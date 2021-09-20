@@ -154,8 +154,8 @@ shinyServer(function(input, output) {
                                                           d.clr="#91268F")})
     
     output$downloadData <- downloadHandler(
-        filename = function() {paste0("acsprof",as.character(as.integer(input$Year)-2004),"-",as.character(as.integer(input$Year)-2000),"-pl-",str_replace(tolower(input$Place)," ","-"),".xlsx")},
-        content <- function(file) {file.copy(paste0("c:/coding/census-data-profiles/output/acsprof",as.character(as.integer(input$Year)-2004),"-",as.character(as.integer(input$Year)-2000),"-pl-",str_replace(tolower(input$Place)," ","-"),".xlsx"),file)},
+        filename = function() {paste0("acs-5yr-profile-",as.character(as.integer(2019)),"-pl-",str_replace("Bainbridge Island"," ","_"),".xlsx")},
+        content <- function(file) {file.copy(here(paste0("data-profiles/acs-5yr-profile-",as.character(as.integer(2019)),"-pl-",str_replace("Bainbridge Island"," ","_"),".xlsx")),file)},
         contentType = "application/Excel"
     )
 

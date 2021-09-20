@@ -16,12 +16,15 @@ library(tidycensus)
 library(tidyverse)
 library(data.table)
 
+library(here)
+
 source('functions.R')
 
 # Inputs ------------------------------------------------------------------
 wgs84 <- 4326
 spn <- 2285 
 
+yrs <- seq(2017,2019,1)
 download.new.census.data <- 'no'
 tables.for.profiles <- c('DP02','DP03','DP04','DP05','B08303')
 
@@ -83,7 +86,6 @@ tract.shape <- st_read('data//extended_tract_2010_no_water_wgs1984.shp') %>%
 
 # Census Data -------------------------------------------------------
 if (download.new.census.data == 'yes') {
-  yrs <- seq(2017,2019,1)
   census_data <- NULL
   
   for (y in yrs) {
