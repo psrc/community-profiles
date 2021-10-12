@@ -84,6 +84,26 @@ tract.shape <- st_read('data//extended_tract_2010_no_water_wgs1984.shp') %>%
   st_transform(wgs84) %>%
   select(GEOID10)
 
+rtp.url <- "https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/RTP/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson"
+rtp.shape <- st_read(rtp.url) %>%
+  mutate(ImprovementType=" ") %>%
+  mutate(TotalCost = gsub(",","",TotalCost)) %>%
+  mutate(TotalCost = as.numeric(TotalCost))
+
+tip.url <- "https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/TIP_19_22/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson"
+tip.shape <- st_read(tip.url) %>%
+  mutate(TotCost = as.numeric(TotCost)) %>%
+  mutate(EstCompletionYear = as.numeric(EstCompletionYear)) %>%
+  mutate(Status="2019-2022 TIP")
+
+rtp.cols <- c("mtpid","Sponsor","Title","ImprovementType","CompletionYear","MTPStatus","TotalCost")
+tip.cols <- c("ProjNo","PlaceShortName","ProjectTitle","ImproveType","EstCompletionYear","Status","TotCost")
+final.nms <- c("ID","Sponsor","Title","Improvement Type","Project Completion","Project Status","Cost")
+
+currency.rtp <- c("Cost")
+proj.length <- 5
+
+
 # Census Data -------------------------------------------------------
 if (download.new.census.data == 'yes') {
   census_data <- NULL

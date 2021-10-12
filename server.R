@@ -198,6 +198,26 @@ shinyServer(function(input, output) {
     output$industry_map <- renderLeaflet({create_tract_map_pick_variable(t=census_data, v=input$IND, y=input$Year, d.clr="Oranges", p=input$Place, e="estimate_percent", 
                                                                            v.type="variable_description", w.title="Share of Total Workers", w.pre="", w.suff="%")})    
     
+    output$rtp_heading <- renderText({
+        paste("Regional Capacity Project List: Projects in ",  input$Place)
+    }) 
+    
+    output$tip_heading <- renderText({
+        paste("Transportation Improvement Program: Projects in ",  input$Place)
+    })
+    
+    output$tip_map <- renderLeaflet({create_tip_map(p=input$Place)})
+    
+    output$rtp_map <- renderLeaflet({create_project_map(p=input$Place)})
+    
+    output$table_rtp <- DT::renderDataTable({
+        datatable(create_project_table(p=input$Place,i=rtp.shape,o=rtp.cols,f=final.nms), rownames = FALSE, options = list(pageLength = proj.length, columnDefs = list(list(className = 'dt-center', targets = 4:6)))) %>% formatCurrency(currency.rtp , "$", digits = 0)
+    })
+    
+    output$table_tip <- DT::renderDataTable({
+        datatable(create_project_table(p=input$Place,i=tip.shape,o=tip.cols,f=final.nms), rownames = FALSE, options = list(pageLength = proj.length, columnDefs = list(list(className = 'dt-center', targets = 4:6)))) %>% formatCurrency(currency.rtp , "$", digits = 0)
+    })
+    
     observeEvent(input$showpanel, {
         
         if(input$showpanel == TRUE) {
