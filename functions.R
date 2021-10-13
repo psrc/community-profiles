@@ -21,7 +21,7 @@ find_place_data <- function(p, v) {
 }
 
 find_rgeo_data <- function(p, v) {
-  c <- community.point %>% filter(NAME == p) %>% select(.data[[v]])
+  c <- community.point %>% filter(NAME == p) %>% select(.data[[v]]) %>% pull()
   return(c)
 }
 
