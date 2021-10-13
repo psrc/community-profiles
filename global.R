@@ -103,6 +103,14 @@ final.nms <- c("ID","Sponsor","Title","Improvement Type","Project Completion","P
 currency.rtp <- c("Cost")
 proj.length <- 5
 
+city.shape <- st_read('data//cities.shp') %>%
+  st_drop_geometry() %>%
+  select(city_name,class_desc) %>%
+  distinct() %>%
+  mutate(city_name = gsub("Sea Tac","SeaTac",city_name)) %>%
+  mutate(city_name = gsub("Beaux Arts","Beaux Arts Village",city_name))
+
+community.point <-left_join(community.point,city.shape,by=c("NAME"="city_name"))
 
 # Census Data -------------------------------------------------------
 if (download.new.census.data == 'yes') {

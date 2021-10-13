@@ -218,6 +218,10 @@ shinyServer(function(input, output) {
         datatable(create_project_table(p=input$Place,i=tip.shape,o=tip.cols,f=final.nms), rownames = FALSE, options = list(pageLength = proj.length, columnDefs = list(list(className = 'dt-center', targets = 4:6)))) %>% formatCurrency(currency.rtp , "$", digits = 0)
     })
     
+    output$place_rgeo <- renderText({
+        paste("Regional Geography:",  find_rgeo_data(p=input$Place,v="class_desc"))
+    }) 
+    
     observeEvent(input$showpanel, {
         
         if(input$showpanel == TRUE) {
