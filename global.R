@@ -36,7 +36,8 @@ db.con <- dbConnect(odbc::odbc(),
                     driver = "SQL Server",
                     server = server.name,
                     database = database.name,
-                    trusted_connection = "yes"
+                    UID = Sys.getenv("userid"),
+                    PWD = Sys.getenv("pwd")
 )
 
 # Jurisdiction Data -------------------------------------------------------
