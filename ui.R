@@ -21,17 +21,20 @@ shinyUI(
         mainPanel(shinyjs::useShinyjs(), id ="Main",
                   bsButton("showpanel", "Show/hide sidebar", type = "toggle", value = TRUE),
             navbarPage(title = "", theme = "styles.css", windowTitle = "PSRC Community Profiles",
-                             tabPanel(icon("city"),
-                                      h1("Community Profiles"),
-                                      "We invite you to explore our various data sets through our Community Profiles Data Portal. This data portal provides access to Census data, Regional Transportation Plan Projects and the Transportation Improvement Program and project related information by jurisdiction. If you can't find what you're looking for, or would like further information about Census or project related data products, please contact us and we will be happy to assist you.",
-                                      hr(),
-                                      h2(textOutput("general_heading")),
-                                      textOutput("place_rgeo"),
-                                      hr(),
-                                      leafletOutput("place_map"),
-                                      hr()
-                                      
-                            ), # end of Overview tabset panel
+                       tabPanel(icon("city"),
+                                h1("Community Profiles"),
+                                "We invite you to explore our various data sets through our Community Profiles Data Portal. This data portal provides access to Census data, Regional Transportation Plan Projects and the Transportation Improvement Program and project related information by jurisdiction. If you can't find what you're looking for, or would like further information about Census or project related data products, please contact us and we will be happy to assist you.",
+                                hr(),
+                                h2(textOutput("general_heading")),
+                                fluidRow(
+                                    column(width=6, textOutput("place_rgeo")),
+                                    column(width=6, textOutput("place_airaff"))
+                                ),
+                                hr(),
+                                leafletOutput("place_map"),
+                                hr()
+                                
+                       ), # end of Overview tabset panel
             
                             tabPanel(icon("users"),
                                 textOutput("DemographicBackground"),

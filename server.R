@@ -18,6 +18,8 @@ shinyServer(function(input, output) {
             setView(lng=find_place_data(input$Place,"INTPTLON"), lat=find_place_data(input$Place,"INTPTLAT"), zoom=find_place_data(input$Place,"ZOOM"))
     })
     
+    output$place_pop_chart <- renderPlotly({create_line_chart(d=ofm.pop, p=input$Place, c="jurisdiction_name", w.x="estimate_year", w.y="total_population", w.title="Total Population")})
+    
     output$Population <- renderText({
         paste("Population: ", return_estimate(census_data, input$Place, input$Year, v=c("DP02_0086","DP02_0087"),"estimate",-2))
     })
@@ -219,7 +221,11 @@ shinyServer(function(input, output) {
     })
     
     output$place_rgeo <- renderText({
-        paste("Regional Geography:",  find_rgeo_data(p=input$Place,v="class_desc"))
+        paste("Regional Geography:",find_rgeo_data(p=input$Place, v="regional_geography"))
+    }) 
+    
+    output$place_airaff <- renderText({
+        paste("Aiport Affected Community:", find_rgeo_data(p=input$Place, v="airport_affected"))
     }) 
     
     observeEvent(input$showpanel, {

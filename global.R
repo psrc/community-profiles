@@ -18,7 +18,69 @@ library(data.table)
 
 library(here)
 
+library(odbc)
+library(DBI)
+
 source('functions.R')
+
+
+# Database Connections ----------------------------------------------------
+server.name <- "AWS-PROD-SQL\\SOCKEYE"
+database.name <- "Elmer"
+jurisdiction.tbl <- "Political.jurisdiction_dims"
+ofm.facts.tbl <- "ofm.april_1_estimate_facts"
+ofm.juris.tbl <- "ofm.jurisdiction_dim"
+ofm.pubs.tbl <- "ofm.publication_dim"
+
+db.con <- dbConnect(odbc::odbc(),
+                    driver = "SQL Server",
+                    server = server.name,
+                    database = database.name,
+                    trusted_connection = "yes"
+)
+
+# Jurisdiction Data -------------------------------------------------------
+airport.community <- c("Auburn", "Burien", "Covington", "Des Moines", "Federal Way", "Kenmore", "Kent", "Lake Forest Park",
+                       "Normandy Park", "Renton", "SeaTac", "Seattle", "Skykomish", "Tukwila", "Bremerton", "Eatonville",
+                       "Gig Harbor", "Lakewood", "Steilacoom", "Tacoma", "University Place", "Arlington", "Darrington",
+                       "Everett", "Marysville", "Monroe","Mukilteo", "Snohomish", "Sultan")
+
+airport.community <- enframe(airport.community) %>%
+  mutate(airport_affected = "Yes") %>%
+  select(-name)
+
+jurisdictions <- as_tibble(dbReadTable(db.con,SQL(jurisdiction.tbl))) %>%
+  mutate(juris_name = gsub("Seatac","SeaTac",juris_name)) %>%
+  mutate(juris_name = gsub("Beau Arts Village","Beaux Arts Village",juris_name)) %>%
+  select(juris_name, regional_geography, airport_affected) %>%
+  distinct() %>%
+  mutate(regional_geography=gsub("HCT","High Capacity Transit Community",regional_geography)) %>%
+  mutate(regional_geography=gsub("Metro","Metropolitan Cities",regional_geography)) %>%
+  mutate(regional_geography=gsub("Core","Core Cities",regional_geography)) %>%
+  mutate(regional_geography=gsub("CitiesTowns","Cities & Towns",regional_geography)) %>%
+  select(-airport_affected)
+
+jurisdictions <- left_join(jurisdictions, airport.community, by=c("juris_name"="value")) %>%
+  mutate(across(airport_affected, ~replace_na(.x, "No")))
+
+# OFM Population Data -----------------------------------------------------
+ofm.pop <- as_tibble(dbReadTable(db.con,SQL(ofm.facts.tbl)))
+
+# Add Jurisdiction Details
+temp <- as_tibble(dbReadTable(db.con,SQL(ofm.juris.tbl)))
+ofm.pop <- left_join(ofm.pop, temp, by=c("jurisdiction_dim_id"))
+
+# Add Publication Details
+temp <- as_tibble(dbReadTable(db.con,SQL(ofm.pubs.tbl)))
+ofm.pop <- left_join(ofm.pop, temp, by=c("publication_dim_id"))
+
+ofm.pub.yr <- ofm.pop %>% select(publication_year) %>% distinct() %>% pull() %>% max()
+ofm.pop <- ofm.pop %>% 
+  filter(publication_year==ofm.pub.yr) %>%
+  select(jurisdiction_name, total_population, housing_units, estimate_year) %>%
+  mutate(jurisdiction_name= str_replace(jurisdiction_name, " \\(part\\)", "")) %>%
+  group_by(jurisdiction_name, estimate_year) %>%
+  summarize(total_population=sum(total_population), housing_units=sum(housing_units))
 
 # Inputs ------------------------------------------------------------------
 wgs84 <- 4326
@@ -27,6 +89,8 @@ spn <- 2285
 yrs <- seq(2017,2019,1)
 download.new.census.data <- 'no'
 tables.for.profiles <- c('DP02','DP03','DP04','DP05','B08303')
+
+
 
 dp02.variables.pre19 <- c("DP02_0015","DP02_0071","DP02_0073","DP02_0075","DP02_0077","DP02_0086")
 dp02.variables.post19 <- c("DP02_0016","DP02_0072","DP02_0074","DP02_0076","DP02_0078","DP02_0087")
@@ -37,6 +101,7 @@ dp03.variables.pre19 <- c("DP03_0009","DP03_0018","DP03_0019","DP03_0020","DP03_
                           "DP03_0041","DP03_0042","DP03_0043","DP03_0044","DP03_0045",
                           "DP03_0051","DP03_0052","DP03_0053","DP03_0054","DP03_0055","DP03_0056","DP03_0057","DP03_0058",
                           "DP03_0059","DP03_0060","DP03_0061","DP03_0062")
+
 dp03.variables.post19 <- c("DP03_0009","DP03_0018","DP03_0019","DP03_0020","DP03_0021","DP03_0022","DP03_0023","DP03_0024", 
                           "DP03_0025","DP03_0026","DP03_0027","DP03_0028","DP03_0029","DP03_0030","DP03_0031","DP03_0032",
                           "DP03_0033","DP03_0034","DP03_0035","DP03_0036","DP03_0037","DP03_0038","DP03_0039","DP03_0040",
@@ -48,6 +113,7 @@ dp04.variables.pre19 <- c("DP04_0006","DP04_0007","DP04_0008","DP04_0009","DP04_
                           "DP04_0057","DP04_0058","DP04_0059","DP04_0060","DP04_0061",
                           "DP04_0080","DP04_0081","DP04_0082","DP04_0083","DP04_0084","DP04_0085","DP04_0086","DP04_0087","DP04_0088","DP04_0089",
                           "DP04_0126","DP04_0127","DP04_0128","DP04_0129","DP04_0130","DP04_0131","DP04_0132","DP04_0133","DP04_0134")
+
 dp04.variables.post19 <- c("DP04_0006","DP04_0007","DP04_0008","DP04_0009","DP04_0010","DP04_0011","DP04_0012","DP04_0013","DP04_0014",
                           "DP04_0057","DP04_0058","DP04_0059","DP04_0060","DP04_0061",
                           "DP04_0080","DP04_0081","DP04_0082","DP04_0083","DP04_0084","DP04_0085","DP04_0086","DP04_0087","DP04_0088","DP04_0089",
@@ -56,6 +122,7 @@ dp04.variables.post19 <- c("DP04_0006","DP04_0007","DP04_0008","DP04_0009","DP04
 dp05.variables.pre19 <- c("DP05_0001","DP05_0005","DP05_0006","DP05_0007","DP05_0008","DP05_0009",
                           "DP05_0010","DP05_0011","DP05_0012","DP05_0013","DP05_0014","DP05_0015","DP05_0016","DP05_0017","DP05_0018",
                           "DP05_0063","DP05_0064","DP05_0065","DP05_0066","DP05_0067","DP05_0068","DP05_0069")
+
 dp05.variables.post19 <- c("DP05_0001","DP05_0005","DP05_0006","DP05_0007","DP05_0008","DP05_0009",
                           "DP05_0010","DP05_0011","DP05_0012","DP05_0013","DP05_0014","DP05_0015","DP05_0016","DP05_0017","DP05_0018",
                           "DP05_0063","DP05_0064","DP05_0065","DP05_0066","DP05_0067","DP05_0068","DP05_0069")
@@ -103,143 +170,13 @@ final.nms <- c("ID","Sponsor","Title","Improvement Type","Project Completion","P
 currency.rtp <- c("Cost")
 proj.length <- 5
 
-city.shape <- st_read('data//cities.shp') %>%
-  st_drop_geometry() %>%
-  select(city_name,class_desc) %>%
-  distinct() %>%
-  mutate(city_name = gsub("Sea Tac","SeaTac",city_name)) %>%
-  mutate(city_name = gsub("Beaux Arts","Beaux Arts Village",city_name))
-
-community.point <-left_join(community.point,city.shape,by=c("NAME"="city_name"))
+#community.point <-left_join(community.point,city.shape,by=c("NAME"="city_name"))
 
 # Census Data -------------------------------------------------------
-if (download.new.census.data == 'yes') {
-  census_data <- NULL
-  
-  for (y in yrs) {
-    table.labels <- load_variables(year=y, dataset="acs5", cache = TRUE)
-    dp.labels <- load_variables(year=y, dataset="acs5/profile", cache = TRUE)
-    labels <- bind_rows(table.labels,dp.labels)
-    
-    for (t in tables.for.profiles) {
-    
-      p <- get_acs(geography="place",state="WA", year=y, table=t, survey='acs5', cache_table=TRUE) %>%
-        mutate(census_year = y, place_type="pl", acs_type="acs5")
-      
-      percent.variables <- p %>% 
-        filter(endsWith(variable,"P")) %>% 
-        select(GEOID,variable,census_year,estimate,moe) %>%
-        rename(estimate_percent=estimate, moe_percent=moe) %>%
-        mutate(variable = str_sub(variable,1,nchar(variable)-1))
-      
-      p <- left_join(p,percent.variables, by=c("GEOID","variable","census_year")) %>%
-        filter(!(endsWith(variable,"P")))
-      
-      c <- get_acs(geography="county",state="WA", counties = c("King","Kitsap","Pierce","Snohomish"), year=y, table=t, survey='acs5', cache_table=TRUE) %>%
-        mutate(census_year = y, place_type="co", acs_type="acs5") 
-      
-      percent.variables <- c %>% 
-        filter(endsWith(variable,"P")) %>% 
-        select(GEOID,variable,census_year,estimate,moe) %>%
-        rename(estimate_percent=estimate, moe_percent=moe) %>%
-        mutate(variable = str_sub(variable,1,nchar(variable)-1))
-      
-      c <- left_join(c,percent.variables, by=c("GEOID","variable","census_year")) %>%
-        filter(!(endsWith(variable,"P")))
-      
-      t.tbl <- get_acs(geography="tract", state="WA", counties = c("King","Kitsap","Pierce","Snohomish"), year=y, table=t, survey='acs5', cache_table=TRUE) %>%
-        mutate(census_year = y, place_type="tr", acs_type="acs5")
-        
-      percent.variables <- t.tbl %>% 
-        filter(endsWith(variable,"P")) %>% 
-        select(GEOID,variable,census_year,estimate,moe) %>%
-        rename(estimate_percent=estimate, moe_percent=moe) %>%
-        mutate(variable = str_sub(variable,1,nchar(variable)-1))
-      
-      t.tbl <- left_join(t.tbl,percent.variables, by=c("GEOID","variable","census_year")) %>%
-        filter(!(endsWith(variable,"P"))) %>% 
-        filter(variable %in% final_tract_variables)
-      
-      d <- bind_rows(list(p,c,t.tbl))
-      d <- left_join(d,labels, by=c("variable"="name"))
-      
-      if (t== 'DP02') {
-        if (y < 2019) {
-          keep.vars <- dp02.variables.pre19
-          d <- d %>% filter(variable %in% keep.vars)
-        } else {
-          keep.vars <- dp02.variables.post19
-          d <- d %>% filter(variable %in% keep.vars)
-        }
-      }
-      
-      if (t== 'DP03') {
-        if (y < 2019) {
-          keep.vars <- dp03.variables.pre19
-          d <- d %>% filter(variable %in% keep.vars)
-        } else {
-          keep.vars <- dp03.variables.post19
-          d <- d %>% filter(variable %in% keep.vars)
-        }
-      }
-      
-      if (t== 'DP04') {
-        if (y < 2019) {
-          keep.vars <- dp04.variables.pre19
-          d <- d %>% filter(variable %in% keep.vars)
-        } else {
-          keep.vars <- dp04.variables.post19
-          d <- d %>% filter(variable %in% keep.vars)
-        }
-      }
-      
-      if (t== 'DP05') {
-        if (y < 2019) {
-          keep.vars <- dp05.variables.pre19
-          d <- d %>% filter(variable %in% keep.vars)
-        } else {
-          keep.vars <- dp05.variables.post19
-          d <- d %>% filter(variable %in% keep.vars)
-        }
-      }
-    
-      ifelse(is.null(census_data), census_data <- d, census_data <- bind_rows(census_data,d))
-      rm(p, c, t.tbl, d)
-    } # end of tables loop
-  } # end of year loop
-  
-  tract_data <- census_data %>% 
-    filter(place_type %in% c("tr")) %>%
-    separate(NAME, into=c("NAME","county", "state"),sep=",") %>%
-    mutate(county = trimws(county, "l")) %>%
-    filter(county %in% c("King County", "Kitsap County", "Pierce County", "Snohomish County")) %>%
-    select(-county, -state)
-  
-  census_data <- census_data %>% filter(GEOID %in% region.geoids)
-  
-  census_data <- bind_rows(census_data, tract_data)
-  
-  census_data <- census_data %>%
-    rename(geoid=GEOID, margin_of_error=moe, geog_name=NAME, variable_name=variable, variable_description=label) %>%
-    mutate(place_type = str_trim(place_type, "right")) %>%
-    mutate(geog_name = gsub(", Washington", "", geog_name)) %>%
-    filter(!(endsWith(geog_name,"CDP"))) %>%
-    filter(!(endsWith(geog_name,"CDP (Pierce County)"))) %>%
-    filter(!(endsWith(geog_name,"CDP (King County)"))) %>%
-    mutate(geog_name = gsub(" city", "", geog_name)) %>%
-    mutate(geog_name = gsub(" town", "", geog_name)) %>%
-    mutate(geog_name = str_trim(geog_name, "right")) %>%
-    select(-concept) %>%
-    mutate(variable_description = str_extract(variable_description, "[^!!]*$")) %>%
-    mutate(variable_description = case_when(
-      variable_name == "DP04_0013" ~ "20+ Units",
-      !(variable_name == "DP04_0013") ~ variable_description))
-  
-  fwrite(census_data, 'data//census_data_by_place.csv')
 
-} else {
-  census_data <- as_tibble(fread('data//census_data_by_place.csv'))
-}
+census_data <- as_tibble(fread('data//census_data_by_place.csv'))
+#census_data <- DBI::dbGetQuery(db.con, "execute census.census_data_for_member_profiles")
+odbc::dbDisconnect(db.con)
 
 # Mode Share Information --------------------------------------------------
 ms_var <- c("DP03_0018","DP03_0019","DP03_0020","DP03_0021","DP03_0022","DP03_0023","DP03_0024")
@@ -420,4 +357,3 @@ data_ind <- census_data %>%
   select(variable_description) %>%
   distinct() %>%
   pull()
-

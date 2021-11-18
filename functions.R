@@ -21,7 +21,7 @@ find_place_data <- function(p, v) {
 }
 
 find_rgeo_data <- function(p, v) {
-  c <- community.point %>% filter(NAME == p) %>% select(.data[[v]]) %>% pull()
+  c <- jurisdictions %>% filter(juris_name == p) %>% select(.data[[v]]) %>% pull()
   return(c)
 }
 
@@ -130,7 +130,7 @@ create_tract_map_pick_variable <- function(t, v, y, d.clr, p, e, v.type, w.title
   tract_ids <- interim %>% st_drop_geometry() %>% select(GEOID10) %>% distinct() %>% pull()
   
   tracts.trimmed <- tract.shape %>% filter(GEOID10%in% tract_ids)
-  current_value  <- left_join(tracts.trimmed, current_tbl, by=c("GEOID10"="geoid"))
+  current_value  <- left_join(tracts.trimmed, current_tbl, by=c("GEOID10"="geoid")) %>% drop_na()
   
   # Determine Bins
   rng <- range(current_value$value)
@@ -352,5 +352,38 @@ create_project_map <- function(p) {
   }
   
   return(working_map)
+  
+}
+
+create_line_chart <- function(d, p, c, w.x, w.y, w.title) {
+  
+  d <- d %>% filter(.data[[c]] == p)
+  y.max <- 1.25 * max(d[w.y])
+  x.breaks <- unique(d %>% pull(w.x))
+  
+  g <-  ggplotly(ggplot(data=d, 
+                        aes(x = get(eval(w.x)), 
+                            y = get(eval(w.y)), 
+                            group=1, 
+                            text = paste0("<b>Year: </b>",  get(eval(w.x)), "<br>","<b>Population: </b>", prettyNum(round(get(eval(w.y)), 0), big.mark = ","), "<br>")))  + 
+                   geom_line(linetype = "solid", size = 1, color="#00A7A0") +
+                   scale_y_continuous(labels = label_comma(), limits = c(0,y.max)) +
+                   scale_x_continuous(breaks= x.breaks) +
+                   labs(title = w.title, x = NULL, y = NULL) +
+                   theme(plot.title = element_text(size = 10, face = 'bold'),
+                         axis.ticks.x = element_blank(),
+                         axis.line.x = element_blank(),
+                         axis.line.y = element_line(colour="#BBBDC0",size = 0.25),
+                         panel.background = element_blank(),
+                         panel.grid.major.y = element_line(colour="#BBBDC0",size = 0.25),
+                         panel.grid.minor.y = element_line(colour="#BBBDC0",size = 0.25),
+                         panel.grid.major.x = element_blank(),
+                         panel.grid.minor.x = element_blank(),
+                         text = element_text(family = "Segoe UI"),
+                         legend.position = "bottom",
+                         legend.title = element_blank()),
+                 tooltip = c("text")) %>% layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.25), hovermode = "x")
+  
+  return(g)
   
 }
