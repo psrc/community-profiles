@@ -5,65 +5,80 @@ shinyUI(
         sidebarPanel(id = "sidebar",
             div(img(src="psrc-logo.png", width = 260, height = 92, style = "padding-top: 25px")),
             br(),
-            selectInput("Place","Please Select the community you are interested in:",data_places, selected = "Bellevue"),
-            selectInput("Year","Please Select the year you are interested in:",data_years, selected = 2019),
+            selectInput("Place","Please Select your Community:",data_places, selected = "Bellevue"),
+            selectInput("Year","Please Select a Year:",data_years, selected = 2019),
             textOutput("Population"),
+            textOutput("POCShare"),
             textOutput("MedianAge"),
+            textOutput("DisabledShare"),
             textOutput("MedianIncome"),
             textOutput("AvgHHSize"),
+            textOutput("OwnShare"),
             textOutput("UnempRate"),
             textOutput("AvgTT"),
-            h3("Note on Census Data:"),
-            textOutput("CensusBackground"),
+            h3("Regional Definitions:"),
+            textOutput("place_rgeo"),
+            textOutput("place_airaff"),
             br(),
             downloadLink('downloadData', label = "Download Data Profiles in Excel"),
             width=3),
         mainPanel(shinyjs::useShinyjs(), id ="Main",
                   bsButton("showpanel", "Show/hide sidebar", type = "toggle", value = TRUE),
             navbarPage(title = "", theme = "styles.css", windowTitle = "PSRC Community Profiles",
+                       
                        tabPanel(icon("city"),
                                 h1("Community Profiles"),
-                                "We invite you to explore our various data sets through our Community Profiles Data Portal. This data portal provides access to Census data, Regional Transportation Plan Projects and the Transportation Improvement Program and project related information by jurisdiction. If you can't find what you're looking for, or would like further information about Census or project related data products, please contact us and we will be happy to assist you.",
+                                textOutput("CensusBackground"),
                                 hr(),
                                 h2(textOutput("general_heading")),
-                                fluidRow(
-                                    column(width=6, textOutput("place_rgeo")),
-                                    column(width=6, textOutput("place_airaff"))
-                                ),
-                                hr(),
-                                leafletOutput("place_map"),
-                                hr()
-                                
-                       ), # end of Overview tabset panel
+                                leafletOutput("place_map")
+                                ), # end of Overview tabset panel
             
-                            tabPanel(icon("users"),
+                        tabPanel(icon("users"),
                                 textOutput("DemographicBackground"),
+                                
                                 tabsetPanel(
                                     
                                     tabPanel("Age",
                                              fluidRow(
-                                                 column(width = 6, br(), br(), plotlyOutput("plot_age")),
-                                                 column(width = 6, h2("Median Age"),leafletOutput("age_map"))
-                                             ), # end of fluid row
+                                                 column(width = 6, plotlyOutput("plot_age")),
+                                                 column(width = 6, leafletOutput("age_map"))
+                                                 ), # end of fluid row
                                              fluidRow(
                                                  column(width = 12,hr(),DT::dataTableOutput("table_age"))
-                                             ) # end of fluid Row
-                                    ), # end of age tab panel
+                                                 ) # end of fluid Row
+                                            ), # end of age tab panel
                                           
                                     tabPanel("Race",
                                         fluidRow(
-                                            column(width = 6, br(), br(), plotlyOutput("plot_race")),
-                                            column(width = 6, selectInput("Race","",data_race, selected = "Black or African American"), leafletOutput("race_map"))
+                                            column(width = 6, plotlyOutput("plot_race")),
+                                            column(width = 6, leafletOutput("race_map"))
                                         ), # end of fluid row
                                         fluidRow(
                                             column(width = 12,hr(),DT::dataTableOutput("table_race"))
                                         ) # end of fluid Row
                                     ), # end of race tab panel
                                     
-                                    tabPanel("Disability",
+
+                                    
+                                    tabPanel("Health Coverage",
                                              fluidRow(
-                                                 column(width = 12,h2("People with a Disability"),leafletOutput("disability_map"))
-                                             ) # end of fluid row
+                                                 column(width = 6, plotlyOutput("plot_health")),
+                                                 column(width = 6, leafletOutput("health_map"))
+                                             ), # end of fluid row
+                                             fluidRow(
+                                                 column(width = 12,hr(),DT::dataTableOutput("table_health"))
+                                             ) # end of fluid Row
+                                    ), # end of Health Coverage Tab Panel
+                                    
+                                    tabPanel("People with a Disability",
+                                             fluidRow(
+                                                 column(width = 6, plotlyOutput("plot_disability")),
+                                                 column(width = 6, leafletOutput("disability_map"))
+                                             ), # end of fluid row
+                                             fluidRow(
+                                                 column(width = 12,hr(),DT::dataTableOutput("table_disability"))
+                                             ) # end of fluid Row
                                     ) # end of Disability Tab Panel
                                           
                                 ) # end of Demographics tabset panel
@@ -75,40 +90,43 @@ shinyUI(
                                 
                                     tabPanel("Housing Units",
                                              fluidRow(
-                                                 column(width = 6, br(), br(), plotlyOutput("plot_housing")),
-                                                 column(width = 6, selectInput("HU","",data_hu, selected = "20+ Units"), leafletOutput("housingunits_map"))
+                                                 column(width = 6, plotlyOutput("plot_housingtype")),
+                                                 column(width = 6, leafletOutput("housingtype_map"))
                                              ), # end of fluid row
                                              fluidRow(
-                                                 column(width = 12,hr(),DT::dataTableOutput("table_housing"))
+                                                 column(width = 12,hr(),DT::dataTableOutput("table_housingtype"))
                                              ) # end of fluid Row
                                     ), # end of units tab panel
                                     
                                     tabPanel("Home Value",
-                                        fluidRow(
-                                            column(width = 6,
-                                             verticalLayout(plotlyOutput("plot_homevalue"),
-                                                            DT::dataTableOutput("table_homevalue"))),
-                                            column(width = 6, h2("Median Home Value"), leafletOutput("homevalue_map",height="600px"))
-                                        ) # end of Fluid Row
+                                             fluidRow(
+                                                 column(width = 6, plotlyOutput("plot_homevalue")),
+                                                 column(width = 6, leafletOutput("homevalue_map"))
+                                             ), # end of fluid row
+                                             fluidRow(
+                                                 column(width = 12,hr(),DT::dataTableOutput("table_homevalue"))
+                                             ) # end of fluid Row
                                     ), # end of Home Value tab panel
                          
                                     tabPanel("Monthly Rent",
-                                        fluidRow(
-                                            column(width = 6,
-                                             verticalLayout(plotlyOutput("plot_monthlyrent"),
-                                                            DT::dataTableOutput("table_monthlyrent"))),
-                                            column(width = 6, h2("Median Monthly Rent"), leafletOutput("monthlyrent_map",height="600px"))
-                                        ) # end of Fluid Row
+                                             fluidRow(
+                                                 column(width = 6, plotlyOutput("plot_monthlyrent")),
+                                                 column(width = 6, leafletOutput("monthlyrent_map"))
+                                             ), # end of fluid row
+                                             fluidRow(
+                                                 column(width = 12,hr(),DT::dataTableOutput("table_monthlyrent"))
+                                             ) # end of fluid Row
                                     ), # end of Monthly Rent tab panel
                          
-                                    tabPanel("Vehicles Available",
-                                        fluidRow(
-                                            column(width = 6,
-                                             verticalLayout(plotlyOutput("plot_vehicles"),
-                                                            DT::dataTableOutput("table_vehicles"))),
-                                            column(width = 6, h2("Zero Car Households"), leafletOutput("zerocar_map",height="600px"))
-                                        ) # end of Fluid Row
-                                    ) # end of Vehicle Availability tab panel 
+                                    tabPanel("Home Ownership",
+                                             fluidRow(
+                                                 column(width = 6, plotlyOutput("plot_ownership")),
+                                                 column(width = 6, leafletOutput("ownership_map"))
+                                             ), # end of fluid row
+                                             fluidRow(
+                                                 column(width = 12,hr(),DT::dataTableOutput("table_ownership"))
+                                             ) # end of fluid Row
+                                    ) # end of Home Ownership tab panel 
                          
                                 ) # end of Housing tabset panel
                             ), # end of Housing Tab Panel
@@ -117,20 +135,30 @@ shinyUI(
                                      textOutput("JobsBackground"),
                                      tabsetPanel(
                                          
+                                         tabPanel("Educational Attainment",
+                                                  fluidRow(
+                                                      column(width = 6, plotlyOutput("plot_edu")),
+                                                      column(width = 6, leafletOutput("edu_map"))
+                                                  ), # end of fluid row
+                                                  fluidRow(
+                                                      column(width = 12,hr(),DT::dataTableOutput("table_edu"))
+                                                  ) # end of fluid Row
+                                         ), # end of educational attainment tab panel
+                                         
                                          tabPanel("Occupation",
                                                   fluidRow(
-                                                      column(width = 6, br(), br(), plotlyOutput("plot_occupation")),
-                                                      column(width = 6, selectInput("OCC","",data_occ, selected = "Service occupations"), leafletOutput("occupation_map"))
+                                                      column(width = 6, plotlyOutput("plot_occupation")),
+                                                      column(width = 6, leafletOutput("occupation_map"))
                                                   ), # end of fluid row
                                                   fluidRow(
                                                       column(width = 12,hr(),DT::dataTableOutput("table_occupation"))
                                                   ) # end of fluid Row
                                          ), # end of occupation tab panel
                                          
-                                         tabPanel("Industy",
+                                         tabPanel("Industry",
                                                   fluidRow(
-                                                      column(width = 6, br(), br(), plotlyOutput("plot_industry")),
-                                                      column(width = 6, selectInput("IND","",data_ind, selected = "Retail trade"), leafletOutput("industry_map"))
+                                                      column(width = 6, plotlyOutput("plot_industry")),
+                                                      column(width = 6, leafletOutput("industry_map"))
                                                   ), # end of fluid row
                                                   fluidRow(
                                                       column(width = 12,hr(),DT::dataTableOutput("table_industry"))
@@ -139,8 +167,8 @@ shinyUI(
                                          
                                          tabPanel("Income",
                                                   fluidRow(
-                                                      column(width = 6, br(), br(), plotlyOutput("plot_income")),
-                                                      column(width = 6, h2("Median Household Income"), leafletOutput("medianincome_map"))
+                                                      column(width = 6, plotlyOutput("plot_income")),
+                                                      column(width = 6, leafletOutput("income_map"))
                                                   ), # end of fluid row
                                                   fluidRow(
                                                       column(width = 12,hr(),DT::dataTableOutput("table_income"))
@@ -153,23 +181,45 @@ shinyUI(
                             tabPanel(icon("car"),
                                      
                                 tabsetPanel(
-                                        tabPanel("Mode Share",
-                                                fluidRow(
-                                                        column(width = 6,
-                                                            verticalLayout(plotlyOutput("plot_ms"),
-                                                                            DT::dataTableOutput("table_ms"))),
-                                                        column(width = 6, selectInput("Mode","",data_modes), leafletOutput("modeshare_map",height="600px"))
-                                                ) # end of Fluid Row
+                                        tabPanel("Mode Share to Work",
+                                                 fluidRow(
+                                                     column(width = 6, plotlyOutput("plot_modes")),
+                                                     column(width = 6, leafletOutput("modes_map"))
+                                                 ), # end of fluid row
+                                                 fluidRow(
+                                                     column(width = 12,hr(),DT::dataTableOutput("table_modes"))
+                                                 ) # end of fluid Row
                                         ), # end of mode share tab panel
                                                  
                                         tabPanel("Travel Time to Work",
-                                                fluidRow(
-                                                        column(width = 6,
-                                                            verticalLayout(plotlyOutput("plot_tt"),
-                                                                            DT::dataTableOutput("table_tt"))),
-                                                        column(width = 6, h2("Average Travel Time to Work"), leafletOutput("traveltime_map",height="600px"))
-                                                ) # end of Fluid Row
-                                        ) # end of travel time tab panel
+                                                 fluidRow(
+                                                     column(width = 6, plotlyOutput("plot_time")),
+                                                     column(width = 6, leafletOutput("time_map"))
+                                                 ), # end of fluid row
+                                                 fluidRow(
+                                                     column(width = 12,hr(),DT::dataTableOutput("table_time"))
+                                                 ) # end of fluid Row
+                                        ), # end of travel time tab panel
+                                        
+                                        tabPanel("Departure Time to Work",
+                                                 fluidRow(
+                                                     column(width = 6, plotlyOutput("plot_depart")),
+                                                     column(width = 6, leafletOutput("depart_map"))
+                                                 ), # end of fluid row
+                                                 fluidRow(
+                                                     column(width = 12,hr(),DT::dataTableOutput("table_depart"))
+                                                 ) # end of fluid Row
+                                        ), # end of departure time tab panel
+                                        
+                                        tabPanel("Vehicles Available",
+                                                 fluidRow(
+                                                     column(width = 6, plotlyOutput("plot_vehicles")),
+                                                     column(width = 6, leafletOutput("vehicles_map"))
+                                                 ), # end of fluid row
+                                                 fluidRow(
+                                                     column(width = 12,hr(),DT::dataTableOutput("table_vehicles"))
+                                                 ) # end of fluid Row
+                                        ) # end of Vehicle Availability tab panel 
                                                  
                                      ) # end of Transportation TabSet
                                      
@@ -182,14 +232,14 @@ shinyUI(
                                     tabPanel("Transportation Improvement Program",
                                              fluidRow(
                                                  column(width = 6,
-                                                        h3(textOutput("tip_heading")),
+                                                        br(),
                                                         "The TIP provides a summary of current transportation projects underway within King, Pierce, Snohomish, and Kitsap counties. These projects are funded with federal, state and local funds, including the most recent federal grants awarded through PSRC.",
                                                         br(),
                                                         br(),
                                                         "The TIP spans a four-year period and must be updated at least every two years. After public review and comment, the TIP is approved by the Regional Council's Transportation Policy and Executive Boards before being submitted for further approvals to the Governor and ultimately the U.S. Department of Transportation.",
                                                         br(),
                                                         br(),
-                                                        "The 2019-2022 Regional TIP was adopted by PSRC's Executive Board in October 2018 and final state and federal approvals were received in January of 2019.  Projects in the 2019-2022 Regional TIP are shown below.",
+                                                        "The 2021-2024 Regional TIP was adopted by PSRC's Executive Board in October 2020 and final state and federal approvals were received in January of 2021.  Projects in the 2021-2024 Regional TIP are shown below.",
                                                         br(),
                                                         br()
                                                  ),
@@ -203,7 +253,7 @@ shinyUI(
                                     tabPanel("Regional Transportation Plan",
                                              fluidRow(
                                                  column(width = 6,
-                                                        h3(textOutput("rtp_heading")),
+                                                        br(),
                                                         "Larger scale regional investments planned through 2040 are included in the RTP on the Regional Capacity Projects list.",
                                                         br(),
                                                         br(),
@@ -234,6 +284,8 @@ shinyUI(
                                      br(),
                                      h3("Census Tables:"),
                                      "Travel Time to Work: Table B08303",
+                                     br(),
+                                     "Departure Time to Work: Table B08302",
                                      br(),
                                      "Age: Data Profile 5 (DP05)",
                                      br(),
