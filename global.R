@@ -23,7 +23,8 @@ source('functions.R')
 jurisdictions <- as_tibble(fread('data//jurisdictions.csv'))
 census_data <- as_tibble(fread('data//census_data_by_place.csv')) %>%
   mutate(Label = gsub("Education & Health Services", "Health & Edu", Label)) %>%
-  mutate(Label = gsub("Entertainment, Accommodation & Food Services", "Food & Entertainment", Label))
+  mutate(Label = gsub("Entertainment, Accommodation & Food Services", "Food & Entertainment", Label)) %>%
+  mutate(acs_year = paste0(census_year-4,"-", census_year," ACS Data"))
 
 # Shapefiles --------------------------------------------------------------
 wgs84 <- 4326
@@ -105,7 +106,7 @@ return_estimate <- function(t, p, y, v, val, d) {
   
   r <- t %>%
     filter(geog_name %in% p) %>%
-    filter(census_year %in% y) %>%
+    filter(acs_year %in% y) %>%
     filter(Label %in% v) %>%
     select(.data[[val]]) %>%
     sum()
@@ -129,7 +130,7 @@ find_rgeo_data <- function(p, v) {
 create_summary_chart <- function(d, p, y, v, val, f=1, dec=0, s="", d.title, d.clr) {
   
   t <- d %>% 
-    filter(geog_name %in% c(p,"Region") & census_year == y & Category == v) %>%
+    filter(geog_name %in% c(p,"Region") & acs_year == y & Category == v) %>%
     select(Label, .data[[val]], geog_name) %>%
     filter(!(str_detect(Label, "Total"))) %>%
     mutate(Label = str_wrap(Label, 20))
@@ -172,7 +173,7 @@ create_summary_chart <- function(d, p, y, v, val, f=1, dec=0, s="", d.title, d.c
 
 create_tract_map <- function(t, y, p, v, val, d.clr, d.title, pre="", s="", dec=0, f=1) {
   
-  if (y >= 2020) {
+  if (y == "2016-2020 ACS Data") {
     tracts <- tract.shape %>% filter(census_year==2020)
   } else {
     tracts <- tract.shape %>% filter(census_year==2010)
@@ -182,7 +183,7 @@ create_tract_map <- function(t, y, p, v, val, d.clr, d.title, pre="", s="", dec=
   
   # Trim full Tract table to Variable and Year of interest
   current_tbl <- t %>% 
-    filter(census_year == y & place_type == "tr" & Label == v) %>%
+    filter(acs_year == y & place_type == "tr" & Label == v) %>%
     select(geoid, .data[[val]]) %>%
     rename(value=.data[[val]]) %>%
     mutate(geoid = as.character(geoid), value = value*f)
@@ -249,12 +250,12 @@ create_summary_table <- function(t,p,y,v) {
   
   # Subset the table and add a share of the total results
   tbl <- t %>% 
-    filter(geog_name %in% c(p) & census_year == y & Category == v) %>%
+    filter(geog_name %in% c(p) & acs_year == y & Category == v) %>%
     select(Label,estimate,margin_of_error,share) %>%
     rename(Variable=Label, Estimate=estimate, MoE=margin_of_error, Share=share)
   
   r <- t %>% 
-    filter(geog_name %in% c("Region") & census_year == y & Category == v) %>%
+    filter(geog_name %in% c("Region") & acs_year == y & Category == v) %>%
     select(Label,share) %>%
     rename(Variable=Label, Region=share)
 
@@ -342,8 +343,13 @@ create_project_table <- function(p, i, f=final.nms, plan.yr="2021-2024 TIP") {
 }
 
 # Dropdown List Creations -------------------------------------------------
+latest.census.yr <- census_data %>% select(census_year) %>% distinct() %>% pull() %>% max()
+non.overlap.census.yr <- latest.census.yr - 5
+
 data_years <- census_data %>%
-  select(census_year) %>%
+  filter(census_year %in% c(non.overlap.census.yr, latest.census.yr)) %>%
+  arrange(desc(census_year)) %>%
+  select(acs_year) %>%
   distinct() %>%
   pull()
 

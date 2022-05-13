@@ -3,10 +3,10 @@
 shinyUI(
     fluidPage(sidebarLayout(
         sidebarPanel(id = "sidebar",
-            div(img(src="psrc-logo.png", width = 260, height = 92, style = "padding-top: 25px")),
+            div(img(src="psrc-logo.png", width = "70%", height = "70%", style = "padding-top: 5px")),
             br(),
-            selectInput("Place","Please Select your Community:",data_places, selected = "Bellevue"),
-            selectInput("Year","Please Select a Year:",data_years, selected = 2019),
+            selectInput("Place","Select your Community:",data_places, selected = "Bellevue"),
+            selectInput("Year","Select American Community Survey Data:",data_years),
             textOutput("Population"),
             textOutput("POCShare"),
             textOutput("MedianAge"),
