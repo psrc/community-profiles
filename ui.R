@@ -23,15 +23,29 @@ shinyUI(
             downloadLink('downloadData', label = "Download Data Profiles in Excel"),
             width=3),
         mainPanel(shinyjs::useShinyjs(), id ="Main",
-                  bsButton("showpanel", "Show/hide sidebar", type = "toggle", value = TRUE),
             navbarPage(title = "", theme = "styles.css", windowTitle = "PSRC Community Profiles",
                        
                        tabPanel(icon("city"),
                                 h1("Community Profiles"),
                                 textOutput("CensusBackground"),
                                 hr(),
-                                h2(textOutput("general_heading")),
-                                leafletOutput("place_map")
+                                fluidRow(
+                                    column(width=7, 
+                                           "The data  on this dashboard is a snapshot of the information that is available from the US Census Bureau. ",
+                                           "In order to view data for all the cities and towns in the Puget Sound region, we are limited to using American Community Survey (ACS) 5 year data. ",
+                                           "For this reason, you will only find two non-overlapping sets of data on this dashboard. ",
+                                           "By only including non-overlapping data, users can analyze the data for changing trends. ",
+                                           "The data on this dashboard is divided into five categories:",br(),br(),
+                                           icon("users"),"People Measures", br(),
+                                           icon("home"),"Household & Housing Measures", br(),
+                                           icon("briefcase"),"Job & Income Measures", br(),
+                                           icon("car"),"Transportation Measures", br(),
+                                           icon("wrench"),"Transportation Projects", br(),
+                                           ),
+                                    column(width=5, leafletOutput("place_map"))),
+                                hr(),
+                                fluidRow("Click on the icon at the top of the page that corresponds to the metrics that you are interested in and you will get access to those measures. If you have any questions about the data or are curious what else we might have, please click",
+                                         tags$a(class = "source_url", href="https://www.psrc.org/contact-center/have-question?contact=9626&destination=node/9362&width=75%25&height=75%25&subject=Planning%20for%20Equity", "here", target="_blank")," and we will be happy to help.")
                                 ), # end of Overview tabset panel
             
                         tabPanel(icon("users"),

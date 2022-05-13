@@ -40,7 +40,7 @@ shinyServer(function(input, output) {
     })
     
     output$place_rgeo <- renderText({
-        paste("Regional Geography:",find_rgeo_data(p=input$Place, v="regional_geography"))
+        paste("Regional Geography:", find_rgeo_data(p=input$Place, v="regional_geography"))
     }) 
     
     output$place_airaff <- renderText({
@@ -53,16 +53,16 @@ shinyServer(function(input, output) {
         contentType = "application/Excel"
     )
     
-    ## This section is for all the dta on the Main Overview Page 
+    ## This section is for all the data on the Main Overview Page 
     
     output$general_heading <- renderText({
         paste(input$Place)
     })
     
     output$CensusBackground <- renderText({
-        paste("As a State Data Center for the central Puget Sound region, PSRC keeps a complete inventory of data released from the U.S. Census Bureau. Cities and counties use it to track the well-being of children, families, and the elderly as well as to determine where to locate new public facilities. This portal includes demographic profiles on a variety of topics for all cities and towns in the PSRC region. We invite you to explore the data and if you can't find what you're looking, please let us know.")
+        paste("As a State Data Center for the central Puget Sound region, PSRC keeps a complete inventory of data released from the U.S. Census Bureau. Cities and counties use it to track the well-being of children, families, and the elderly as well as to determine where to locate new public facilities. This portal includes demographic profiles on a variety of topics for all cities and towns in the PSRC region.")
     })
-
+    
     output$place_map <- renderLeaflet({
         leaflet() %>%
             addTiles() %>%
@@ -263,22 +263,5 @@ shinyServer(function(input, output) {
     output$table_rtp <- DT::renderDataTable({
         datatable(create_project_table(p=input$Place,i=rtp.shape,o=rtp.cols,f=final.nms), rownames = FALSE, options = list(pageLength = proj.length, columnDefs = list(list(className = 'dt-center', targets = 4:6)))) %>% formatCurrency(currency.rtp , "$", digits = 0)
     })
-    
-    # This chunk of Code deals with the hide/show sidebar button
-    observeEvent(input$showpanel, {
-        
-        if(input$showpanel == TRUE) {
-            removeCssClass("Main", "col-sm-12")
-            addCssClass("Main", "col-sm-8")
-            shinyjs::show(id = "sidebar")
-            shinyjs::enable(id = "sidebar")
-        }
-        else {
-            removeCssClass("Main", "col-sm-8")
-            addCssClass("Main", "col-sm-12")
-            shinyjs::hide(id = "sidebar")
-        }
-    })
-    
     
 })
