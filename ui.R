@@ -27,7 +27,9 @@ shinyUI(
                        
                        tabPanel(icon("city"),
                                 h1("Community Profiles"),
-                                textOutput("CensusBackground"),
+                                "As a State Data Center for the central Puget Sound region, PSRC keeps a complete inventory of data released from the U.S. Census Bureau. ",
+                                "Cities and counties use it to track the well-being of children, families, and the elderly as well as to determine where to locate new public facilities. ",
+                                "This portal includes demographic profiles on a variety of topics for all cities and towns in the PSRC region.",
                                 hr(),
                                 fluidRow(
                                     column(width=7, 
@@ -49,7 +51,9 @@ shinyUI(
                                 ), # end of Overview tabset panel
             
                         tabPanel(icon("users"),
-                                textOutput("DemographicBackground"),
+                                 "The person level metrics on this page cover the topics of Age, Race & Ethnicity, Health Coverage and Disability Status. ",
+                                 "Data Profile 2 (DP02) includes information on People with Disabilites within a community, DP03 includes information of people's access to health coverage and DP05 includes details on Age and Race & Ethnicity. ",
+                                 "Data profiles are a summarization of a variety of Census Detailed Tables contained within the American Community Survey datasets and are a great resource for high level statistics for a community however detailed information requires the use of specific ACS tables.",
                                 
                                 tabsetPanel(
                                     
@@ -63,7 +67,7 @@ shinyUI(
                                                  ) # end of fluid Row
                                             ), # end of age tab panel
                                           
-                                    tabPanel("Race",
+                                    tabPanel("Race & Ethnicity",
                                         fluidRow(
                                             column(width = 6, plotlyOutput("plot_race")),
                                             column(width = 6, leafletOutput("race_map"))
@@ -99,7 +103,10 @@ shinyUI(
                             ), # end of Demographics Tab Panel
             
                             tabPanel(icon("home"),
-                                textOutput("HousingBackground"),
+                                     "The housing and household level metrics on this page cover the topics of Housing Type, Home Values, Monthly Rental Cost and Home Ownership. ",
+                                     "Data Profile 4 (DP04) includes a wealth of information on housing and household characteristics. ",
+                                     "Data profiles are a summarization of a variety of Census Detailed Tables contained within the American Community Survey datasets and are a great resource for high level statistics for a community however detailed information requires the use of specific ACS tables.",
+                                     
                                 tabsetPanel(
                                 
                                     tabPanel("Housing Units",
@@ -146,7 +153,10 @@ shinyUI(
                             ), # end of Housing Tab Panel
 
                             tabPanel(icon("briefcase"),
-                                     textOutput("JobsBackground"),
+                                     "The job and income metrics on this page cover the topics of Educational Attainment, Occupation of residents, Industry of residents and Median Income for houesholds. ",
+                                     "Job and income characteristics are summarized in Data Profile 3 (DP03) and Educational Attainment is included in DP02. ",
+                                     "Data profiles are a summarization of a variety of Census Detailed Tables contained within the American Community Survey datasets and are a great resource for high level statistics for a community however detailed information requires the use of specific ACS tables.",
+                                     
                                      tabsetPanel(
                                          
                                          tabPanel("Educational Attainment",
@@ -193,6 +203,10 @@ shinyUI(
                             ), # end of jobs and income Tab Panel
                             
                             tabPanel(icon("car"),
+                                     
+                                     "The travel related metrics on this page cover the topics of Mode Share, Travel Time and Time of Departure for Work related travel as well as the number of Vehicles Available for households in the community. ",
+                                     "Mode Share and Vehicle Availability are metrics from Data Profile 3 (DP03) and DP04 respectively. Detailed Travel Time comes from table B08303 and Departure Time is from table B08302. ",
+                                     "Data profiles are a summarization of a variety of Census Detailed Tables contained within the American Community Survey datasets and are a great resource for high level statistics for a community however detailed information requires the use of specific ACS tables.",
                                      
                                 tabsetPanel(
                                         tabPanel("Mode Share to Work",
@@ -245,19 +259,16 @@ shinyUI(
                                     
                                     tabPanel("Transportation Improvement Program",
                                              fluidRow(
-                                                 column(width = 6,
+                                                 column(width = 5,
                                                         br(),
                                                         "The TIP provides a summary of current transportation projects underway within King, Pierce, Snohomish, and Kitsap counties. These projects are funded with federal, state and local funds, including the most recent federal grants awarded through PSRC.",
                                                         br(),
                                                         br(),
                                                         "The TIP spans a four-year period and must be updated at least every two years. After public review and comment, the TIP is approved by the Regional Council's Transportation Policy and Executive Boards before being submitted for further approvals to the Governor and ultimately the U.S. Department of Transportation.",
                                                         br(),
-                                                        br(),
-                                                        "The 2021-2024 Regional TIP was adopted by PSRC's Executive Board in October 2020 and final state and federal approvals were received in January of 2021.  Projects in the 2021-2024 Regional TIP are shown below.",
-                                                        br(),
                                                         br()
                                                  ),
-                                                 column(width = 6, br(), leafletOutput("tip_map",height="400px"))
+                                                 column(width = 7, br(), leafletOutput("tip_map",height="400px"))
                                              ), # end of Fluid Row
                                              
                                              fluidRow(
