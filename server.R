@@ -234,18 +234,18 @@ shinyServer(function(input, output) {
     
     ## TIP Tab Panel Information
     
-    output$tip_map <- renderLeaflet({create_tip_map(p=input$Place)})
+    output$tip_map <- renderLeaflet({create_project_map(p=input$Place, i=projects.shape, plan.yr="2021-2024 TIP", d.title="Transportation Improvement Program")})
     
     output$table_tip <- DT::renderDataTable({
-        datatable(create_project_table(p=input$Place,i=tip.shape,f=final.nms,plan.yr="2021-2024 TIP"), rownames = FALSE, options = list(pageLength = 10, columnDefs = list(list(className = 'dt-center', targets = 4:6)))) %>% formatCurrency(currency.rtp , "$", digits = 0)
+        datatable(create_project_table(p=input$Place,i=projects.shape,f=final.nms,plan.yr="2021-2024 TIP"), rownames = FALSE, options = list(pageLength = 10, columnDefs = list(list(className = 'dt-center', targets = 4:6)))) %>% formatCurrency(currency.rtp , "$", digits = 0)
     })
     
     ## RTP Tab Panel Information
     
-    output$rtp_map <- renderLeaflet({create_project_map(p=input$Place)})
+    output$rtp_map <- renderLeaflet({create_project_map(p=input$Place, i=projects.shape, plan.yr=rtp.status, d.title="Regional Transportation Plan")})
     
     output$table_rtp <- DT::renderDataTable({
-        datatable(create_project_table(p=input$Place,i=rtp.shape,o=rtp.cols,f=final.nms), rownames = FALSE, options = list(pageLength = proj.length, columnDefs = list(list(className = 'dt-center', targets = 4:6)))) %>% formatCurrency(currency.rtp , "$", digits = 0)
+        datatable(create_project_table(p=input$Place,i=projects.shape,f=final.nms,plan.yr=rtp.status), rownames = FALSE, options = list(pageLength = 10, columnDefs = list(list(className = 'dt-center', targets = 4:6)))) %>% formatCurrency(currency.rtp , "$", digits = 0)
     })
     
 })

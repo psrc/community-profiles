@@ -17,7 +17,13 @@ library(data.table)
 
 library(here)
 
-source('functions.R')
+plan.clrs <- list("Approved" = "#AD5CAB",
+                  "Conditionally Approved" = "#C388C2",
+                  "ROW Conditionally Approved" = "#E3C9E3",
+                  "Candidate" = "#F4835E",
+                  "Financially Constrained" = "#F7A489",
+                  "Unprogrammed" = "#FBD6C9",
+                  "2021-2024 TIP" = "#A9D46E")
 
 # Jurisdiction Data -------------------------------------------------------
 jurisdictions <- as_tibble(fread('data//jurisdictions.csv'))
@@ -50,7 +56,6 @@ county.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/re
 
 community.shape <- rbind(city.shape, county.shape, rgeo.shape)
 community.shape <- left_join(community.shape, jurisdictions, by=c("geog_name"="juris_name"))
-
 rm(city.shape, county.shape, rgeo.shape)
 
 community.point <- community.shape %>% st_drop_geometry()
@@ -66,40 +71,39 @@ tract.2020 <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest
   mutate(census_year = 2020)
 
 tract.shape <- rbind(tract.2010, tract.2020)
-
 rm(tract.2010, tract.2020)
 
-rtp.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/RTP/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>%
-  mutate(ImprovementType=" ") %>%
-  mutate(TotalCost = gsub(",","",TotalCost)) %>%
-  mutate(TotalCost = as.numeric(TotalCost))
+rtp.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/Regional_Capacity_Projects/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>%
+  mutate(Total_Cost = as.numeric(Total_Cost)) %>%
+  mutate(Completion = as.character(Completion)) %>%
+  select(MTP_ID, Sponsor, Agency_Typ, Project_Ti, Type, Completion, Status, Total_Cost) %>%
+  rename(`ID`=MTP_ID, `Type`=Agency_Typ,`Title`=Project_Ti, `Improvement`=Type, `Cost`=Total_Cost)
 
-tip.shape.19 <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/TIP_19_22/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>%
+tip.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/TIP_21_24/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>%
   mutate(TotCost = as.numeric(TotCost)) %>%
-  mutate(EstCompletionYear = as.numeric(EstCompletionYear)) %>%
-  mutate(Status="2019-2022 TIP") %>%
-  select(ProjNo,PlaceShortName,ProjectTitle,ImproveType,EstCompletionYear,Status,TotCost) %>%
-  rename(`ID`=ProjNo, `Sponsor`=PlaceShortName, `Title`=ProjectTitle) %>%
-  rename(`Improvement`=ImproveType, `Completion`= EstCompletionYear, `Status`=Status, `Cost`=TotCost)
-
-tip.shape.21 <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/TIP_21_24/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>%
-  mutate(TotCost = as.numeric(TotCost)) %>%
-  mutate(EstCompletionYear = as.numeric(EstCompletionYear)) %>%
+  mutate(EstCompletionYear = as.character(EstCompletionYear)) %>%
   mutate(Status="2021-2024 TIP") %>%
   select(ProjNo,PlaceShortName,ProjectTitle,ImproveType,EstCompletionYear,Status,TotCost) %>%
   rename(`ID`=ProjNo, `Sponsor`=PlaceShortName, `Title`=ProjectTitle) %>%
-  rename(`Improvement`=ImproveType, `Completion`= EstCompletionYear, `Status`=Status, `Cost`=TotCost)
+  rename(`Improvement`=ImproveType, `Completion`= EstCompletionYear, `Status`=Status, `Cost`=TotCost) %>%
+  mutate(Type = case_when(
+    Sponsor %in% c("King County", "Kitsap County", "Pierce County", "Snohomish County") ~ "Counties",
+    Sponsor %in% c("Kitsap Transit", "Pierce Transit", "Everett Transit", "King County Metro", "Community Transit") ~ "Local Transit",
+    Sponsor %in% c("Sound Transit") ~ "Regional Transit",
+    Sponsor %in% c("Tulalip Tribes", "Port of Seattle", "Muckleshoot Indian Tribe", "Port of Everett") ~ "Ports/Tribes",
+    Sponsor %in% c("WSDOT") ~ "State",
+    Sponsor %in% c("Washington State Ferries") ~ "WSF")) %>%
+  mutate(Type = replace_na(Type, "Cities")) %>%
+  select(ID, Sponsor, Type, Title, Improvement, Completion, Status, Cost)
 
-tip.shape <- bind_rows(tip.shape.19, tip.shape.21)
-
-rm(tip.shape.19, tip.shape.21)
-
-rtp.cols <- c("mtpid","Sponsor","Title","ImprovementType","CompletionYear","MTPStatus","TotalCost")
-
+projects.shape <- rbind(tip.shape, rtp.shape)
+rm(tip.shape, rtp.shape)
+  
 numeric_variables <- c("Estimate","MoE")
 percent_variables <- c("Share","Region")
-final.nms <- c("ID","Sponsor","Title","Improvement","Completion","Status","Cost")
+final.nms <- c("ID","Sponsor","Type","Title","Improvement","Completion","Status","Cost")
 currency.rtp <- c("Cost")
+rtp.status <- c("Approved","Conditionally Approved","ROW Conditionally Approved","Candidate", "Financially Constrained", "Unprogrammed")
 
 # Functions ---------------------------------------------------------------
 return_estimate <- function(t, p, y, v, val, d) {
@@ -264,19 +268,21 @@ create_summary_table <- function(t,p,y,v) {
   return(tbl)
 }
 
-create_tip_map <- function(p, tip.yr="2021-2024 TIP") {
+create_project_map <- function(p, i, plan.yr, d.title, d.clr=plan.clrs) {
   
   # First determine the city and trim city shapefile and project coverage to the city
   city <- community.shape %>% filter(geog_name %in% p)
-  interim <- st_intersection(tip.shape, city) %>% filter(Status == tip.yr)
+  interim <- st_intersection(i, city) %>% filter(Status %in% plan.yr)
   proj_ids <- interim %>% st_drop_geometry() %>% select(ID) %>% distinct() %>% pull()
+  
+  title <- tags$div(HTML(d.title)) 
   
   if (is.null(interim) == TRUE) {
     
     working_map <- leaflet() %>% 
       addProviderTiles(providers$CartoDB.Positron) %>%
       addLayersControl(baseGroups = c("Base Map"),
-                       overlayGroups = c("TIP Projects","City Boundary"),
+                       overlayGroups = c(plan.yr,"City Boundary"),
                        options = layersControlOptions(collapsed = TRUE)) %>%
       addPolygons(data = city,
                   fillColor = "76787A",
@@ -284,23 +290,23 @@ create_tip_map <- function(p, tip.yr="2021-2024 TIP") {
                   opacity = 1.0,
                   color = "#444444",
                   fillOpacity = 0.10,
-                  group = "City Boundary")
+                  group = "City Boundary") %>%
+      addControl(title, position = "bottomleft")
     
   } else {
     
-    tip.trimmed <- tip.shape %>% filter(ID %in% proj_ids & Status == tip.yr)
-    
-    labels <- paste0("<b>","Project Sponsor: ", "</b>",tip.trimmed$Sponsor,
-                     "<b> <br>",paste0("Project Title: "), "</b>", tip.trimmed$Title,
-                     "<b> <br>",paste0("Project Cost: $"), "</b>", prettyNum(round(tip.trimmed$Cost, 0), big.mark = ","),
-                     "<b> <br>",paste0("Type of Improvement: "), "</b>", tip.trimmed$Improvement,
-                     "<b> <br>",paste0("Project Completion: "), "</b>", tip.trimmed$Completion) %>% lapply(htmltools::HTML)
-    
+    trimmed <- i %>% filter(ID %in% proj_ids & Status %in% plan.yr) %>% mutate(Status=factor(Status, levels=plan.yr))
+
+    labels <- paste0("<b>","Project Sponsor: ", "</b>",trimmed$Sponsor,
+                     "<b> <br>",paste0("Project Title: "), "</b>", trimmed$Title,
+                     "<b> <br>",paste0("Project Cost: $"), "</b>", prettyNum(round(trimmed$Cost, 0), big.mark = ","),
+                     "<b> <br>",paste0("Type of Improvement: "), "</b>", trimmed$Improvement,
+                     "<b> <br>",paste0("Project Completion: "), "</b>", trimmed$Completion) %>% lapply(htmltools::HTML)
     # Create Map
     working_map <- leaflet() %>% 
       addProviderTiles(providers$CartoDB.Positron) %>%
       addLayersControl(baseGroups = c("Base Map"),
-                       overlayGroups = c("TIP Projects","City Boundary"),
+                       overlayGroups = c(plan.yr,"City Boundary"),
                        options = layersControlOptions(collapsed = TRUE)) %>%
       addPolygons(data = city,
                   fillColor = "76787A",
@@ -310,26 +316,26 @@ create_tip_map <- function(p, tip.yr="2021-2024 TIP") {
                   dashArray = "4",
                   fillOpacity = 0.0,
                   group = "City Boundary")%>% 
-      addPolylines(data = tip.trimmed,
-                   color = "#F05A28",
-                   weight = 4,
-                   label = labels,
-                   fillColor = "#F05A28",
-                   group = "TIP Projects")
+      addControl(title, position = "bottomleft")
+    
+    for(group in levels(trimmed$Status)){
+      working_map <- addPolylines(working_map, data=trimmed[trimmed$Status==group,], group = group, weight = 4, label = labels, color=d.clr[[group]])
+    }
+    
   }
   
   return(working_map)
   
 }
 
-create_project_table <- function(p, i, f=final.nms, plan.yr="2021-2024 TIP") {
+create_project_table <- function(p, i, f=final.nms, plan.yr) {
   
   city <- community.shape %>% filter(geog_name %in% p)
-  trimmed <- st_intersection(i, city) %>% filter(Status==plan.yr)
+  trimmed <- st_intersection(i, city) %>% filter(Status%in%plan.yr)
   
   if (is.null(trimmed) == TRUE) {
     
-    tbl <- setNames(data.table(matrix(nrow = 0, ncol = 7)), f)
+    tbl <- setNames(data.table(matrix(nrow = 0, ncol = 8)), f)
     
   } else {
     
@@ -341,6 +347,9 @@ create_project_table <- function(p, i, f=final.nms, plan.yr="2021-2024 TIP") {
   return(tbl)
   
 }
+
+tip.proj <- create_project_table(p="Bellevue", i=projects.shape, plan.yr="2021-2024 TIP")
+rtp.proj <- create_project_table(p="Bellevue", i=projects.shape, plan.yr=rtp.status)
 
 # Dropdown List Creations -------------------------------------------------
 latest.census.yr <- census_data %>% select(census_year) %>% distinct() %>% pull() %>% max()

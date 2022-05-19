@@ -259,16 +259,16 @@ shinyUI(
                                     
                                     tabPanel("Transportation Improvement Program",
                                              fluidRow(
-                                                 column(width = 5,
+                                                 column(width = 6,
                                                         br(),
-                                                        "The TIP provides a summary of current transportation projects underway within King, Pierce, Snohomish, and Kitsap counties. These projects are funded with federal, state and local funds, including the most recent federal grants awarded through PSRC.",
+                                                        "The TIP provides a summary of current transportation projects underway within King, Pierce, Snohomish, and Kitsap counties. These projects are funded with federal, state and local funds, including the most recent federal grants awarded through PSRC. ",
                                                         br(),
                                                         br(),
                                                         "The TIP spans a four-year period and must be updated at least every two years. After public review and comment, the TIP is approved by the Regional Council's Transportation Policy and Executive Boards before being submitted for further approvals to the Governor and ultimately the U.S. Department of Transportation.",
                                                         br(),
                                                         br()
                                                  ),
-                                                 column(width = 7, br(), leafletOutput("tip_map",height="400px"))
+                                                column(width = 6, leafletOutput("tip_map",height="400px"))
                                              ), # end of Fluid Row
                                              
                                              fluidRow(
@@ -279,7 +279,7 @@ shinyUI(
                                              fluidRow(
                                                  column(width = 6,
                                                         br(),
-                                                        "Larger scale regional investments planned through 2040 are included in the RTP on the Regional Capacity Projects list.",
+                                                        "Larger scale regional investments planned through 2050 are included in the RTP on the Regional Capacity Projects list.",
                                                         br(),
                                                         br(),
                                                         "Regional Capacity Projects are those projects adding capacity to the regional system above a pre-determined threshold, and include roadway, transit, bicycle/pedestrian and other project types. Projects meeting this threshold must be approved on the list before proceeding towards funding and implementation. Projects that are below this threshold are considered programmatic in the plan and are able to pursue funding and implementation with no further actions.",
