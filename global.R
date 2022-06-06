@@ -97,8 +97,7 @@ tip.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/
   select(ID, Sponsor, Type, Title, Improvement, Completion, Status, Cost)
 
 projects.shape <- rbind(tip.shape, rtp.shape)
-rm(tip.shape, rtp.shape)
-  
+
 numeric_variables <- c("Estimate","MoE")
 percent_variables <- c("Share","Region")
 final.nms <- c("ID","Sponsor","Type","Title","Improvement","Completion","Status","Cost")
@@ -268,7 +267,67 @@ create_summary_table <- function(t,p,y,v) {
   return(tbl)
 }
 
-create_project_map <- function(p, i, plan.yr, d.title, d.clr=plan.clrs) {
+create_tip_map <- function(p, i=tip.shape, plan.yr, d.title, d.clr=plan.clrs) {
+  
+  # First determine the city and trim city shapefile and project coverage to the city
+  city <- community.shape %>% filter(geog_name %in% p)
+  interim <- st_intersection(i, city) %>% filter(Status %in% plan.yr)
+  proj_ids <- interim %>% st_drop_geometry() %>% select(ID) %>% distinct() %>% pull()
+  
+  title <- tags$div(HTML(d.title)) 
+  
+  if (is.null(interim) == TRUE) {
+    
+    working_map <- leaflet() %>% 
+      addProviderTiles(providers$CartoDB.Positron) %>%
+      addLayersControl(baseGroups = c("Base Map"),
+                       overlayGroups = c(plan.yr,"City Boundary"),
+                       options = layersControlOptions(collapsed = TRUE)) %>%
+      addPolygons(data = city,
+                  fillColor = "76787A",
+                  weight = 1,
+                  opacity = 1.0,
+                  color = "#444444",
+                  fillOpacity = 0.10,
+                  group = "City Boundary") %>%
+      addControl(title, position = "bottomleft")
+    
+  } else {
+    
+    trimmed <- i %>% filter(ID %in% proj_ids & Status %in% plan.yr) %>% mutate(Status=factor(Status, levels=plan.yr))
+    
+    labels <- paste0("<b>","Project Sponsor: ", "</b>",trimmed$Sponsor,
+                     "<b> <br>",paste0("Project Title: "), "</b>", trimmed$Title,
+                     "<b> <br>",paste0("Project Cost: $"), "</b>", prettyNum(round(trimmed$Cost, 0), big.mark = ","),
+                     "<b> <br>",paste0("Type of Improvement: "), "</b>", trimmed$Improvement,
+                     "<b> <br>",paste0("Project Completion: "), "</b>", trimmed$Completion) %>% lapply(htmltools::HTML)
+    # Create Map
+    working_map <- leaflet() %>% 
+      addProviderTiles(providers$CartoDB.Positron) %>%
+      addLayersControl(baseGroups = c("Base Map"),
+                       overlayGroups = c(plan.yr,"City Boundary"),
+                       options = layersControlOptions(collapsed = TRUE)) %>%
+      addPolygons(data = city,
+                  fillColor = "76787A",
+                  weight = 4,
+                  opacity = 1.0,
+                  color = "#91268F",
+                  dashArray = "4",
+                  fillOpacity = 0.0,
+                  group = "City Boundary")%>% 
+      addControl(title, position = "bottomleft")
+    
+    for(group in levels(trimmed$Status)){
+      working_map <- addPolylines(working_map, data=trimmed[trimmed$Status==group,], group = group, weight = 4, label = labels, color=d.clr[[group]])
+    }
+    
+  }
+  
+  return(working_map)
+  
+}
+
+create_rtp_map <- function(p, i=rtp.shape, plan.yr, d.title, d.clr=plan.clrs) {
   
   # First determine the city and trim city shapefile and project coverage to the city
   city <- community.shape %>% filter(geog_name %in% p)
@@ -347,9 +406,6 @@ create_project_table <- function(p, i, f=final.nms, plan.yr) {
   return(tbl)
   
 }
-
-tip.proj <- create_project_table(p="Bellevue", i=projects.shape, plan.yr="2021-2024 TIP")
-rtp.proj <- create_project_table(p="Bellevue", i=projects.shape, plan.yr=rtp.status)
 
 # Dropdown List Creations -------------------------------------------------
 latest.census.yr <- census_data %>% select(census_year) %>% distinct() %>% pull() %>% max()
