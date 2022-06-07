@@ -5,7 +5,7 @@ shinyUI(
         sidebarPanel(id = "sidebar",
             div(img(src="psrc-logo.png", width = "70%", height = "70%", style = "padding-top: 5px")),
             br(),
-            selectInput("Place","Select your Community:",data_places, selected = "Bellevue"),
+            selectInput("Place","Select your Community:",list("City" = data_places, "County"=data_counties), selected = "Bellevue"),
             selectInput("Year","Select American Community Survey Data:",data_years),
             textOutput("Population"),
             textOutput("POCShare"),

@@ -419,7 +419,14 @@ data_years <- census_data %>%
   pull()
 
 data_places <- census_data %>%
-  filter(place_type %in% c("pl","co")) %>%
+  filter(place_type %in% c("pl")) %>%
+  select(geog_name) %>%
+  filter(geog_name != "Region") %>%
+  distinct() %>%
+  pull()
+
+data_counties <- census_data %>%
+  filter(place_type %in% c("co")) %>%
   select(geog_name) %>%
   filter(geog_name != "Region") %>%
   distinct() %>%
