@@ -61,12 +61,16 @@ rm(city.shape, county.shape, rgeo.shape)
 community.point <- community.shape %>% st_drop_geometry()
 
 tract.2010 <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/Census_Tracts_2010/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>% 
-  select(geoid10) %>%
+  select(geoid10, county_name) %>%
+  mutate(county = paste0(county_name, " County")) %>%
+  select(-county_name) %>%
   rename(geoid=geoid10) %>%
   mutate(census_year = 2010)
 
 tract.2020 <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/Census_Tracts_2020/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>% 
-  select(geoid20) %>%
+  select(geoid20, county_name) %>%
+  mutate(county = paste0(county_name, " County")) %>%
+  select(-county_name) %>%
   rename(geoid=geoid20) %>%
   mutate(census_year = 2020)
 
@@ -174,6 +178,7 @@ create_summary_chart <- function(d, p, y, v, val, f=1, dec=0, s="", d.title, d.c
   return(g)
 }
 
+
 create_tract_map <- function(t, y, p, v, val, d.clr, d.title, pre="", s="", dec=0, f=1) {
   
   if (y == "2016-2020 ACS Data") {
@@ -191,12 +196,20 @@ create_tract_map <- function(t, y, p, v, val, d.clr, d.title, pre="", s="", dec=
     rename(value=.data[[val]]) %>%
     mutate(geoid = as.character(geoid), value = value*f)
   
-  # Trim Tracts for current place
-  city <- community.shape %>% filter(geog_name %in% p)
-  interim <- st_intersection(tracts, city)
-  tract_ids <- interim %>% st_drop_geometry() %>% select(geoid) %>% distinct() %>% pull()
+  if (p %in% c("King County", "Kitsap County", "Pierce County", "Snohomish County")) {
+    
+    tracts.trimmed <- tracts %>% filter(county == p)
+    city <- community.shape %>% filter(geog_name %in% p)
+    
+  } else {
   
-  tracts.trimmed <- tracts %>% filter(geoid%in% tract_ids)
+    # Trim Tracts for current place
+    city <- community.shape %>% filter(geog_name %in% p)
+    interim <- st_intersection(tracts, city)
+    tract_ids <- interim %>% st_drop_geometry() %>% select(geoid) %>% distinct() %>% pull()
+    tracts.trimmed <- tracts %>% filter(geoid%in% tract_ids)
+  }
+  
   current_value  <- left_join(tracts.trimmed, current_tbl, by=c("geoid")) %>% drop_na()
   
   # Determine Bins
@@ -215,7 +228,7 @@ create_tract_map <- function(t, y, p, v, val, d.clr, d.title, pre="", s="", dec=
   working_map <- leaflet(data = current_value, options = leafletOptions(zoomControl=FALSE)) %>% 
     addProviderTiles(providers$CartoDB.Positron) %>%
     addLayersControl(baseGroups = c("Base Map"),
-                     overlayGroups = c("Census Tracts","City Boundary"),
+                     overlayGroups = c("Census Tracts","Place Boundary"),
                      options = layersControlOptions(collapsed = TRUE)) %>%
     addPolygons(data = city,
                 fillColor = "76787A",
