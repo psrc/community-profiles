@@ -48,8 +48,8 @@ shinyServer(function(input, output) {
     }) 
     
     output$downloadData <- downloadHandler(
-        filename = function() {paste0("acs-5yr-profile-",as.character(as.integer(input$Year)),"-pl-",str_replace(input$Place," ","_"),".xlsx")},
-        content <- function(file) {file.copy(here(paste0("data-profiles/acs-5yr-profile-",as.character(as.integer(input$Year)),"-pl-",str_replace(input$Place," ","_"),".xlsx")),file)},
+        filename = function() {paste0(tolower(str_replace_all(input$Year," ","-")),"-",tolower(str_replace_all(input$Place," ","-")),".xlsx")},
+        content <- function(file) {file.copy(here(paste0("data-profiles/",tolower(str_replace_all(input$Year," ","-")),"-",tolower(str_replace_all(input$Place," ","-")),".xlsx")),file)},
         contentType = "application/Excel"
     )
     

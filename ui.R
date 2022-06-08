@@ -20,7 +20,7 @@ shinyUI(
             textOutput("place_rgeo"),
             textOutput("place_airaff"),
             br(),
-            downloadLink('downloadData', label = "Download Data Profiles in Excel"),
+            downloadLink('downloadData', label = "Download Data Profiles in Excel Format"),
             width=3),
         mainPanel(shinyjs::useShinyjs(), id ="Main",
             navbarPage(title = "", theme = "styles.css", windowTitle = "PSRC Community Profiles",
