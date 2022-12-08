@@ -49,9 +49,9 @@ rgeo.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest
   mutate(cnty_name=paste0(cnty_name, " County")) %>%
   rename(geog_name=juris, county=cnty_name)
 
-county.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/county/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>%
-  filter(PSRC == 1) %>%
-  select(COUNTY_NM) %>% rename(geog_name=COUNTY_NM) %>%
+county.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/County_Boundaries/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>%
+  filter(psrc == 1) %>%
+  select(county_nm) %>% rename(geog_name=county_nm) %>%
   mutate(geog_name = paste0(geog_name, " County"), county=geog_name)
 
 community.shape <- rbind(city.shape, county.shape, rgeo.shape)
