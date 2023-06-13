@@ -17,6 +17,10 @@ library(data.table)
 
 library(here)
 
+# run all files in the modules sub-directory
+module_files <- list.files('modules', full.names = TRUE)
+sapply(module_files, source)
+
 plan.clrs <- list("Approved" = "#AD5CAB",
                   "Conditionally Approved" = "#C388C2",
                   "ROW Conditionally Approved" = "#E3C9E3",

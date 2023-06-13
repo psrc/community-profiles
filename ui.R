@@ -298,7 +298,14 @@ shinyUI(
                                     
                                 ) # end of Projects and Funding TabSet
                                 
-                       ), # end of Projects and Funding tabPanel  
+                       ), # end of Projects and Funding tabPanel 
+                       
+                       ## Insert RDI module----
+                       tabPanel("RDI",
+                                rdi_tab_ui("rdi")
+                         
+                       ),
+                       
                        
                             tabPanel(icon("info-circle"),
                                      h1("Data Sources"),
