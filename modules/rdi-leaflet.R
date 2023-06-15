@@ -12,10 +12,9 @@ leaflet_server <- function(id, shape, place) {
   
   moduleServer(id, function(input, output, session) { 
     ns <- session$ns
-    stopifnot(is.reactive(place))
     
     map_data <- reactive({
-      s <- shape %>% filter(.data[["geog_name"]] == place)
+      s <- shape %>% filter(geog_name == place)
       })
     
     output$map <- renderLeaflet({

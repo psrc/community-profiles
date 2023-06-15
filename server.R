@@ -1,6 +1,10 @@
 # Define server logic required to draw the map for the main panel
 shinyServer(function(input, output, session) {
   
+  rdi_tab_server("rdi", 
+                 shape = community.shape,
+                 place = reactive({input$Place}))
+  
   ## This section is for all the high level stats that are displayed in the sidebar 
   
   output$Population <- renderText({
@@ -248,8 +252,5 @@ shinyServer(function(input, output, session) {
     datatable(create_project_table(p=input$Place,i=projects.shape,f=final.nms,plan.yr=rtp.status), rownames = FALSE, options = list(pageLength = 10, columnDefs = list(list(className = 'dt-center', targets = 4:6)))) %>% formatCurrency(currency.rtp , "$", digits = 0)
   })
   
-  rdi_tab_server("rdi", 
-                 shape = community.shape,
-                 place = reactive(input$Place))
   
 })

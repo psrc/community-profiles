@@ -8,8 +8,9 @@ rdi_tab_ui <- function(id) {
       p("A paragraph on the racial disparity index and metrics using CHAS data")
     ),
     fluidRow(
-      tabsetPanel(
-        rdi_rent_aff_ui(ns('rentaff'))
+      tabsetPanel(id = ns('tabset'),
+        rdi_metric_ui(ns('rentaff'), 'Rental Affordability')
+        
       ) # end tabsetPanel
     )
     
@@ -21,15 +22,13 @@ rdi_tab_server <- function(id, shape, place) {
   
   moduleServer(id, function(input, output, session) { 
     ns <- session$ns
-    stopifnot(is.reactive(place))
     
-    rdi_rent_aff_server('rentaff', 
-                        shape = shape,
-                        place = place())
-    
+    place <- reactive(place())
 
-
-    
+    rdi_metric_server('rentaff', 
+                      shape = shape,
+                      place = place)
+   
   }) # end moduleServer
   
 }
