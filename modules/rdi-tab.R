@@ -9,7 +9,7 @@ rdi_tab_ui <- function(id) {
     ),
     fluidRow(
       tabsetPanel(id = ns('tabset'),
-        rdi_metric_ui(ns('rentaff'), 'Rental Affordability')
+        rdi_rentaff_ui(ns('rentaff'))
         
       ) # end tabsetPanel
     )
@@ -23,11 +23,10 @@ rdi_tab_server <- function(id, shape, place) {
   moduleServer(id, function(input, output, session) { 
     ns <- session$ns
     
-    place <- reactive(place())
-
-    rdi_metric_server('rentaff', 
+    rdi_rentaff_server('rentaff', 
                       shape = shape,
-                      place = place)
+                      place = reactive(place())
+                      )
    
   }) # end moduleServer
   

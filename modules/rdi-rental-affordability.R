@@ -1,9 +1,9 @@
 # Display metric
 
-rdi_metric_ui <- function(id, metric) {
+rdi_rentaff_ui <- function(id) {
   ns <- NS(id)
   
-  tabPanel(title = metric,
+  tabPanel(title = "Rental Affordability",
            fluidRow(
              column(6,
                     plotOutput(ns('plot'))),
@@ -20,12 +20,14 @@ rdi_metric_ui <- function(id, metric) {
   
 }
 
-rdi_metric_server <- function(id, shape, place) {
+rdi_rentaff_server <- function(id, shape, place) {
   
   moduleServer(id, function(input, output, session) { 
     # ns <- session$ns
     
+    # reactive calling function to generate 
     output$table <- renderDT(datatable(mtcars))
+    
     
     output$plot <- renderPlot({
       ggplot(mtcars) +
@@ -33,7 +35,7 @@ rdi_metric_server <- function(id, shape, place) {
     })
     
     map_data <- reactive({
-      shape %>% filter(geog_name == place())
+      s <- shape %>% filter(geog_name == place())
     })
     
     output$map <- renderLeaflet({

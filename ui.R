@@ -303,7 +303,6 @@ shinyUI(
                        ## Insert RDI module----
                        tabPanel("RDI",
                                 rdi_tab_ui("rdi")
-                         
                        ),
                        
                        
