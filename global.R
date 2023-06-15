@@ -16,6 +16,8 @@ library(tidyverse)
 library(data.table)
 
 library(here)
+library(shinycssloaders)
+library(psrcplot)
 
 # run all files in the modules sub-directory
 module_files <- list.files('modules', full.names = TRUE)

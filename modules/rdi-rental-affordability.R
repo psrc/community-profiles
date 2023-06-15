@@ -12,9 +12,11 @@ rdi_rentaff_ui <- function(id) {
                     )
            ), # end fluidrow
            fluidRow(
-             column(width = 12,
-                    DTOutput(ns("table"))
-             )
+               column(width = 12,
+                      uiOutput(ns('tableui'))
+                      # DTOutput(ns("table"))
+                      )
+             
            ) # end fluidRow
   ) # end tabpanel
   
@@ -23,19 +25,30 @@ rdi_rentaff_ui <- function(id) {
 rdi_rentaff_server <- function(id, shape, place) {
   
   moduleServer(id, function(input, output, session) { 
-    # ns <- session$ns
+    ns <- session$ns
+    
+    output$tableui <- renderUI({
+      div(
+        withSpinner(
+          DTOutput(ns("table")),
+          type = 5,
+          color = psrc_colors$pgnobgy_10[sample.int(10, 1)]
+        ),
+        style = 'margin-top: 1rem'
+      )
+      
+    })
     
     data <- reactive({
       # pull (currently from Elmer) semi-prepped CHAS
-      
+
       df <- create_rental_affordability_table() %>% 
         filter(geography_name == place())
     })
     
-    
-    
     output$table <- renderDT({
       
+      source <- 'Sources: US HUD, 2015-2019 Comprehensive Housing Affordability Strategy (CHAS) Tables 8, 14B, 15C'
       place_name <- reactive(unique(data()$geography_name))
       
       d <- data() %>% 
@@ -49,7 +62,6 @@ rdi_rentaff_server <- function(id, shape, place) {
             rep(list(th(class = 'dt-center', colspan = 2, place_name())), 2)
           ),
           tr(
-            # rep(lapply(c('Household', 'Rental Units'), function(x) th(class = 'dt-center', x)), 2)
             lapply(rep(c("Households", "Rental Units"), 2), th)
           )
         )
@@ -58,7 +70,11 @@ rdi_rentaff_server <- function(id, shape, place) {
       datatable(d,
                 container = sketch,
                 rownames = FALSE,
-                options = list(columnDefs = list(list(className = 'dt-center', targets = 1:4)))) %>% 
+                options = list(columnDefs = list(list(className = 'dt-center', targets = 1:4))),
+                caption = htmltools::tags$caption(
+                  style = 'caption-side: bottom; text-align: right;',
+                  htmltools::em(source)
+                )) %>% 
         formatPercentage(str_subset(colnames(d), ".*share$"), 1)
     })
     

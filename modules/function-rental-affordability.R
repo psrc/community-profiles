@@ -40,7 +40,7 @@ create_rental_affordability_table <- function() {
   t14b <- dfs$T14B[sort %in% t14b_head, ]
   t14b <- t14b[, `:=` (sort = factor(sort, levels = t14b_head), col_desc = 'vacant_rental_units')][order(sort)]
   t14b$description <- names(t14b_head)[t14b$sort]
-  
+
   # select common columns
   cols <- c('variable_name', 'sort','chas_year', 'geography_name', 'estimate', 'moe',  'col_desc', 'description')
   ra_dfs <- map(list(t8, t15c, t14b), ~.x[, ..cols])
