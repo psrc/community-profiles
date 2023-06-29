@@ -20,10 +20,16 @@ read.dt <- function(adatabase, type = c('table', 'query'), string) {
   setDT(dtelm)
 }
 
-gather_tables <- function(chas_table_codes) {
+gather_tables <- function(juris = c('place', 'county'), chas_table_codes) {
   # gather CHAS tables of interest and store in a named list
   
-  exp <- map(chas_table_codes, ~paste0('execute chas.get_data_by_place','"', .x ,'"' ,', 2019'))
+  if(juris == 'place') {
+    query <-  'execute chas.get_data_by_place'
+  } else if (juris == 'county') {
+    query <-  'execute chas.get_data_by_county'
+  }
+  
+  exp <- map(chas_table_codes, ~paste0(query,'"', .x ,'"' ,', 2019'))
   
   dfs <- map(exp, ~read.dt('Elmer', 'query', .x))
   dfs <- map(dfs, ~.x[, sort := as.numeric(str_extract(variable_name, "\\d*$"))][order(sort)])

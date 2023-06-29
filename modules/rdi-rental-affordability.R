@@ -1,4 +1,4 @@
-# Display metric
+# Display Rental Affordability metric
 
 rdi_rentaff_ui <- function(id) {
   ns <- NS(id)
@@ -14,7 +14,6 @@ rdi_rentaff_ui <- function(id) {
            fluidRow(
                column(width = 12,
                       uiOutput(ns('tableui'))
-                      # DTOutput(ns("table"))
                       )
              
            ) # end fluidRow
@@ -42,27 +41,35 @@ rdi_rentaff_server <- function(id, shape, place) {
     data <- reactive({
       # pull (currently from Elmer) semi-prepped CHAS
 
-      df <- create_rental_affordability_table() %>% 
+      df <- create_rental_affordability_table(juris = 'place') %>% 
         filter(geography_name == place())
+      # browser()
+      df_region <- create_rental_affordability_table(juris = 'county') %>% 
+        select(description, renter_hh_income, rental_units, ends_with('share')) %>% 
+        rename_with(~paste0(.x, '_reg'))
+      
+      d <- left_join(df, df_region, by = c('description' = 'description_reg'))
+      
     })
     
     output$table <- renderDT({
       
       source <- 'Sources: US HUD, 2015-2019 Comprehensive Housing Affordability Strategy (CHAS) Tables 8, 14B, 15C'
       place_name <- reactive(unique(data()$geography_name))
-      
+      # browser()
       d <- data() %>% 
-        select(description, renter_hh_income, rental_units, ends_with('share'))
-      
+        select(description, renter_hh_income, rental_units, ends_with('share'), ends_with('reg'))
+
       sketch <-  htmltools::withTags(table(
         class = 'display',
         thead(
           tr(
             th(rowspan = 2, 'Affordability'),
-            rep(list(th(class = 'dt-center', colspan = 2, place_name())), 2)
+            th(class = 'dt-center', colspan = 4, place_name()),
+            th(class = 'dt-center', colspan = 4, 'Region')
           ),
           tr(
-            lapply(rep(c("Households", "Rental Units"), 2), th)
+            lapply(rep(c("Households", "Rental Units"), 4), th)
           )
         )
       ))
@@ -70,12 +77,12 @@ rdi_rentaff_server <- function(id, shape, place) {
       datatable(d,
                 container = sketch,
                 rownames = FALSE,
-                options = list(columnDefs = list(list(className = 'dt-center', targets = 1:4))),
+                options = list(columnDefs = list(list(className = 'dt-center', targets = 1:8))),
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: right;',
                   htmltools::em(source)
                 )) %>% 
-        formatPercentage(str_subset(colnames(d), ".*share$"), 1)
+        formatPercentage(str_subset(colnames(d), ".*share(.)*$"), 1)
     })
     
     
