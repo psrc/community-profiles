@@ -43,7 +43,7 @@ rdi_rentaff_server <- function(id, shape, place) {
 
       df <- create_rental_affordability_table(juris = 'place') %>% 
         filter(geography_name == place())
-      # browser()
+
       df_region <- create_rental_affordability_table(juris = 'county') %>% 
         select(description, renter_hh_income, rental_units, ends_with('share')) %>% 
         rename_with(~paste0(.x, '_reg'))
@@ -52,15 +52,12 @@ rdi_rentaff_server <- function(id, shape, place) {
       
     })
     
-    output$table <- renderDT({
+    container <- reactive({
+      # custom container for DT
       
-      source <- 'Sources: US HUD, 2015-2019 Comprehensive Housing Affordability Strategy (CHAS) Tables 8, 14B, 15C'
       place_name <- reactive(unique(data()$geography_name))
-      # browser()
-      d <- data() %>% 
-        select(description, renter_hh_income, rental_units, ends_with('share'), ends_with('reg'))
-
-      sketch <-  htmltools::withTags(table(
+      
+      htmltools::withTags(table(
         class = 'display',
         thead(
           tr(
@@ -73,9 +70,17 @@ rdi_rentaff_server <- function(id, shape, place) {
           )
         )
       ))
+    })
+    
+    output$table <- renderDT({
+      
+      source <- 'Sources: US HUD, 2015-2019 Comprehensive Housing Affordability Strategy (CHAS) Tables 8, 14B, 15C'
+     
+      d <- data() %>% 
+        select(description, renter_hh_income, rental_units, ends_with('share'), ends_with('reg'))
 
       datatable(d,
-                container = sketch,
+                container = container(),
                 rownames = FALSE,
                 options = list(columnDefs = list(list(className = 'dt-center', targets = 1:8))),
                 caption = htmltools::tags$caption(
