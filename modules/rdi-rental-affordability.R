@@ -6,7 +6,8 @@ rdi_rentaff_ui <- function(id) {
   tabPanel(title = "Rental Affordability",
            fluidRow(
              column(6,
-                    plotOutput(ns('plot'))),
+                    echarts4rOutput(ns('plot'))),
+                    # plotOutput(ns('plot'))),
              column(6,
                     leafletOutput(ns('map'))
                     )
@@ -44,18 +45,55 @@ rdi_rentaff_server <- function(id, shape, place) {
       df <- create_rental_affordability_table(juris = 'place') %>% 
         filter(geography_name == place())
 
-      df_region <- create_rental_affordability_table(juris = 'county') %>% 
+      df_region <- create_rental_affordability_table(juris = 'county')
+
+      return(list(place = df, region = df_region))
+    })
+    
+    table_data <- reactive({
+      # data in wide for display in table
+      
+      region <- data()$region %>% 
         select(description, renter_hh_income, rental_units, ends_with('share')) %>% 
-        rename_with(~paste0(.x, '_reg'))
+          rename_with(~paste0(.x, '_reg'))
+        
+      d <- left_join(data()$place, region, by = c('description' = 'description_reg')) %>% 
+        select(description, renter_hh_income, rental_units, ends_with('share'), ends_with('reg'))
+    })
+    
+    plot_data <- reactive({
+      # data in long form for plotting
       
-      d <- left_join(df, df_region, by = c('description' = 'description_reg'))
+      df <- bind_rows(data()) %>% 
+        filter(description != 'All') %>% 
+        select(chas_year, geography_name, description, ends_with('share')) %>% 
+        pivot_longer(cols = ends_with('Share'),
+                     names_to = 'type',
+                     values_to = 'value')
+    })
+    
+    plot_clean_data <- reactive({
+      # munge long form data for visual
       
+      desc_rev <- rev(c('Extremely Low Income (<30% AMI)', 
+                        'Very Low Income (30-50% AMI)', 
+                        'Low Income (50-80% AMI)', 
+                        'Moderate Income (80-100% AMI)', 
+                        'Greater than 100% of AMI'))
+      
+      geog <- c('Region', place())
+      
+      plot_data() %>% 
+        mutate(type_desc = case_when(type == 'rental_units_share' ~ 'Rental Units', 
+                                     type == 'renter_hh_income_share' ~ 'Households')) %>% 
+        mutate(description_plot = factor(description, levels = desc_rev),
+               geography_name = factor(geography_name, levels = geog))
     })
     
     container <- reactive({
       # custom container for DT
       
-      place_name <- reactive(unique(data()$geography_name))
+      place_name <- reactive(unique(data()$place$geography_name))
       
       htmltools::withTags(table(
         class = 'display',
@@ -73,13 +111,11 @@ rdi_rentaff_server <- function(id, shape, place) {
     })
     
     output$table <- renderDT({
+      # table display
       
       source <- 'Sources: US HUD, 2015-2019 Comprehensive Housing Affordability Strategy (CHAS) Tables 8, 14B, 15C'
      
-      d <- data() %>% 
-        select(description, renter_hh_income, rental_units, ends_with('share'), ends_with('reg'))
-
-      datatable(d,
+      datatable(table_data(),
                 container = container(),
                 rownames = FALSE,
                 options = list(columnDefs = list(list(className = 'dt-center', targets = 1:8))),
@@ -87,13 +123,52 @@ rdi_rentaff_server <- function(id, shape, place) {
                   style = 'caption-side: bottom; text-align: right;',
                   htmltools::em(source)
                 )) %>% 
-        formatPercentage(str_subset(colnames(d), ".*share(.)*$"), 1)
+        formatPercentage(str_subset(colnames(table_data()), ".*share(.)*$"), 1)
     })
     
     
-    output$plot <- renderPlot({
-      ggplot(mtcars) +
-        geom_point(aes(mpg, cyl))
+    output$plot <- renderEcharts4r({
+    
+      my_plot_function <- function(data, filter_type, group, element_id, x, y, title) {
+        data %>%
+          filter(type == filter_type) %>%
+          mutate(description_plot = str_wrap(description_plot, 10)) %>%
+          group_by({{group}}) %>%
+          e_charts_(x = x, elementId = element_id) %>%
+          e_bar_(y) %>%
+          e_x_axis(axisLabel = list(interval = 0L)) %>%
+          e_flip_coords() %>%
+          e_grid(left = "15%", top = '5%') %>%
+          e_title(text = title,
+                  left = 'center') %>%
+          e_color(psrc_colors$obgnpgy_5) %>% 
+          e_tooltip(trigger = "axis") %>%
+          e_x_axis(formatter = e_axis_formatter("percent", digits = 0))
+      }
+      # browser()
+      p1 <- my_plot_function(data = plot_clean_data(),
+                             filter_type = "renter_hh_income_share",
+                             group = geography_name,
+                             element_id = "chart1",
+                             x = 'description_plot',
+                             y = 'value',
+                             title = 'Households') %>% 
+        e_legend(bottom=0)
+      
+      p2 <- my_plot_function(data = plot_clean_data(),
+                             filter_type = "rental_units_share",
+                             group = geography_name,
+                             element_id = "chart2",
+                             x = 'description_plot',
+                             y = 'value',
+                             title = 'Rental Units') %>% 
+        e_legend(show=FALSE) %>%
+        e_toolbox_feature("dataView") %>%
+        e_toolbox_feature("saveAsImage") %>%
+        e_connect(c("chart1"))
+      
+      
+      pp <- e_arrange(p1, p2, rows = 2, cols = 2) 
     })
     
     map_data <- reactive({
