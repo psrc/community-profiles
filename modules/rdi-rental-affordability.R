@@ -5,10 +5,12 @@ rdi_rentaff_ui <- function(id) {
   
   tabPanel(title = "Rental Affordability",
            fluidRow(
-             column(6,
-                    echarts4rOutput(ns('plot'))),
-                    # plotOutput(ns('plot'))),
-             column(6,
+             column(4,
+                    echarts4rOutput(ns('plot01'))),
+             column(4,
+                    echarts4rOutput(ns('plot02'))),
+                    
+             column(4,
                     leafletOutput(ns('map'))
                     )
            ), # end fluidrow
@@ -126,49 +128,47 @@ rdi_rentaff_server <- function(id, shape, place) {
         formatPercentage(str_subset(colnames(table_data()), ".*share(.)*$"), 1)
     })
     
+    my_plot_function <- function(data, filter_type, group, x, y, title) {
+      data %>%
+        filter(type == filter_type) %>%
+        mutate(description_plot = str_wrap(description_plot, 10)) %>%
+        group_by({{group}}) %>%
+        e_charts_(x = x) %>%
+        e_bar_(y) %>%
+        e_x_axis(axisLabel = list(interval = 0L)) %>%
+        e_flip_coords() %>%
+        e_grid(left = "25%", top = '5%') %>%
+        e_title(text = title) %>%
+        e_color(psrc_colors$obgnpgy_5) %>% 
+        e_tooltip(trigger = "axis") %>%
+        e_x_axis(formatter = e_axis_formatter("percent", digits = 0))
+    }
     
-    output$plot <- renderEcharts4r({
+    output$plot01 <- renderEcharts4r({
+      
+      my_plot_function(data = plot_clean_data(),
+                       filter_type = "renter_hh_income_share",
+                       group = geography_name,
+                       x = 'description_plot',
+                       y = 'value',
+                       title = 'Households') |> 
+        e_legend(bottom=0) |>
+        e_group("grp") 
+      
+    })
     
-      my_plot_function <- function(data, filter_type, group, element_id, x, y, title) {
-        data %>%
-          filter(type == filter_type) %>%
-          mutate(description_plot = str_wrap(description_plot, 10)) %>%
-          group_by({{group}}) %>%
-          e_charts_(x = x, elementId = element_id) %>%
-          e_bar_(y) %>%
-          e_x_axis(axisLabel = list(interval = 0L)) %>%
-          e_flip_coords() %>%
-          e_grid(left = "15%", top = '5%') %>%
-          e_title(text = title,
-                  left = 'center') %>%
-          e_color(psrc_colors$obgnpgy_5) %>% 
-          e_tooltip(trigger = "axis") %>%
-          e_x_axis(formatter = e_axis_formatter("percent", digits = 0))
-      }
-      # browser()
-      p1 <- my_plot_function(data = plot_clean_data(),
-                             filter_type = "renter_hh_income_share",
-                             group = geography_name,
-                             element_id = "chart1",
-                             x = 'description_plot',
-                             y = 'value',
-                             title = 'Households') %>% 
-        e_legend(bottom=0)
-      
-      p2 <- my_plot_function(data = plot_clean_data(),
-                             filter_type = "rental_units_share",
-                             group = geography_name,
-                             element_id = "chart2",
-                             x = 'description_plot',
-                             y = 'value',
-                             title = 'Rental Units') %>% 
-        e_legend(show=FALSE) %>%
-        e_toolbox_feature("dataView") %>%
-        e_toolbox_feature("saveAsImage") %>%
-        e_connect(c("chart1"))
-      
-      
-      pp <- e_arrange(p1, p2, rows = 2, cols = 2) 
+    output$plot02 <- renderEcharts4r({
+      my_plot_function(data = plot_clean_data(),
+                       filter_type = "rental_units_share",
+                       group = geography_name,
+                       x = 'description_plot',
+                       y = 'value',
+                       title = 'Rental Units') |>  
+        e_legend(show=FALSE) |> 
+        e_toolbox_feature("dataView") |> 
+        e_toolbox_feature("saveAsImage") |> 
+        e_group("grp") |> 
+        e_connect_group("grp")
     })
     
     map_data <- reactive({
