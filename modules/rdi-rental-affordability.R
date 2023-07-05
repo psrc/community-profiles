@@ -139,7 +139,9 @@ rdi_rentaff_server <- function(id, shape, place) {
         e_x_axis(axisLabel = list(interval = 0L)) |>
         e_flip_coords() |>
         e_grid(left = "20%", top = '10%') |>
-        e_title(text = title) |>
+        e_title(text = title, 
+                left = 'center',
+                textStyle = list(fontSize = 10)) |>
         e_color(psrc_colors$obgnpgy_5) %>% 
         e_tooltip(trigger = "axis") |> #, formatter =  e_tooltip_item_formatter("percent")
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))
