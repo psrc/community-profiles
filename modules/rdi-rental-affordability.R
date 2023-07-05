@@ -84,12 +84,13 @@ rdi_rentaff_server <- function(id, shape, place) {
                         'Greater than 100% of AMI'))
       
       geog <- c('Region', place())
-      
+
       plot_data() %>% 
         mutate(type_desc = case_when(type == 'rental_units_share' ~ 'Rental Units', 
                                      type == 'renter_hh_income_share' ~ 'Households')) %>% 
-        mutate(description_plot = factor(description, levels = desc_rev),
-               geography_name = factor(geography_name, levels = geog))
+        mutate(description = factor(description, levels = desc_rev),
+               geography_name = factor(geography_name, levels = geog)) %>% 
+        arrange(description)
     })
     
     container <- reactive({
@@ -131,25 +132,24 @@ rdi_rentaff_server <- function(id, shape, place) {
     my_plot_function <- function(data, filter_type, group, x, y, title) {
       data %>%
         filter(type == filter_type) %>%
-        mutate(description_plot = str_wrap(description_plot, 10)) %>%
+        mutate(description = str_wrap(description, 10)) %>%
         group_by({{group}}) %>%
-        e_charts_(x = x) %>%
-        e_bar_(y) %>%
-        e_x_axis(axisLabel = list(interval = 0L)) %>%
-        e_flip_coords() %>%
-        e_grid(left = "25%", top = '5%') %>%
-        e_title(text = title) %>%
+        e_charts_(x = x) |>
+        e_bar_(y) |>
+        e_x_axis(axisLabel = list(interval = 0L)) |>
+        e_flip_coords() |>
+        e_grid(left = "20%", top = '10%') |>
+        e_title(text = title) |>
         e_color(psrc_colors$obgnpgy_5) %>% 
-        e_tooltip(trigger = "axis") %>%
+        e_tooltip(trigger = "axis") |> #, formatter =  e_tooltip_item_formatter("percent")
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))
     }
     
     output$plot01 <- renderEcharts4r({
-      
       my_plot_function(data = plot_clean_data(),
                        filter_type = "renter_hh_income_share",
                        group = geography_name,
-                       x = 'description_plot',
+                       x = 'description',
                        y = 'value',
                        title = 'Households') |> 
         e_legend(bottom=0) |>
@@ -161,7 +161,7 @@ rdi_rentaff_server <- function(id, shape, place) {
       my_plot_function(data = plot_clean_data(),
                        filter_type = "rental_units_share",
                        group = geography_name,
-                       x = 'description_plot',
+                       x = 'description',
                        y = 'value',
                        title = 'Rental Units') |>  
         e_legend(show=FALSE) |> 
