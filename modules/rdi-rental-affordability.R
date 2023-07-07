@@ -43,7 +43,7 @@ rdi_rentaff_server <- function(id, shape, place) {
     
     data <- reactive({
       # pull (currently from Elmer) semi-prepped CHAS
-
+      if(place() == 'Des Moines') browser()
       df <- create_rental_affordability_table(juris = 'place') %>% 
         filter(geography_name == place())
 
@@ -93,10 +93,10 @@ rdi_rentaff_server <- function(id, shape, place) {
         arrange(description)
     })
     
+    place_name <- reactive({unique(data()$place$geography_name)})
+    
     container <- reactive({
       # custom container for DT
-      
-      place_name <- reactive(unique(data()$place$geography_name))
       
       htmltools::withTags(table(
         class = 'display',
@@ -178,15 +178,17 @@ rdi_rentaff_server <- function(id, shape, place) {
     })
     
     output$map <- renderLeaflet({
-      leaflet() %>%
-        addTiles() %>%
-        addPolygons(data = map_data(),
-                    fillColor = "#76787A",
-                    weight = 4,
-                    opacity = 1.0,
-                    color = "#91268F",
-                    dashArray = "4",
-                    fillOpacity = 0.0)
+      shp <- tract.shape %>% 
+        filter(census_year == 2010)
+      
+      d <- create_rental_affordability_tract_table()
+      
+      s <- shp %>%
+        left_join(d, by = c('geoid' = 'tract_geoid'))
+      
+      m <- create_chas_tract_map(shape_tract = s,
+                                 shape_place = map_data(), 
+                                 title = 'Census Tracts of Rental Units\nwith Less than 80% AMI')
     })
     
     

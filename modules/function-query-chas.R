@@ -20,11 +20,13 @@ read.dt <- function(adatabase, type = c('table', 'query'), string) {
   setDT(dtelm)
 }
 
-gather_tables <- function(juris = c('place', 'county'), chas_table_codes) {
+gather_tables <- function(juris = c('place', 'tract', 'county'), chas_table_codes) {
   # gather CHAS tables of interest and store in a named list
   
   if(juris == 'place') {
     query <-  'execute chas.get_data_by_place'
+  } else if (juris == 'tract') {
+    query <-  'execute chas.get_data_by_tract'
   } else if (juris == 'county') {
     query <-  'execute chas.get_data_by_county'
   }
