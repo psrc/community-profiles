@@ -5,6 +5,7 @@
 # source('modules/function-query-chas.R')
 
 create_rental_affordability_tract_table <- function() {
+  # Generate tract level table for rental affordability metric. To be used in tract map.
   
   chas_tables <- c('T8', 'T15C', 'T14B')
   dfs <- gather_tables(juris = 'tract', chas_tables)
@@ -57,8 +58,7 @@ create_rental_affordability_tract_table <- function() {
 }
 
 create_chas_tract_map <- function(shape_tract, shape_place, title) {
-  
-  title <- tags$div(title)
+  # Generate tract shape cut to place of interest and display in leaflet
   
   # Trim Tracts for current place
   shp_cut <- st_intersection(shape_tract, shape_place)
@@ -67,13 +67,15 @@ create_chas_tract_map <- function(shape_tract, shape_place, title) {
   rng <- range(shp_cut$share)
   max_bin <- max(abs(rng))
   round_to <- 10^floor(log10(max_bin))
-  max_bin <- ceiling(max_bin/round_to)*round_to
+  max_bin <- ceiling(max_bin/round_to) * round_to
   breaks <- (max_bin*c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1))
   bins <- c(0, breaks)
   
   pal <- colorBin("Purples", domain = shp_cut$share, bins = bins)
   
-  labels <- paste0("<b>",title,"</b>", "Tract ", shp_cut$geoid, ": ", label_percent(suffix = "%")(shp_cut$share)) %>% lapply(htmltools::HTML)
+  title <- tags$div(HTML(title))
+  labels <- paste0("<b>",title,"</b>", "Tract ", shp_cut$geoid, ": ", label_percent(suffix = "%")(shp_cut$share)) %>% 
+    lapply(htmltools::HTML)
   
   ## Create Map ----
   
