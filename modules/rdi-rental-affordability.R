@@ -50,7 +50,7 @@ rdi_rentaff_server <- function(id, shape, place) {
       df <- create_rental_affordability_table(juris = 'place') %>% 
         filter(geography_name == place())
 
-      df_region <- create_rental_affordability_table(juris = 'county')
+      df_region <- create_rental_affordability_table(juris = 'region')
 
       return(list(place = df, region = df_region))
     })
