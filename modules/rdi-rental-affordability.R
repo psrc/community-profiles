@@ -138,7 +138,8 @@ rdi_rentaff_server <- function(id, shape, place) {
         group_by({{group}}) %>%
         e_charts_(x = x) |>
         e_bar_(y) |>
-        e_x_axis(axisLabel = list(interval = 0L)) |>
+        e_x_axis(axisLabel = list(interval = 0L),
+                 axisTick = list(alignWithLabel = TRUE)) |>
         e_flip_coords() |>
         e_grid(left = "20%", top = '10%') |>
         e_title(text = title, 

@@ -9,7 +9,8 @@ rdi_tab_ui <- function(id) {
     ),
     fluidRow(
       tabsetPanel(id = ns('tabset'),
-        rdi_rentaff_ui(ns('rentaff'))
+        rdi_rentaff_ui(ns('rentaff'))#,
+        # rdi_tenure_ui(ns('tenure'))
         
       ) # end tabsetPanel
     )
@@ -27,6 +28,11 @@ rdi_tab_server <- function(id, shape, place) {
                       shape = shape,
                       place = reactive(place())
                       )
+    
+    # rdi_tenure_server('tenure', 
+    #                    shape = shape,
+    #                    place = reactive(place())
+    # )
    
   }) # end moduleServer
   

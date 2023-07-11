@@ -8,7 +8,7 @@ create_rental_affordability_table <- function(juris = c('place', 'region')) {
   chas_tables <- c('T8', 'T15C', 'T14B')
   ifelse(juris == 'place', j <- 'place', j <- 'county')
   dfs <- gather_tables(j, chas_tables)
-  
+
   # Assemble Table ----
   
   desc <- c('Extremely Low Income (<30% AMI)', 
@@ -55,7 +55,7 @@ create_rental_affordability_table <- function(juris = c('place', 'region')) {
     df <- df[, .(estimate = sum(estimate)), by = c('variable_name', 'sort', 'chas_year', 'description', 'col_desc')
              ][, geography_name := 'Region'] 
   }
-  
+
   # pivot wider
   df <- dcast.data.table(df, chas_year + geography_name + description ~ col_desc, value.var = 'estimate')
   
