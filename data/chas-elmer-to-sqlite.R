@@ -47,11 +47,11 @@ dbDisconnect(mydb)
 
 # test ----
 
-# con <- dbConnect(SQLite(), "data/chas_2023-07-11.db")
-# as.data.frame(dbListTables(con))
-# 
+con <- dbConnect(SQLite(), "data/chas_2023-07-11.db")
+as.data.frame(dbListTables(con))
+
 # # Get table
-# test <- dbReadTable(con, 'chas.county_t14B')
+test <- dbReadTable(con, 'chas.county_T14B')
 # 
 # # data is fetched; disconnect
-# dbDisconnect(con)
+dbDisconnect(con)
