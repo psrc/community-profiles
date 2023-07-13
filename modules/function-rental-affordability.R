@@ -1,6 +1,6 @@
 # Function to assemble Rental Affordability table
 
-# source('modules/function-query-chas.R')
+# source('modules/function-query-sqlite-chas.R')
 
 create_rental_affordability_table <- function(juris = c('place', 'region')) {
   # gather tables T8, T15C, and T14B to create formatted Rental Affordability table

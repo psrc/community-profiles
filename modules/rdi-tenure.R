@@ -45,25 +45,25 @@ rdi_tenure_server <- function(id, shape, place) {
     })
     
     data <- reactive({
-      # pull (currently from Elmer) semi-prepped CHAS
-      # browser()
+      # pull (currently from SQLite) semi-prepped CHAS
+
       df <- create_tenure_table(juris = 'place') %>%
         filter(geography_name == place())
 
-      # df_region <- create_rental_affordability_table(juris = 'region')
-      # 
-      # return(list(place = df, region = df_region))
+      df_region <- create_tenure_table(juris = 'region')
+
+      return(list(place = df, region = df_region))
     })
     
     table_data <- reactive({
       # data in wide for display in table
       
-      # region <- data()$region %>% 
-      #   select(description, renter_hh_income, rental_units, ends_with('share')) %>% 
-      #   rename_with(~paste0(.x, '_reg'))
-      # 
-      # d <- left_join(data()$place, region, by = c('description' = 'description_reg')) %>% 
-      #   select(description, renter_hh_income, rental_units, ends_with('share'), ends_with('reg'))
+      region <- data()$region %>%
+        select(description, renter_occupied, owner_occupied, ends_with('share')) %>%
+        rename_with(~paste0(.x, '_reg'))
+
+      d <- left_join(data()$place, region, by = c('description' = 'description_reg')) %>%
+        select(description, renter_occupied, owner_occupied, ends_with('share'), ends_with('reg'))
     })
     
     plot_data <- reactive({
@@ -100,19 +100,19 @@ rdi_tenure_server <- function(id, shape, place) {
     container <- reactive({
       # custom container for DT
       
-      # htmltools::withTags(table(
-      #   class = 'display',
-      #   thead(
-      #     tr(
-      #       th(rowspan = 2, 'Race/Ethnicity'),
-      #       th(class = 'dt-center', colspan = 4, place_name()),
-      #       th(class = 'dt-center', colspan = 4, 'Region')
-      #     ),
-      #     tr(
-      #       lapply(rep(c("Renter Households", "Owner Households"), 4), th)
-      #     )
-      #   )
-      # ))
+      htmltools::withTags(table(
+        class = 'display',
+        thead(
+          tr(
+            th(rowspan = 2, 'Race/Ethnicity'),
+            th(class = 'dt-center', colspan = 4, place_name()),
+            th(class = 'dt-center', colspan = 4, 'Region')
+          ),
+          tr(
+            lapply(rep(c("Renter Households", "Owner Households"), 4), th)
+          )
+        )
+      ))
     })
     
     output$table <- renderDT({
@@ -120,15 +120,15 @@ rdi_tenure_server <- function(id, shape, place) {
       
       source <- 'Sources: US HUD, 2015-2019 Comprehensive Housing Affordability Strategy (CHAS) Table 9'
       
-      datatable(data(), #table_data(),
-                # container = container(),
+      datatable(table_data(), #table_data(),
+                container = container(),
                 rownames = FALSE,
                 options = list(columnDefs = list(list(className = 'dt-center', targets = 1:8))),
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: right;',
                   htmltools::em(source)
-                )) #%>%
-        # formatPercentage(str_subset(colnames(table_data()), ".*share(.)*$"), 1)
+                )) %>%
+        formatPercentage(str_subset(colnames(table_data()), ".*share(.)*$"), 1)
     })
     
     echart_ra <- function(data, filter_type, group, x, y, title) {

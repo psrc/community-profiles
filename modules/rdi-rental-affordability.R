@@ -45,7 +45,7 @@ rdi_rentaff_server <- function(id, shape, place) {
     })
     
     data <- reactive({
-      # pull (currently from Elmer) semi-prepped CHAS
+      # pull (currently from SQLite) semi-prepped CHAS
 
       df <- create_rental_affordability_table(juris = 'place') %>% 
         filter(geography_name == place())
@@ -146,7 +146,7 @@ rdi_rentaff_server <- function(id, shape, place) {
                 left = 'center',
                 textStyle = list(fontSize = 12)) |>
         e_color(psrc_colors$obgnpgy_5) %>% 
-        e_tooltip(formatter =  e_tooltip_item_formatter("percent")) |> #,  trigger = "axis"
+        e_tooltip(formatter =  e_tooltip_item_formatter("percent", digits = 1)) |> #,  trigger = "axis"
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))
       
     }
