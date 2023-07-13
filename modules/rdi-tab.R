@@ -5,7 +5,12 @@ rdi_tab_ui <- function(id) {
   
   div(
     fluidRow(
-      p("A paragraph on the racial disparity index and metrics using CHAS data")
+      p("The person level metrics on this page address Racially Disparate Impacts (RDI) throughout the PSRC region. 
+        Topics include Racial Composition and racial disparities in Cost Burden, Rental Affordability, Income, and Tenure. 
+        The data were collected from the", 
+        tags$a(href="https://www.huduser.gov/portal/datasets/cp.html","2015-2019 Comprehensive Housing Affordability Strategy (CHAS)", target = "_blank"), ".",  
+        "The Washington Department of Commerce has", tags$a(href="https://deptofcommerce.app.box.com/s/1l217l98jattb87qobtw63pkplzhxege", "published guidance", target = "_blank"), 
+        "for jurisdictions looking to address RDI in their comprehensive plan update.")
     ),
     fluidRow(
       tabsetPanel(id = ns('tabset'),

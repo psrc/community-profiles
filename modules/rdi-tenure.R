@@ -46,7 +46,7 @@ rdi_tenure_server <- function(id, shape, place) {
     
     data <- reactive({
       # pull (currently from Elmer) semi-prepped CHAS
-      browser()
+      # browser()
       df <- create_tenure_table(juris = 'place') %>%
         filter(geography_name == place())
 
