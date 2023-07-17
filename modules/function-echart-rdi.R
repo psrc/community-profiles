@@ -14,7 +14,19 @@ echart_rdi <- function(data, filter_type, desc_col, str_wrap_num, group, x, y, t
     e_title(text = title,
             left = 'center',
             textStyle = list(fontSize = 12)) |>
-    e_color(psrc_colors$obgnpgy_5) %>%
-    e_tooltip(formatter =  e_tooltip_item_formatter("percent", digits = 1)) |> 
+    e_color(psrc_colors$obgnpgy_5) |>
+    e_tooltip(formatter =  e_tooltip_item_formatter("percent", digits = 1)) |>
+    e_tooltip(formatter =  htmlwidgets::JS("
+                                           function(params, ticket, callback) {
+                                           var fmt = new Intl.NumberFormat('en', {\"style\":\"percent\",\"minimumFractionDigits\":1,\"maximumFractionDigits\":1,\"currency\":\"USD\"});\n        
+                                           var idx = 0;\n        
+                                           if (params.name == params.value[0]) {\n            
+                                           idx = 1;\n        }\n        
+                                           return(params.marker + ' ' +\n       
+                                                  params.seriesName + ': ' + fmt.format(parseFloat(params.value[idx]))
+                                                  )
+                                           }")
+              ) |>
     e_x_axis(formatter = e_axis_formatter("percent", digits = 0))
+ 
 }

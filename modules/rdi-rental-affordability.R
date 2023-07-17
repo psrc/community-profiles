@@ -141,8 +141,8 @@ rdi_rentaff_server <- function(id, shape, place) {
                  y = 'value',
                  title = 'Households',
                  egrid_left = "20%")|> 
-          e_legend(bottom=0) |>
-          e_group("grp")
+        e_legend(bottom=0) |>
+        e_group("grp")
     })
     
     output$plot02 <- renderEcharts4r({
