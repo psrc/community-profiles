@@ -18,6 +18,8 @@ create_rental_affordability_table <- function(juris = c('place', 'region')) {
             'Greater than 100% of AMI', 
             'All')
   
+  desc2 <- c(desc[1:3], 'Greater than 80% of AMI', 'All')
+  
   # Table 8 
   t8_head <- c(69, 82, 95, 108, 121, 68)
   names(t8_head) <- desc
@@ -47,12 +49,16 @@ create_rental_affordability_table <- function(juris = c('place', 'region')) {
   ra_dfs <- map(list(t8, t15c, t14b), ~.x[, ..cols])
   df <- rbindlist(ra_dfs)
   
+  # aggregate two highest categories
+  df[description %in% c('Moderate Income (80-100% AMI)','Greater than 100% of AMI'), description := 'Greater than 80% of AMI']
+  df <- df[, .(estimate = sum(estimate)), by = c('chas_year', 'geography_name', 'col_desc', 'description')]
+  
   ## Format Table ----
   
   if(juris == 'region') {
     # aggregate counties to region
     
-    df <- df[, .(estimate = sum(estimate)), by = c('variable_name', 'sort', 'chas_year', 'description', 'col_desc')
+    df <- df[, .(estimate = sum(estimate)), by = c('chas_year', 'description', 'col_desc')
              ][, geography_name := 'Region'] 
   }
 
@@ -60,7 +66,7 @@ create_rental_affordability_table <- function(juris = c('place', 'region')) {
   df <- dcast.data.table(df, chas_year + geography_name + description ~ col_desc, value.var = 'estimate')
   
   # reorder rows
-  df <- df[, description := factor(description, levels = desc)][order(description)]
+  df <- df[, description := factor(description, levels = desc2)][order(description)]
   
   # order columns
   setcolorder(df, c('chas_year', 'geography_name', 'description', 'renter_hh_income', 'rental_unit_affordability', 'vacant_rental_units'))

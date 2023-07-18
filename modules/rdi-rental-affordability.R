@@ -88,10 +88,10 @@ rdi_rentaff_server <- function(id, shape, place) {
         mutate(description_short = case_when(description == 'Extremely Low Income (<30% AMI)' ~ '<30% AMI',
                                              description == 'Very Low Income (30-50% AMI)' ~ '30-50% AMI',
                                              description == 'Low Income (50-80% AMI)' ~ '50-80% AMI',
-                                             description == 'Moderate Income (80-100% AMI)' ~ '80-100% AMI',
-                                             description == 'Greater than 100% of AMI' ~ '> 100% AMI'),
+                                             description == 'Greater than 80% of AMI' ~ '> 80% AMI'
+                                             ),
                geography_name = factor(geography_name, levels = geog)) %>%
-        mutate(description_short = factor(description_short, levels = c('> 100% AMI', '80-100% AMI', '50-80% AMI', '30-50% AMI', '<30% AMI'))) %>% 
+        mutate(description_short = factor(description_short, levels = c('> 80% AMI', '50-80% AMI', '30-50% AMI', '<30% AMI'))) %>% 
         arrange(description_short)
     })
     
