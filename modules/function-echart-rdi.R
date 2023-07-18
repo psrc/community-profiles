@@ -7,6 +7,7 @@ echart_rdi <- function(data, filter_type, desc_col, str_wrap_num, group, x, y, t
     group_by({{group}}) %>%
     e_charts_(x = x) |>
     e_bar_(y) |>
+    e_y_axis(splitNumber = 3) |>
     e_x_axis(axisLabel = list(interval = 0L),
              axisTick = list(alignWithLabel = TRUE)) |>
     e_flip_coords() |>

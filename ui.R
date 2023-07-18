@@ -1,7 +1,8 @@
 # User Interface for a Place Selection with a map returned for that place.
 
 shinyUI(
-    fluidPage(sidebarLayout(
+    fluidPage(
+      sidebarLayout(
         sidebarPanel(id = "sidebar",
             div(img(src="psrc-logo.png", width = "70%", height = "70%", style = "padding-top: 5px")),
             br(),
@@ -21,8 +22,8 @@ shinyUI(
             textOutput("place_airaff"),
             br(),
             downloadLink('downloadData', label = "Download Data Profiles in Excel Format"),
-            width=3),
-        mainPanel(shinyjs::useShinyjs(), id ="Main",
+            width = 3),
+        mainPanel(shinyjs::useShinyjs(), id ="Main", width = 9,
             navbarPage(title = "", theme = "styles.css", windowTitle = "PSRC Community Profiles",
                        
                        tabPanel(icon("city"),
