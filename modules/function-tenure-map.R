@@ -86,8 +86,6 @@ create_tenure_tract_map <- function(table, shape_tract, shape_place, title) {
   pal <- colorBin("Purples", domain = shp_cut$share, bins = bins)
   
   title <- tags$div(HTML(title))
-  labels <- paste0("<b>Tract ", shp_cut$geoid,"</b>", "<br>People of Color: ", label_percent(accuracy = 0.1, suffix = "%")(shp_cut$share)) %>%
-    lapply(htmltools::HTML)
   
   ## Create Map ----
   
@@ -111,7 +109,11 @@ create_tenure_tract_map <- function(table, shape_tract, shape_place, title) {
   ### add layers ----
   
   for(s in 1:length(shps)){
-
+    labels <- paste0("<b>Tract ", shps[[s]]$geoid,"</b>", "<br>", shps[[s]]$grouping,"<br>", 
+                     str_to_title(str_replace_all(shps[[s]]$tenure, "_", " ")),": ", 
+                     label_percent(accuracy = 0.1, suffix = "%")(shps[[s]]$share)) %>%
+      lapply(htmltools::HTML)
+    
     m <- m %>% 
       addPolygons(fillColor = pal(shps[[s]]$share),
                   weight = 1.0,
@@ -137,12 +139,12 @@ create_tenure_tract_map <- function(table, shape_tract, shape_place, title) {
   
 }
 
-shp <- tract.shape %>% 
-  filter(census_year == 2010)
-
-pl <- community.shape %>%
-  filter(geog_name == 'Bellevue')
-
-d <- create_tenure_tract_table()
- 
-y <- create_tenure_tract_map(table = d, shape_tract = shp, shape_place = pl, title = 'Test test')
+# shp <- tract.shape %>% 
+#   filter(census_year == 2010)
+# 
+# pl <- community.shape %>%
+#   filter(geog_name == 'Bellevue')
+# 
+# d <- create_tenure_tract_table()
+#  
+# y <- create_tenure_tract_map(table = d, shape_tract = shp, shape_place = pl, title = 'Test test')
