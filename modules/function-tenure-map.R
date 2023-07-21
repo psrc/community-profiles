@@ -59,7 +59,7 @@ create_tenure_tract_table <- function() {
   return(df)
 }
 
-create_tenure_tract_map <- function(table, shape_tract, shape_place, title) {
+create_tenure_tract_map <- function(table, shape_tract, shape_place) {
   # Generate tract shape cut to place of interest and display in leaflet
   shape_tract_all <- left_join(shape_tract, table, by = c('geoid' = 'tract_geoid'))
   
@@ -85,9 +85,9 @@ create_tenure_tract_map <- function(table, shape_tract, shape_place, title) {
   
   pal <- colorBin("Purples", domain = shp_cut$share, bins = bins)
   
-  title <- tags$div(HTML(title))
-  
   ## Create Map ----
+  
+  title <- tags$div(HTML("Tenure of People of Color (POC) or Hispanic/Latino<br>Households by Census Tract"))
   
   shps <- list("POC Owner" = po, "POC Renter" = pr, "Hispanic/Latino Owner" = ho, "Hispanic/Latino Renter" = hr)
   
@@ -135,16 +135,8 @@ create_tenure_tract_map <- function(table, shape_tract, shape_place, title) {
                   group = names(shps)[s])
   }
   
-  return(m)
+  m <- m %>% 
+    hideGroup(c(names(shps)[2:5]))
   
+  return(m)
 }
-
-# shp <- tract.shape %>% 
-#   filter(census_year == 2010)
-# 
-# pl <- community.shape %>%
-#   filter(geog_name == 'Bellevue')
-# 
-# d <- create_tenure_tract_table()
-#  
-# y <- create_tenure_tract_map(table = d, shape_tract = shp, shape_place = pl, title = 'Test test')

@@ -165,15 +165,12 @@ rdi_tenure_server <- function(id, shape, place) {
     output$map <- renderLeaflet({
       shp <- tract.shape %>% 
         filter(census_year == 2010)
-      
-      # d <- create_rental_affordability_tract_table()
-      # 
-      # s <- shp %>%
-      #   left_join(d, by = c('geoid' = 'tract_geoid'))
-      # 
-      # m <- create_chas_tract_map(shape_tract = s,
-      #                            shape_place = map_data(), 
-      #                            title = paste('Census Tracts of Rental Units', 'Less than 80% AMI', sep = "<br>"))
+
+      d <- create_tenure_tract_table()
+
+      y <- create_tenure_tract_map(table = d, 
+                                   shape_tract = shp, 
+                                   shape_place = map_data())
     })
     
     
