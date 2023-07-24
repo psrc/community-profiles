@@ -1,7 +1,7 @@
 # Function to assemble Cost Burden table
 # Written by Eric Clute
 
-source('modules/function-query-sqlite-chas.R')
+# source('modules/function-query-sqlite-chas.R')
 
 create_cost_burden_table <- function(juris = c('place', 'region')) {
   # gather tables T9 to create formatted Cost Burden table
