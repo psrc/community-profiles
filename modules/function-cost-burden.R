@@ -1,7 +1,7 @@
 # Function to assemble Cost Burden table
 # Written by Eric Clute
 
-# source('modules/function-query-sqlite-chas.R')
+source('modules/function-query-sqlite-chas.R')
 
 create_cost_burden_table <- function(juris = c('place', 'region')) {
   # gather tables T9 to create formatted Cost Burden table
@@ -27,6 +27,15 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
                             cost_burden == "greater than 50%", "Severely Cost-Burdened (>50%)",
                             cost_burden ==  "not computed (no/negative income)", "Not Calculated",
                             cost_burden == "All", "All")]
+  
+  df[, race_ethnicity := fcase(grepl("^American Indian ", race_ethnicity), "American Indian or Alaskan Native",
+                               grepl("^Asian ", race_ethnicity), "Asian",
+                               grepl("^Black ", race_ethnicity), "Black or African American",
+                               grepl("^Hispanic, any race", race_ethnicity), "Hispanic or Latino (of any race)",
+                               grepl("^other ", race_ethnicity), "Other Race",
+                               grepl("^Pacific ", race_ethnicity), "Pacific Islander",
+                               grepl("^White ", race_ethnicity), "White",
+                               grepl("^All", race_ethnicity), "All")]
   
   if(juris == 'region') {
     # aggregate counties to region
@@ -62,7 +71,7 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
                    str_subset(unique(df$race_ethnicity), "^Black.*"),
                    str_subset(unique(df$race_ethnicity), "^Hispanic.*"),
                    str_subset(unique(df$race_ethnicity), "^Pacific.*"),
-                   str_subset(unique(df$race_ethnicity), "^other.*"),
+                   str_subset(unique(df$race_ethnicity), "^Other.*"),
                    'POC',
                    str_subset(unique(df$race_ethnicity), "^White.*"),
                    'Total')
@@ -84,3 +93,5 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
   
   return(list(e = df_est, s = df_share))
 }
+
+# x <- create_cost_burden_table(juris = 'place')
