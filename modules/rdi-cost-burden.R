@@ -9,12 +9,12 @@ rdi_cost_burden_ui <- function(id) {
              tabPanel(title = 'Renter',
                       div(style = "padding-top: 1rem;",
                           fluidRow(
-                            column(4,
+                            column(6,
                                    echarts4rOutput(ns('r_plot01'))),
-                            column(4,
-                                   echarts4rOutput(ns('r_plot02'))),
+                            # column(4,
+                            #        echarts4rOutput(ns('r_plot02'))),
                             
-                            column(4,
+                            column(6,
                                    leafletOutput(ns('r_map'))
                             )
                           )# end fluidrow

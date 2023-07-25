@@ -14,10 +14,11 @@ rdi_tab_ui <- function(id) {
     ),
     fluidRow(
       tabsetPanel(id = ns('tabset'),
-        rdi_rentaff_ui(ns('rentaff')),
-        rdi_tenure_ui(ns('tenure')),
-        rdi_cost_burden_ui(ns('costburden'))
-        
+                  rdi_cost_burden_ui(ns('costburden')),
+                  rdi_rentaff_ui(ns('rentaff')),
+                  rdi_tenure_ui(ns('tenure')),
+                  
+                  
       ) # end tabsetPanel
     )
     
@@ -31,20 +32,20 @@ rdi_tab_server <- function(id, shape, place) {
     ns <- session$ns
     
     rdi_rentaff_server('rentaff', 
-                      shape = shape,
-                      place = reactive(place())
-                      )
-    
-    rdi_tenure_server('tenure',
                        shape = shape,
                        place = reactive(place())
-                      )
+    )
+    
+    rdi_tenure_server('tenure',
+                      shape = shape,
+                      place = reactive(place())
+    )
     
     rdi_cost_burden_server('costburden',
                            shape = shape,
                            place = reactive(place())
-                           )
-   
+    )
+    
   }) # end moduleServer
   
 }
