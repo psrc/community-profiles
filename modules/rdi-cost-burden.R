@@ -10,10 +10,7 @@ rdi_cost_burden_ui <- function(id) {
                       div(style = "padding-top: 1rem;",
                           fluidRow(
                             column(6,
-                                   echarts4rOutput(ns('r_plot01'))),
-                            # column(4,
-                            #        echarts4rOutput(ns('r_plot02'))),
-                            
+                                   echarts4rOutput(ns('r_plot'))),
                             column(6,
                                    leafletOutput(ns('r_map'))
                             )
@@ -22,19 +19,43 @@ rdi_cost_burden_ui <- function(id) {
                       ,
                       fluidRow(
                         tabsetPanel(type = 'pills',
-                          tabPanel(title = 'Estimate',
-                                   column(width = 12,
-                                          uiOutput(ns('r_e_tableui')))),
-                          tabPanel(title = 'Share',
-                                   column(width = 12,
-                                          uiOutput(ns('r_s_tableui'))))
-                        
+                                    tabPanel(title = 'Estimate',
+                                             column(width = 12,
+                                                    uiOutput(ns('r_e_tableui')))),
+                                    tabPanel(title = 'Share',
+                                             column(width = 12,
+                                                    uiOutput(ns('r_s_tableui'))))
+                                    
                         )
                         
                       ) # end fluidRow
              ), # end Renter tabPanel
-           tabPanel(title = 'Owner')
-         
+             
+             # owner ----
+             
+             tabPanel(title = 'Owner',
+                      div(style = "padding-top: 1rem;",
+                          fluidRow(
+                            column(6,
+                                   echarts4rOutput(ns('o_plot'))),
+                            column(6,
+                                   leafletOutput(ns('o_map'))
+                            )
+                          )# end fluidrow
+                      ) # end div
+                      ,
+                      fluidRow(
+                        tabsetPanel(type = 'pills',
+                                    tabPanel(title = 'Estimate',
+                                             column(width = 12,
+                                                    uiOutput(ns('o_e_tableui')))),
+                                    tabPanel(title = 'Share',
+                                             column(width = 12,
+                                                    uiOutput(ns('o_s_tableui'))))
+                        ) # end tabsetPanel
+                      ) # end fluidRow
+             ) # end owner tabPanel
+             
            ) # end tabsetPanel
   ) # end tabpanel
   
@@ -63,6 +84,28 @@ rdi_cost_burden_server <- function(id, shape, place) {
       div(
         withSpinner(
           DTOutput(ns("r_s_table")),
+          type = 5,
+          color = psrc_colors$pgnobgy_10[sample.int(10, 1)]
+        ),
+        style = 'margin-top: 1rem'
+      )
+    })
+    
+    output$o_e_tableui <- renderUI({
+      div(
+        withSpinner(
+          DTOutput(ns("o_e_table")),
+          type = 5,
+          color = psrc_colors$pgnobgy_10[sample.int(10, 1)]
+        ),
+        style = 'margin-top: 1rem'
+      )
+    })
+    
+    output$o_s_tableui <- renderUI({
+      div(
+        withSpinner(
+          DTOutput(ns("o_s_table")),
           type = 5,
           color = psrc_colors$pgnobgy_10[sample.int(10, 1)]
         ),
@@ -109,7 +152,7 @@ rdi_cost_burden_server <- function(id, shape, place) {
     })
 
     plot_clean_data <- reactive({
-      # munge long form data for visual
+      # munge long form data (shares) for renter and owner for plotting
 
       filter_set_levels <- function(table) {
         df <- table %>% 
@@ -147,7 +190,7 @@ rdi_cost_burden_server <- function(id, shape, place) {
       ))
     })
     
-    # renter ----
+    # Renter ----
     
     output$r_e_table <- renderDT({
       # Renter Estimate table display
@@ -168,7 +211,7 @@ rdi_cost_burden_server <- function(id, shape, place) {
         formatPercentage(2:10, 1)
     })
 
-    output$r_plot01 <- renderEcharts4r({
+    output$r_plot <- renderEcharts4r({
       
       echart_rdi(data = plot_clean_data()$r,
                  desc_col = race_ethnicity,
@@ -180,26 +223,48 @@ rdi_cost_burden_server <- function(id, shape, place) {
                  egrid_left = "20%")|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
         e_legend(bottom=0) |>
-        e_group("grp")
+        e_toolbox_feature("dataView") |>
+        e_toolbox_feature("saveAsImage")
     })
 
-    # output$plot02 <- renderEcharts4r({
-    #   # echart_rdi(data = plot_clean_data(),
-    #   #            filter_type = "owner_share",
-    #   #            desc_col = description, 
-    #   #            str_wrap_num = 15,
-    #   #            group = geography_name,
-    #   #            x = 'description',
-    #   #            y = 'value',
-    #   #            title = 'Owner Households',
-    #   #            egrid_left = "30%")|>
-    #   #   e_legend(show=FALSE) |>
-    #   #   e_toolbox_feature("dataView") |>
-    #   #   e_toolbox_feature("saveAsImage") |>
-    #   #   e_group("grp") |>
-    #   #   e_connect_group("grp")
-    # })
-    # 
+    # Owner ----
+    
+    output$o_e_table <- renderDT({
+      # Owner Estimate table display
+
+      exc_cols <- vals$exc_cols
+      d <- data()$o$e[,!..exc_cols]
+
+      create_dt_cost_burden(table = d, container = container(), source = vals$source)
+    })
+
+    output$o_s_table <- renderDT({
+      # Renter Share table display
+
+      exc_cols <- vals$exc_cols
+      d <- data()$o$s[,!..exc_cols]
+
+      create_dt_cost_burden(table = d, container = container(), source = vals$source) %>%
+        formatPercentage(2:10, 1)
+    })
+    
+    output$o_plot <- renderEcharts4r({
+      
+      echart_rdi(data = plot_clean_data()$o,
+                 desc_col = race_ethnicity,
+                 str_wrap_num = 15,
+                 group = description,
+                 x = 'race_ethnicity',
+                 y = 'value',
+                 title = 'Owner Households',
+                 egrid_left = "20%")|>
+        e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
+        e_legend(bottom=0) |>
+        e_toolbox_feature("dataView") |>
+        e_toolbox_feature("saveAsImage")
+
+    })
+
     # map_data <- reactive({
     #   s <- shape %>% filter(geog_name == place())
     # })
