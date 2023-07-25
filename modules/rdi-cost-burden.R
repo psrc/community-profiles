@@ -170,32 +170,14 @@ rdi_cost_burden_server <- function(id, shape, place) {
 
     output$r_plot01 <- renderEcharts4r({
       
-      plot_clean_data()$r %>% 
-        mutate(race_ethnicity := str_wrap(race_ethnicity, 15)) %>%
-        group_by(description) %>%
-        e_charts_(x = 'race_ethnicity') |>
-        e_bar_('value') |>
-        e_y_axis(splitNumber = 3) |>
-        e_x_axis(axisLabel = list(interval = 0L),
-                 axisTick = list(alignWithLabel = TRUE)) |>
-        e_flip_coords() |>
-        e_grid(left = "20%", top = '10%') |>
-        e_title(text = "Renter Households",
-                left = 'center',
-                textStyle = list(fontSize = 12)) |>
-        e_color(psrc_colors$obgnpgy_5) |>
-        e_tooltip(formatter =  e_tooltip_item_formatter("percent", digits = 1)) |>
-        e_tooltip(formatter =  htmlwidgets::JS("
-                                           function(params, ticket, callback) {
-                                           var fmt = new Intl.NumberFormat('en', {\"style\":\"percent\",\"minimumFractionDigits\":1,\"maximumFractionDigits\":1,\"currency\":\"USD\"});\n        
-                                           var idx = 0;\n        
-                                           if (params.name == params.value[0]) {\n            
-                                           idx = 1;\n        }\n        
-                                           return(params.marker + ' ' +\n       
-                                                  params.seriesName + ': ' + fmt.format(parseFloat(params.value[idx]))
-                                                  )
-                                           }")
-        ) |>
+      echart_rdi(data = plot_clean_data()$r,
+                 desc_col = race_ethnicity,
+                 str_wrap_num = 15,
+                 group = description,
+                 x = 'race_ethnicity',
+                 y = 'value',
+                 title = 'Renter Households',
+                 egrid_left = "20%")|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
         e_legend(bottom=0) |>
         e_group("grp")
