@@ -95,3 +95,14 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
 }
 
 # x <- create_cost_burden_table(juris = 'place')
+
+create_dt_cost_burden <- function(table, container, source) {
+  datatable(table,
+            container = container,
+            rownames = FALSE,
+            options = list(columnDefs = list(list(className = 'dt-center', targets = 1:9))),
+            caption = htmltools::tags$caption(
+              style = 'caption-side: bottom; text-align: right;',
+              htmltools::em(source)
+            ))
+}

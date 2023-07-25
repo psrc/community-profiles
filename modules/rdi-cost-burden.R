@@ -45,7 +45,8 @@ rdi_cost_burden_server <- function(id, shape, place) {
   moduleServer(id, function(input, output, session) { 
     ns <- session$ns
     
-    vals <- reactiveValues(source = 'Sources: US HUD, 2015-2019 Comprehensive Housing Affordability Strategy (CHAS) Table 9')
+    vals <- reactiveValues(source = 'Sources: US HUD, 2015-2019 Comprehensive Housing Affordability Strategy (CHAS) Table 9',
+                           exc_cols = c('chas_year', 'geography_name', 'tenure'))
     
     output$r_e_tableui <- renderUI({
       div(
@@ -140,37 +141,21 @@ rdi_cost_burden_server <- function(id, shape, place) {
     
     output$r_e_table <- renderDT({
       # Renter Estimate table display
-      exc_cols <- c('chas_year', 'geography_name', 'tenure')
-      # browser()
-      d <- data()$r$e[,!..exc_cols]
-    
-      # browser()
-      datatable(d,
-                container = container(),
-                rownames = FALSE,
-                options = list(columnDefs = list(list(className = 'dt-center', targets = 1:9))),
-                caption = htmltools::tags$caption(
-                  style = 'caption-side: bottom; text-align: right;',
-                  htmltools::em(vals$source)
-                ))
       
+      exc_cols <- vals$exc_cols
+      d <- data()$r$e[,!..exc_cols]
+      
+      create_dt_cost_burden(table = d, container = container(), source = vals$source)
     })
     
     output$r_s_table <- renderDT({
       # Renter Share table display
 
-      exc_cols <- c('chas_year', 'geography_name', 'tenure')
+      exc_cols <- vals$exc_cols
       d <- data()$r$s[,!..exc_cols]
       
-      datatable(d,
-                container = container(),
-                rownames = FALSE,
-                options = list(columnDefs = list(list(className = 'dt-center', targets = 1:9))),
-                caption = htmltools::tags$caption(
-                  style = 'caption-side: bottom; text-align: right;',
-                  htmltools::em(vals$source)
-                )) %>%
-      formatPercentage(2:10, 1)
+      create_dt_cost_burden(table = d, container = container(), source = vals$source) %>%
+        formatPercentage(2:10, 1)
     })
 
     # output$plot01 <- renderEcharts4r({

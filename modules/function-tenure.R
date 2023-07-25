@@ -12,9 +12,9 @@ create_tenure_table <- function(juris = c('place', 'region')) {
   re_order <- c('American Indian or Alaskan Native', 
                 'Asian', 
                 'Black or African American', 
-                'Hispanic or Latino (of any race)', 
-                'Other Race', 
                 'Pacific Islander',
+                'Other Race', 
+                'Hispanic or Latino (of any race)', 
                 'White',
                 'All')
   
