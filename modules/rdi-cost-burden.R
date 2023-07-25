@@ -116,21 +116,23 @@ rdi_cost_burden_server <- function(id, shape, place) {
     #   #   arrange(description)
     # })
     
-    place_name <- reactive({unique(data()$place$geography_name)})
+    place_name <- reactive({unique(data()$r$e$geography_name)})
     
     container <- reactive({
       # custom container for DT
+      
+      selcols <- colnames(data()$r$e)[which(!(colnames(data()$r$e) %in% c('chas_year', 'geography_name', 'tenure', 'description')))]
+      selcols <- str_replace_all(selcols, "POC", "People of Color (POC)")
       
       htmltools::withTags(table(
         class = 'display',
         thead(
           tr(
             th(rowspan = 2, 'Cost Burden'),
-            th(class = 'dt-center', colspan = 4, place_name()),
-            th(class = 'dt-center', colspan = 4, 'Region')
+            th(class = 'dt-center', colspan = 9, place_name())
           ),
           tr(
-            lapply(rep(c("Renter Households", "Owner Households"), 4), th)
+            lapply(selcols, th)
           )
         )
       ))
@@ -138,35 +140,37 @@ rdi_cost_burden_server <- function(id, shape, place) {
     
     output$r_e_table <- renderDT({
       # Renter Estimate table display
-      # source = 'Sources: US HUD, 2015-2019 Comprehensive Housing Affordability Strategy (CHAS) Table 9'
-      datatable(data()$r$e,
-                # container = container(),
+      exc_cols <- c('chas_year', 'geography_name', 'tenure')
+      # browser()
+      d <- data()$r$e[,!..exc_cols]
+    
+      # browser()
+      datatable(d,
+                container = container(),
                 rownames = FALSE,
-                options = list(columnDefs = list(list(className = 'dt-center', targets = 4:12),
-                                                 list(visible = FALSE, targets = 0:2)
-                                                 )
-                               ),
+                options = list(columnDefs = list(list(className = 'dt-center', targets = 1:9))),
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: right;',
                   htmltools::em(vals$source)
                 ))
+      
     })
     
     output$r_s_table <- renderDT({
       # Renter Share table display
-      # source = 'Sources: US HUD, 2015-2019 Comprehensive Housing Affordability Strategy (CHAS) Table 9'
-      datatable(data()$r$s,
-                # container = container(),
+
+      exc_cols <- c('chas_year', 'geography_name', 'tenure')
+      d <- data()$r$s[,!..exc_cols]
+      
+      datatable(d,
+                container = container(),
                 rownames = FALSE,
-                options = list(columnDefs = list(list(className = 'dt-center', targets = 4:12),
-                                                 list(visible = FALSE, targets = 0:2)
-                )
-                ),
+                options = list(columnDefs = list(list(className = 'dt-center', targets = 1:9))),
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: right;',
                   htmltools::em(vals$source)
                 )) %>%
-      formatPercentage(5:13, 1)
+      formatPercentage(2:10, 1)
     })
 
     # output$plot01 <- renderEcharts4r({

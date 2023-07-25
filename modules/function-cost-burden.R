@@ -59,7 +59,7 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
   tot <- df[, .(estimate = sum(estimate), race_ethnicity = 'Total'), by = c('geography_name', 'chas_year', 'tenure', 'cost_burden', 'description')]
 
   # poc (for column)
-  poc <- df[race_ethnicity != str_subset(unique(df$race_ethnicity), "^W.*"), .(estimate = sum(estimate), race_ethnicity = 'POC'), 
+  poc <- df[!(race_ethnicity %in% str_subset(unique(df$race_ethnicity), "^[W|H].*")), .(estimate = sum(estimate), race_ethnicity = 'POC'), 
             by = c('geography_name', 'chas_year', 'tenure', 'cost_burden', 'description')]
 
   df <- rbindlist(list(df, poc, tot), use.names = TRUE, fill = TRUE)
@@ -69,10 +69,10 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
   race_levels <- c(str_subset(unique(df$race_ethnicity), "^American.*"),
                    str_subset(unique(df$race_ethnicity), "^Asian.*"),
                    str_subset(unique(df$race_ethnicity), "^Black.*"),
-                   str_subset(unique(df$race_ethnicity), "^Hispanic.*"),
                    str_subset(unique(df$race_ethnicity), "^Pacific.*"),
                    str_subset(unique(df$race_ethnicity), "^Other.*"),
                    'POC',
+                   str_subset(unique(df$race_ethnicity), "^Hispanic.*"),
                    str_subset(unique(df$race_ethnicity), "^White.*"),
                    'Total')
   
