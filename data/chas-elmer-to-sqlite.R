@@ -15,7 +15,7 @@ elmer_connection <- dbConnect(odbc::odbc(),
 sqlite_dbname <- file.path('data', paste0('chas_',Sys.Date(), '.db'))
 mydb <- dbConnect(RSQLite::SQLite(), sqlite_dbname)
 
-chas_table_codes <- c('T8', 'T15C', 'T14B', 'T9')
+chas_table_codes <- c('T1', 'T8', 'T15C', 'T14B', 'T9')
 geog <- c('place', 'county', 'tract')
 
 # export to SQLite db ----
@@ -46,12 +46,12 @@ for (n in names) {
 dbDisconnect(mydb)
 
 # test ----
-
-con <- dbConnect(SQLite(), "data/chas_2023-07-11.db")
-as.data.frame(dbListTables(con))
-
-# # Get table
-test <- dbReadTable(con, 'chas.county_T14B')
 # 
-# # data is fetched; disconnect
-dbDisconnect(con)
+# con <- dbConnect(SQLite(), "data/chas_2023-07-26.db")
+# as.data.frame(dbListTables(con))
+# 
+# # # Get table
+# test <- dbReadTable(con, 'chas.county_T1')
+# #
+# # # data is fetched; disconnect
+# dbDisconnect(con)

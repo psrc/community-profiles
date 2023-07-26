@@ -1,6 +1,6 @@
 library(tidyverse)
 library(data.table)
-source('modules/function-query-sqlite-chas.R')
+# source('modules/function-query-sqlite-chas.R')
 
 create_tenure_tract_table <- function() {
   # Generate tract level table for RDI Tenure metric. To be used in tract map.

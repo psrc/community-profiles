@@ -170,6 +170,10 @@ rdi_cost_burden_server <- function(id, shape, place) {
     
     place_name <- reactive({unique(data()$r$e$geography_name)})
     
+    map_data <- reactive({
+      s <- shape %>% filter(geog_name == place())
+    })
+    
     container <- reactive({
       # custom container for DT
       
@@ -239,7 +243,7 @@ rdi_cost_burden_server <- function(id, shape, place) {
     })
 
     output$o_s_table <- renderDT({
-      # Renter Share table display
+      # Owner Share table display
 
       exc_cols <- vals$exc_cols
       d <- data()$o$s[,!..exc_cols]
@@ -264,21 +268,24 @@ rdi_cost_burden_server <- function(id, shape, place) {
         e_toolbox_feature("saveAsImage")
 
     })
+    
+    output$r_map <- renderLeaflet({
+      shp <- tract.shape %>%
+        filter(census_year == 2010)
+      
+      d <- create_cost_burden_tract_table()
 
-    # map_data <- reactive({
-    #   s <- shape %>% filter(geog_name == place())
-    # })
-    # 
-    # output$map <- renderLeaflet({
-    #   # shp <- tract.shape %>% 
-    #   #   filter(census_year == 2010)
-    #   # 
-    #   # d <- create_tenure_tract_table()
-    #   # 
-    #   # y <- create_tenure_tract_map(table = d, 
-    #   #                              shape_tract = shp, 
-    #   #                              shape_place = map_data())
-    # })
+      create_cost_burden_tract_map(table = d, tenure_type = "Renter", shape_tract = shp, shape_place = map_data())
+    })
+    
+    output$o_map <- renderLeaflet({
+      shp <- tract.shape %>%
+        filter(census_year == 2010)
+      
+      d <- create_cost_burden_tract_table()
+      
+      create_cost_burden_tract_map(table = d, tenure_type = "Owner", shape_tract = shp, shape_place = map_data())
+    })
     
     
   }) # end moduleServer
