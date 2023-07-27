@@ -26,12 +26,12 @@ create_cost_burden_tract_table <- function() {
                                 cost_burden ==  "not computed (no/negative income)", "Not Calculated",
                                 cost_burden == "All", "All")]
   
-  df[, race_ethnicity_grp := fcase(grepl("^American Indian ", race_ethnicity), "POC",
-                                   grepl("^Asian ", race_ethnicity), "POC",
-                                   grepl("^Black ", race_ethnicity), "POC",
+  df[, race_ethnicity_grp := fcase(grepl("^American Indian ", race_ethnicity), "People of Color",
+                                   grepl("^Asian ", race_ethnicity), "People of Color",
+                                   grepl("^Black ", race_ethnicity), "People of Color",
                                    grepl("^Hispanic, any race", race_ethnicity), "Hispanic or Latino (of any race)",
-                                   grepl("^other ", race_ethnicity), "POC",
-                                   grepl("^Pacific ", race_ethnicity), "POC",
+                                   grepl("^other ", race_ethnicity), "People of Color",
+                                   grepl("^Pacific ", race_ethnicity), "People of Color",
                                    grepl("^White ", race_ethnicity), "White",
                                    grepl("^All", race_ethnicity), "All")]
   
@@ -62,7 +62,7 @@ create_cost_burden_tract_map <- function(table, tenure_type = c("Owner", "Renter
   # Trim Tracts for current place
   shp_cut <- st_intersection(shape_tract_all, shape_place)
 
-  p <- shp_cut %>% filter(race_ethnicity_grp == 'POC')
+  p <- shp_cut %>% filter(race_ethnicity_grp == 'People of Color')
   h <- shp_cut %>% filter(grepl("^Hispanic", race_ethnicity_grp))
   
   # Determine Bins
@@ -77,7 +77,7 @@ create_cost_burden_tract_map <- function(table, tenure_type = c("Owner", "Renter
 
   ## Create Map ----
 
-  title <- tags$div(HTML("People of Color (POC) or Hispanic/Latino<br>", tenure_type, " Households by Census Tract"))
+  title <- tags$div(HTML("People of Color (POC) or Hispanic/Latino", tenure_type, " Households<br>with Cost-burden Greater than 30% by Census Tract"))
 
   shps <- list("People of Color (POC)" = p, "Hispanic/Latino" = h)
 
@@ -99,8 +99,8 @@ create_cost_burden_tract_map <- function(table, tenure_type = c("Owner", "Renter
   ### add layers ----
 
   for(s in 1:length(shps)){
-    labels <- paste0("<b>Tract ", shps[[s]]$geoid,"</b>", "<br>", shps[[s]]$race_ethnicity_grp,"<br>",
-                     shps[[s]]$tenure,": ",
+    labels <- paste0("<b>Tract ", shps[[s]]$geoid,"</b>", "<br>", shps[[s]]$race_ethnicity_grp, ", ",
+                     str_to_lower(shps[[s]]$tenure),"<br>(cost-burden >30%): ",
                      label_percent(accuracy = 0.1, suffix = "%")(shps[[s]]$share)) %>%
       lapply(htmltools::HTML)
 
