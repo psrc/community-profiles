@@ -124,17 +124,6 @@ rdi_cost_burden_server <- function(id, shape, place) {
       return(list(r = rdfs, o = odfs))
     })
 
-    table_data <- reactive({
-      # data in wide for display in table
-
-      # region <- data()$region %>%
-      #   select(description, renter_occupied, owner_occupied, ends_with('share')) %>%
-      #   rename_with(~paste0(.x, '_reg'))
-      #
-      # d <- left_join(data()$place, region, by = c('description' = 'description_reg')) %>%
-      #   select(description, renter_occupied, owner_occupied, ends_with('share'), ends_with('reg'))
-    })
-
     plot_data <- reactive({
       # data (shares) for renter and owner in long form for plotting
 
