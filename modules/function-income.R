@@ -45,7 +45,7 @@ create_income_table <- function(juris = c('place', 'region')) {
                    str_subset(unique(df$race_ethnicity_grp), "^Black.*"),
                    str_subset(unique(df$race_ethnicity_grp), "^Pacific.*"),
                    str_subset(unique(df$race_ethnicity_grp), "^Other.*"),
-                   'People of Color',
+                   'POC',
                    str_subset(unique(df$race_ethnicity_grp), "^Hispanic.*"),
                    str_subset(unique(df$race_ethnicity_grp), "^White.*"),
                    'All Races')
@@ -66,7 +66,7 @@ create_income_table <- function(juris = c('place', 'region')) {
                           by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp')]
   
   # sum POC (totals & by income group)
-  poc <- df_sum[!race_ethnicity_grp %in% c('All Races', 'White', str_subset(race_ethnicity_grp, "^H.*")), .(estimate = sum(estimate), race_ethnicity_grp = 'People of Color'), 
+  poc <- df_sum[!race_ethnicity_grp %in% c('All Races', 'White', str_subset(race_ethnicity_grp, "^H.*")), .(estimate = sum(estimate), race_ethnicity_grp = 'POC'), 
                 by = c('chas_year', 'geography_name', 'tenure', 'income_grp')]
   
   tot_poc <- poc[, .(estimate = sum(estimate), income_grp = 'All'), by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp') ]
@@ -94,4 +94,15 @@ create_income_table <- function(juris = c('place', 'region')) {
   df_shr <- dcast.data.table(df_join, chas_year + geography_name + tenure + income_grp ~ race_ethnicity_grp, value.var = 'share')
   
   return(list(e = df_est, s = df_shr))
+}
+
+create_dt_income <- function(table, container, source) {
+  datatable(table,
+            container = container,
+            rownames = FALSE,
+            options = list(columnDefs = list(list(className = 'dt-center', targets = 1:8))),
+            caption = htmltools::tags$caption(
+              style = 'caption-side: bottom; text-align: right;',
+              htmltools::em(source)
+            ))
 }

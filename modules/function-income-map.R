@@ -2,7 +2,7 @@
 # library(data.table)
 # source('modules/function-query-sqlite-chas.R')
 
-create_income_table_tract <- function() {
+create_income_tract_table <- function() {
   # Generate tract level table for RDI Income metric. To be used in tract map.
   
   # gather T1 table
@@ -140,7 +140,7 @@ create_income_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
 # pl <- community.shape %>%
 #   filter(geog_name == 'Bellevue')
 # 
-# x <- create_income_table_tract()
+# x <- create_income_tract_table()
 # 
 # create_income_tract_map(table = x, tenure_type = "Renter", shape_tract = shp, shape_place = pl)
 # create_income_tract_map(table = x, tenure_type = "Owner", shape_tract = shp, shape_place = pl)

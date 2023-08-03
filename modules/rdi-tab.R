@@ -16,6 +16,7 @@ rdi_tab_ui <- function(id) {
       tabsetPanel(id = ns('tabset'),
                   rdi_cost_burden_ui(ns('costburden')),
                   rdi_rentaff_ui(ns('rentaff')),
+                  rdi_income_ui(ns('income')),
                   rdi_tenure_ui(ns('tenure')),
                   
                   
@@ -44,6 +45,11 @@ rdi_tab_server <- function(id, shape, place) {
     rdi_cost_burden_server('costburden',
                            shape = shape,
                            place = reactive(place())
+    )
+    
+    rdi_income_server('income',
+                      shape = shape,
+                      place = reactive(place())
     )
     
   }) # end moduleServer
