@@ -45,12 +45,13 @@ shinyUI(
                                              icon("briefcase"),"Job & Income Measures", br(),
                                              icon("car"),"Transportation Measures", br(),
                                              icon("wrench"),"Transportation Projects", br(),br(),
-                                             "*Data measures to support analysis of racially disparate impacts are pulled from HUD’s Comprehensive Housing Affordability Strategy (CHAS) dataset."
+                                             p("*Data measures to support analysis of racially disparate impacts are pulled from HUD’s 
+                                               Comprehensive Housing Affordability Strategy (CHAS) dataset.", style = "font-size: 10pt;")
                                       ),
                                       column(width=5, leafletOutput("place_map"))),
                                     hr(),
-                                    fluidRow("Click on the icon at the top of the page that corresponds to the metrics that you are interested in and you will get access to those measures. If you have any questions about the data or are curious what else we might have, please click",
-                                             tags$a(class = "source_url", href="https://www.psrc.org/contact-center/have-question?contact=9626&destination=node/9362&width=75%25&height=75%25&subject=Planning%20for%20Equity", "here", target="_blank")," and we will be happy to help.")
+                                    # original 'footer' here
+                                    
                            ), # end of Overview tabset panel
                            
                            tabPanel(icon("users"),
@@ -341,9 +342,14 @@ shinyUI(
                                     br(),
                                     "Vehicles Available: Data Profile 4 (DP04)",
                                     br()
-                           ) # end of Data tabset panel
+                           ), # end of Data tabset panel
                            
-                           
+                           footer = p("Click on the icon at the top of the page that corresponds to the metrics that you are interested in 
+                                      and you will get access to those measures. 
+                                      If you have any questions about the data or are curious what else we might have, please click",
+                                    tags$a(class = "source_url", href="https://www.psrc.org/contact/information-center", "here", target="_blank"),
+                                    " and we will be happy to help.",
+                                    style = "font-size: 10pt;")
                 ) # end of NavBar Page
       ) # end of main panel
     ) # end of sidebar layout

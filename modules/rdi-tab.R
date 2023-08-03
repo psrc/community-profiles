@@ -18,12 +18,17 @@ rdi_tab_ui <- function(id) {
                   rdi_rentaff_ui(ns('rentaff')),
                   rdi_income_ui(ns('income')),
                   rdi_tenure_ui(ns('tenure')),
+                  footer = p("Race and Hispanic/Latinx origin are reported as overlapping categories in CHAS data metrics. For more information, 
+         see the following resources on the US Census Bureau’s website:", tags$a(href="https://www.census.gov/topics/population/race/about.html", "About the Topic of Race"), "and", 
+         tags$a(href="https://www.census.gov/topics/population/hispanic-origin/about.html", "About the Hispanic Population and its Origin"), 
+         style = "font-size: 10pt; margin-top: 2rem;")
                   
                   
       ) # end tabsetPanel
     )
-    
+
   ) # end div
+  
   
 }
 
