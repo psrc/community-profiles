@@ -127,17 +127,17 @@ rdi_income_server <- function(id, shape, place) {
     plot_data <- reactive({
       # data (shares) for renter and owner in long form for plotting
       
-      dfs <- map(data(), ~.x[['s']])
-      
-      pivot_table_longer <- function(table) {
-        # table %>% 
-        #   filter(description %in% c(str_subset(description, "^Total.*"))) %>%
-        #   pivot_longer(cols = setdiff(colnames(table), c(vals$exc_cols, 'description')),
-        #                names_to = 'race_ethnicity',
-        #                values_to = 'value')
-      }
-      
-      dfs_share <- map(dfs, ~pivot_table_longer(.x))
+      # dfs <- map(data(), ~.x[['s']])
+      # # browser()
+      # pivot_table_longer <- function(table) {
+      #   # table %>% 
+      #   #   filter(!(income_grp %in% c(str_subset(income_grp, "All")))) %>%
+      #   #   pivot_longer(cols = setdiff(colnames(table), c(vals$exc_cols, 'description')),
+      #   #                names_to = 'race_ethnicity',
+      #   #                values_to = 'value')
+      # }
+      # 
+      # dfs_share <- map(dfs, ~pivot_table_longer(.x))
     })
     
     plot_clean_data <- reactive({
@@ -225,20 +225,20 @@ rdi_income_server <- function(id, shape, place) {
     output$o_e_table <- renderDT({
       # Owner Estimate table display
       
-      # exc_cols <- vals$exc_cols
-      # d <- data()$o$e[,!..exc_cols]
-      # 
-      # create_dt_income(table = d, container = container(), source = vals$source)
+      exc_cols <- vals$exc_cols
+      d <- data()$o$e[,!..exc_cols]
+
+      create_dt_income(table = d, container = container(), source = vals$source)
     })
     
     output$o_s_table <- renderDT({
       # Owner Share table display
-      # 
-      # exc_cols <- vals$exc_cols
-      # d <- data()$o$s[,!..exc_cols]
-      # 
-      # create_dt_income(table = d, container = container(), source = vals$source) %>%
-      #   formatPercentage(2:10, 1)
+
+      exc_cols <- vals$exc_cols
+      d <- data()$o$s[,!..exc_cols]
+
+      create_dt_income(table = d, container = container(), source = vals$source) %>%
+        formatPercentage(2:9, 1)
     })
     
     output$o_plot <- renderEcharts4r({

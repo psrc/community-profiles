@@ -32,7 +32,7 @@ create_income_table <- function(juris = c('place', 'region')) {
                                        grepl("^Hispanic, any race", race_ethnicity), "Hispanic or Latino (of any race)",
                                        grepl("^Pacific ", race_ethnicity), "Pacific Islander",
                                        grepl("^White ", race_ethnicity), "White",
-                                       grepl("^All", race_ethnicity), "All Races")]
+                                       grepl("^All", race_ethnicity), "Total")]
   
   # exclude high level totals
   df <- dfs$T1[!(sort %in% c(1, 2, 75)),]
@@ -48,7 +48,7 @@ create_income_table <- function(juris = c('place', 'region')) {
                    'POC',
                    str_subset(unique(df$race_ethnicity_grp), "^Hispanic.*"),
                    str_subset(unique(df$race_ethnicity_grp), "^White.*"),
-                   'All Races')
+                   'Total')
   
   df[, race_ethnicity_grp := factor(race_ethnicity_grp, levels = race_levels)]
   
@@ -62,13 +62,13 @@ create_income_table <- function(juris = c('place', 'region')) {
   df_sum <- df[, .(estimate = sum(estimate)), by = c('chas_year', 'geography_name', 'tenure', 'income_grp', 'race_ethnicity_grp')]
   
   # sum each race/ethnicity/POC
-  tot_resp_race <- df_sum[income_grp != 'All' & race_ethnicity_grp != 'All Races', .(estimate = sum(estimate), income_grp = 'All'), 
+  tot_resp_race <- df_sum[income_grp != 'All' & race_ethnicity_grp != 'Total', .(estimate = sum(estimate), income_grp = 'All'), 
                           by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp')]
   
   # sum POC (totals & by income group)
-  poc <- df_sum[!race_ethnicity_grp %in% c('All Races', 'White', str_subset(race_ethnicity_grp, "^H.*")), .(estimate = sum(estimate), race_ethnicity_grp = 'POC'), 
+  poc <- df_sum[!race_ethnicity_grp %in% c('Total', str_subset(race_ethnicity_grp, "^[H|W].*")), .(estimate = sum(estimate), race_ethnicity_grp = 'POC'),
                 by = c('chas_year', 'geography_name', 'tenure', 'income_grp')]
-  
+
   tot_poc <- poc[, .(estimate = sum(estimate), income_grp = 'All'), by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp') ]
   
   # combine
@@ -79,7 +79,7 @@ create_income_table <- function(juris = c('place', 'region')) {
   setnames(denom, 'estimate', 'denom')
   denom[, income_grp:= NULL]
   
-  all <- df_all[income_grp == 'All' & race_ethnicity_grp == 'All Races', ][, income_grp := NULL]
+  all <- df_all[income_grp == 'All' & race_ethnicity_grp == 'Total', ][, income_grp := NULL]
   setnames(all, 'estimate', 'denom')
   denom <- rbindlist(list(denom, all))
   
