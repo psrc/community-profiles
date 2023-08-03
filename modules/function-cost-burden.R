@@ -100,7 +100,8 @@ create_dt_cost_burden <- function(table, container, source) {
   datatable(table,
             container = container,
             rownames = FALSE,
-            options = list(columnDefs = list(list(className = 'dt-center', targets = 1:9))),
+            options = list(dom = 'tipr',
+                           columnDefs = list(list(className = 'dt-center', targets = 1:9))),
             caption = htmltools::tags$caption(
               style = 'caption-side: bottom; text-align: right;',
               htmltools::em(source)

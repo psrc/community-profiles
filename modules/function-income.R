@@ -100,7 +100,8 @@ create_dt_income <- function(table, container, source) {
   datatable(table,
             container = container,
             rownames = FALSE,
-            options = list(columnDefs = list(list(className = 'dt-center', targets = 1:8))),
+            options = list(dom = 'tipr',
+                           columnDefs = list(list(className = 'dt-center', targets = 1:8))),
             caption = htmltools::tags$caption(
               style = 'caption-side: bottom; text-align: right;',
               htmltools::em(source)
