@@ -127,31 +127,31 @@ rdi_income_server <- function(id, shape, place) {
     plot_data <- reactive({
       # data (shares) for renter and owner in long form for plotting
       
-      # dfs <- map(data(), ~.x[['s']])
-      # # browser()
-      # pivot_table_longer <- function(table) {
-      #   # table %>% 
-      #   #   filter(!(income_grp %in% c(str_subset(income_grp, "All")))) %>%
-      #   #   pivot_longer(cols = setdiff(colnames(table), c(vals$exc_cols, 'description')),
-      #   #                names_to = 'race_ethnicity',
-      #   #                values_to = 'value')
-      # }
-      # 
-      # dfs_share <- map(dfs, ~pivot_table_longer(.x))
+      dfs <- map(data(), ~.x[['s']])
+      # browser()
+      pivot_table_longer <- function(table) {
+      table %>%
+        filter(!(income_grp %in% c(str_subset(income_grp, "All")))) %>%
+        pivot_longer(cols = setdiff(colnames(table), c(vals$exc_cols, 'income_grp')),
+                     names_to = 'race_ethnicity',
+                     values_to = 'value')
+      }
+
+      dfs_share <- map(dfs, ~pivot_table_longer(.x))
     })
     
     plot_clean_data <- reactive({
       # munge long form data (shares) for renter and owner for plotting
       
       filter_set_levels <- function(table) {
-        # df <- table %>% 
-        #   filter(!race_ethnicity %in% c('POC', 'Total'))
-        # 
-        # desc_rev <- rev(unique(df$race_ethnicity))
-        # 
-        # df %>% 
-        #   mutate(race_ethnicity = factor(race_ethnicity, levels = desc_rev)) %>%
-        #   arrange(race_ethnicity)
+        df <- table %>%
+          filter(!race_ethnicity %in% c('POC', 'Total'))
+
+        desc_rev <- rev(unique(df$race_ethnicity))
+
+        df %>%
+          mutate(race_ethnicity = factor(race_ethnicity, levels = desc_rev)) %>%
+          arrange(race_ethnicity)
       }
       
       dfs <- map(plot_data(), ~filter_set_levels(.x))
@@ -205,6 +205,36 @@ rdi_income_server <- function(id, shape, place) {
     })
     
     output$r_plot <- renderEcharts4r({
+      
+      js <- "function(params, ticket, callback) {
+                                           var fmt = new Intl.NumberFormat('en', {\"style\":\"percent\",\"minimumFractionDigits\":1,\"maximumFractionDigits\":1,\"currency\":\"USD\"});\n
+                                           var idx = 0;\n
+                                           if (params.name == params.value[0]) {\n
+                                           idx = 1;\n        }\n
+                                           return(params.marker + ' ' +\n
+                                                  params.seriesName + ': ' + fmt.format(parseFloat(params.value[idx]))
+                                                  )
+                                           }"
+      plot_clean_data()$r %>% 
+        mutate(race_ethnicity := str_wrap(race_ethnicity, 15)) %>% 
+        group_by(income_grp) %>% 
+        e_charts_(x = 'race_ethnicity', stack = 'grp') |>
+        e_bar_('value') |>
+        e_y_axis(splitNumber = 3,
+                 max = 1) |>
+        e_x_axis(axisLabel = list(interval = 0L),
+                 axisTick = list(alignWithLabel = TRUE)) |>
+        e_flip_coords() |>
+        e_grid(left = '15%', top = '10%') |>
+        e_title(text = 'Something',
+                left = 'center',
+                textStyle = list(fontSize = 12)) |>
+        e_color(psrc_colors$obgnpgy_5) |>
+        e_tooltip(formatter =  e_tooltip_item_formatter("percent", digits = 1)) |>
+        e_tooltip(formatter =  htmlwidgets::JS(js)) |>
+        e_x_axis(formatter = e_axis_formatter("percent", digits = 0)) |>
+        e_legend(show = TRUE, bottom=0)
+      
       
       # echart_rdi(data = plot_clean_data()$r,
       #            desc_col = race_ethnicity,
