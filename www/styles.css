@@ -1,29 +1,29 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap');
 
 body {
-  font-family: 'Open Sans Condensed', sans-serif;
-  font-size: 16pt;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12pt;
   color: black;
 }
 
 h1 {
   color: #00A7A0;
-  font-size: 32pt;
+  font-size: 28pt;
   margin-top: 5px;
 }
 
 h2 {
   color: #91268F;
-  font-size: 24pt;
+  font-size: 20pt;
 }
 
 h3 {
   color: #8CC63E;
-  font-size: 18pt;
+  font-size: 14pt;
 }
 
 .datatables {
-  font-size: 12pt; 
+  font-size: 10pt; 
 }
 
 #plot_race {
@@ -43,5 +43,5 @@ h3 {
 
 .source_url {
   color: #91268F;
-  font-size: 14pt;
+  font-weight: bold;
 }

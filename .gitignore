@@ -19,6 +19,7 @@
 
 # RStudio files
 .Rproj.user/
+rsconnect/
 
 # produced vignettes
 vignettes/*.html
@@ -38,6 +39,7 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
+*.db
 *.xlsx
 *.csv
 *.png
