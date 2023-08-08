@@ -9,7 +9,7 @@ rdi_tab_ui <- function(id) {
         Topics include racial disparities in Cost Burden, Rental Affordability, Income, and Tenure. 
         The data were collected from the", 
         tags$a(href="https://www.huduser.gov/portal/datasets/cp.html","Comprehensive Housing Affordability Strategy (CHAS) dataset", target = "_blank"), ".",  
-        "The People section of this dashboard includes a related measure for Race & Ethnicity. The Washington Department of Commerce has", tags$a(href="https://deptofcommerce.app.box.com/s/1l217l98jattb87qobtw63pkplzhxege", "published guidance", target = "_blank"), 
+        "The People section of this dashboard includes a related measure for", actionLink(ns("link_re"), "Race & Ethnicity"),". The Washington Department of Commerce has", tags$a(href="https://deptofcommerce.app.box.com/s/1l217l98jattb87qobtw63pkplzhxege", "published guidance", target = "_blank"), 
         "for jurisdictions looking to address racially disparate impacts in their comprehensive plan update."),
       p("Please allow at least 5 seconds for visuals to load.", style = "font-size: 10pt; margin-top: 2rem;")
     ),
