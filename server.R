@@ -5,6 +5,12 @@ shinyServer(function(input, output, session) {
                  shape = community.shape,
                  place = reactive({input$Place}))
   
+  # link from RDI to Race & Ethnicity tab in People/demographics
+  observeEvent(input$`rdi-link_re`, {
+    updateTabsetPanel(session, inputId = 'Navbar', selected = 'people')
+    updateTabsetPanel(session, inputId = 'tab_people', selected = 're')
+  })
+  
   ## This section is for all the high level stats that are displayed in the sidebar 
   
   output$Population <- renderText({

@@ -25,7 +25,7 @@ shinyUI(
                    width = 3),
       mainPanel(shinyjs::useShinyjs(), id ="Main", width = 9,
                 navbarPage(title = "", theme = "styles.css", windowTitle = "PSRC Community Profiles",
-                           
+                           id = "Navbar",
                            tabPanel(icon("city"),
                                     h1("Community Profiles"),
                                     "As a State Data Center for the central Puget Sound region, PSRC keeps a complete inventory of data released from the U.S. Census Bureau. ",
@@ -58,10 +58,11 @@ shinyUI(
                                     "The person level metrics on this page cover the topics of Age, Race & Ethnicity, Health Coverage and Disability Status. ",
                                     "Data Profile 2 (DP02) includes information on People with Disabilites within a community, DP03 includes information of people's access to health coverage and DP05 includes details on Age and Race & Ethnicity. ",
                                     "Data profiles are a summarization of a variety of Census Detailed Tables contained within the American Community Survey datasets and are a great resource for high level statistics for a community however detailed information requires the use of specific ACS tables.",
-                                    
+                                    value = 'people',
                                     tabsetPanel(
-                                      
+                                      id = 'tab_people',
                                       tabPanel("Age",
+                                               value = 'age',
                                                fluidRow(
                                                  column(width = 6, plotlyOutput("plot_age")),
                                                  column(width = 6, leafletOutput("age_map"))
@@ -72,6 +73,7 @@ shinyUI(
                                       ), # end of age tab panel
                                       
                                       tabPanel("Race & Ethnicity",
+                                               value = 're',
                                                fluidRow(
                                                  column(width = 6, plotlyOutput("plot_race")),
                                                  column(width = 6, leafletOutput("race_map"))
@@ -84,6 +86,7 @@ shinyUI(
                                       
                                       
                                       tabPanel("Health Coverage",
+                                               value = 'health',
                                                fluidRow(
                                                  column(width = 6, plotlyOutput("plot_health")),
                                                  column(width = 6, leafletOutput("health_map"))
@@ -94,6 +97,7 @@ shinyUI(
                                       ), # end of Health Coverage Tab Panel
                                       
                                       tabPanel("People with a Disability",
+                                               value = 'disability',
                                                fluidRow(
                                                  column(width = 6, plotlyOutput("plot_disability")),
                                                  column(width = 6, leafletOutput("disability_map"))
