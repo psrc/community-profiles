@@ -26,34 +26,9 @@ shinyUI(
       mainPanel(shinyjs::useShinyjs(), id ="Main", width = 9,
                 navbarPage(title = "", theme = "styles.css", windowTitle = "PSRC Community Profiles",
                            id = "Navbar",
-                           tabPanel(icon("city"),
-                                    h1("Community Profiles"),
-                                    "As a State Data Center for the central Puget Sound region, PSRC keeps a complete inventory of data released from the U.S. Census Bureau. ",
-                                    "Cities and counties use it to track the well-being of children, families, and the elderly as well as to determine where to locate new public facilities. ",
-                                    "This portal includes demographic profiles on a variety of topics for all cities and towns in the PSRC region.",
-                                    hr(),
-                                    fluidRow(
-                                      column(width=7, 
-                                             "The data  on this dashboard is a snapshot of the information that is available from the US Census Bureau. ",
-                                             "In order to view data for all the cities and towns in the Puget Sound region, we are limited to using American Community Survey (ACS) 5 year data. ",
-                                             "For this reason, you will only find two non-overlapping sets of data on this dashboard. ",
-                                             "By only including non-overlapping data, users can analyze the data for changing trends. ",
-                                             "The data on this dashboard is divided into six categories:",br(),br(),
-                                             icon("users"),"People Measures", br(),
-                                             icon("home"),"Household & Housing Measures", br(),
-                                             HTML(paste("<b>", "RDI", "</b>")), "Racially Disparate Impacts Measures*", br(),
-                                             icon("briefcase"),"Job & Income Measures", br(),
-                                             icon("car"),"Transportation Measures", br(),
-                                             icon("wrench"),"Transportation Projects", br(),br(),
-                                             p("*Data measures to support analysis of racially disparate impacts are pulled from HUD’s 
-                                               Comprehensive Housing Affordability Strategy (CHAS) dataset.", style = "font-size: 10pt;")
-                                      ),
-                                      column(width=5, leafletOutput("place_map"))),
-                                    hr(),
-                                    # original 'footer' here
-                                    
-                           ), # end of Overview tabset panel
                            
+                           home_tab_ui("home"),
+
                            tabPanel(icon("users"),
                                     "The person level metrics on this page cover the topics of Age, Race & Ethnicity, Health Coverage and Disability Status. ",
                                     "Data Profile 2 (DP02) includes information on People with Disabilites within a community, DP03 includes information of people's access to health coverage and DP05 includes details on Age and Race & Ethnicity. ",
@@ -159,7 +134,7 @@ shinyUI(
                                       
                                     ) # end of Housing tabset panel
                            ), # end of Housing Tab Panel
-                           ## Insert RDI module----
+
                            tabPanel("RDI",
                                     rdi_tab_ui("rdi")
                            ),
