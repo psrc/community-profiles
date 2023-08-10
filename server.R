@@ -1,6 +1,8 @@
 # Define server logic required to draw the map for the main panel
 shinyServer(function(input, output, session) {
   
+  ## RDI ----
+  
   rdi_tab_server("rdi", 
                  shape = community.shape,
                  place = reactive({input$Place}))
@@ -11,7 +13,7 @@ shinyServer(function(input, output, session) {
     updateTabsetPanel(session, inputId = 'tab_people', selected = 're')
   })
   
-  ## This section is for all the high level stats that are displayed in the sidebar 
+  ## This section is for all the high level stats that are displayed in the sidebar ----
   
   output$Population <- renderText({
     paste("Population: ", return_estimate(t=census_data, p=input$Place, y=input$Year, v="Population",val="estimate",d=-2))
@@ -63,25 +65,11 @@ shinyServer(function(input, output, session) {
     contentType = "application/Excel"
   )
   
-  ## This section is for all the data on the Main Overview Page 
+  ## This section is for all the data on the Main Overview Page ----
+
+  home_tab_server("home", place = reactive({input$Place}))
   
-  output$general_heading <- renderText({
-    paste(input$Place)
-  })
-  
-  output$place_map <- renderLeaflet({
-    leaflet() %>%
-      addTiles() %>%
-      addPolygons(data = community.shape %>% filter(geog_name %in% input$Place),
-                  fillColor = "76787A",
-                  weight = 4,
-                  opacity = 1.0,
-                  color = "#91268F",
-                  dashArray = "4",
-                  fillOpacity = 0.0)
-  })
-  
-  ## Age Tab Panel Information
+  ## Age Tab Panel Information ----
   
   output$table_age <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Age"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -91,7 +79,7 @@ shinyServer(function(input, output, session) {
   
   output$age_map <- renderLeaflet({create_tract_map(t=census_data, v="Age", y=input$Year, d.clr="Purples", p=input$Place, val="estimate", d.title="Median Age", dec=1)})
   
-  ## Race Tab Panel Information
+  ## Race Tab Panel Information ----
   
   output$table_race <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Race"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -101,7 +89,7 @@ shinyServer(function(input, output, session) {
   
   output$race_map <- renderLeaflet({create_tract_map(t=census_data, v="People-of-Color", y=input$Year, d.clr="Greens", p=input$Place, val="share", d.title="People of Color", dec=1, f=100, s="%")})
   
-  ## Health Insurance Tab Panel Information
+  ## Health Insurance Tab Panel Information ----
   
   output$table_health <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Health Coverage"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -111,7 +99,7 @@ shinyServer(function(input, output, session) {
   
   output$health_map <- renderLeaflet({create_tract_map(t=census_data, v="Health-Insurance", y=input$Year, d.clr="Oranges", p=input$Place, val="share", d.title="No Health Coverage", dec=1, f=100, s="%")})
   
-  ## Disability Tab Panel Information
+  ## Disability Tab Panel Information ----
   
   output$table_disability <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Disability"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -122,7 +110,7 @@ shinyServer(function(input, output, session) {
   output$disability_map <- renderLeaflet({create_tract_map(t=census_data, v="Disabled", y=input$Year, d.clr="GnBu", p=input$Place, val="share", d.title="People with a Disability", dec=1, f=100, s="%")})
   
   
-  ## Housing Type Tab Panel Information
+  ## Housing Type Tab Panel Information ----
   
   output$table_housingtype <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Housing Type"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -132,7 +120,7 @@ shinyServer(function(input, output, session) {
   
   output$housingtype_map <- renderLeaflet({create_tract_map(t=census_data, v="Middle-Housing", y=input$Year, d.clr="Purples", p=input$Place, val="share", d.title="Medium Density Housing", dec=1, f=100, s="%")})
   
-  ## Home Value Tab Panel Information
+  ## Home Value Tab Panel Information ----
   
   output$table_homevalue <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Home Value"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -142,7 +130,7 @@ shinyServer(function(input, output, session) {
   
   output$homevalue_map <- renderLeaflet({create_tract_map(t=census_data, v="Home-Value", y=input$Year, d.clr="Greens", p=input$Place, val="estimate", d.title="Median Value", dec=0, f=1, s="", pre="$")})
   
-  ## Monthly Rent Tab Panel Information
+  ## Monthly Rent Tab Panel Information ----
   
   output$table_monthlyrent <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Monthly Rent"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -152,7 +140,7 @@ shinyServer(function(input, output, session) {
   
   output$monthlyrent_map <- renderLeaflet({create_tract_map(t=census_data, v="Rent", y=input$Year, d.clr="Oranges", p=input$Place, val="estimate", d.title="Median Rent", dec=0, f=1, s="", pre="$")})
   
-  ## Home Ownership Tab Panel Information
+  ## Home Ownership Tab Panel Information ----
   
   output$table_ownership <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Home Ownership"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -162,7 +150,7 @@ shinyServer(function(input, output, session) {
   
   output$ownership_map <- renderLeaflet({create_tract_map(t=census_data, v="Home-Owner", y=input$Year, d.clr="GnBu", p=input$Place, val="share", d.title="% Home Ownership", dec=1, f=100, s="%", pre="")})
   
-  ## Educational Attainment Tab Panel Information
+  ## Educational Attainment Tab Panel Information ----
   
   output$table_edu <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Educational Attainment"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -172,7 +160,7 @@ shinyServer(function(input, output, session) {
   
   output$edu_map <- renderLeaflet({create_tract_map(t=census_data, v="College-Degree", y=input$Year, d.clr="Purples", p=input$Place, val="share", d.title="College Degree", dec=1, f=100, s="%")})
   
-  ## Occupation Tab Panel Information
+  ## Occupation Tab Panel Information ----
   
   output$table_occupation <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Occupation"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -182,7 +170,7 @@ shinyServer(function(input, output, session) {
   
   output$occupation_map <- renderLeaflet({create_tract_map(t=census_data, v="Office", y=input$Year, d.clr="Greens", p=input$Place, val="share", d.title="% Office Workers", dec=1, f=100, s="%", pre="")})
   
-  ## Industry Tab Panel Information
+  ## Industry Tab Panel Information ----
   
   output$table_industry <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Industry"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -192,7 +180,7 @@ shinyServer(function(input, output, session) {
   
   output$industry_map <- renderLeaflet({create_tract_map(t=census_data, v="Retail-Accomodations", y=input$Year, d.clr="Oranges", p=input$Place, val="share", d.title="% Retail-Accom. Workers", dec=1, f=100, s="%", pre="")})
   
-  ## Income Tab Panel Information
+  ## Income Tab Panel Information ----
   
   output$table_income <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Household Income"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -202,7 +190,7 @@ shinyServer(function(input, output, session) {
   
   output$income_map <- renderLeaflet({create_tract_map(t=census_data, v="Income", y=input$Year, d.clr="GnBu", p=input$Place, val="estimate", d.title="Median HH Income", dec=0, f=1, s="", pre="$")})
   
-  ## Mode Share Tab Panel Information
+  ## Mode Share Tab Panel Information ----
   
   output$table_modes <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Mode Share"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -212,7 +200,7 @@ shinyServer(function(input, output, session) {
   
   output$modes_map <- renderLeaflet({create_tract_map(t=census_data, v="Non-Vehicle", y=input$Year, d.clr="Purples", p=input$Place, val="share", d.title="Non-Vehicle Modes to Work", dec=0, f=100, s="%", pre="")})
   
-  ## Travel Time Tab Panel Information
+  ## Travel Time Tab Panel Information ----
   
   output$table_time <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Travel Time"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -222,7 +210,7 @@ shinyServer(function(input, output, session) {
   
   output$time_map <- renderLeaflet({create_tract_map(t=census_data, v="Time", y=input$Year, d.clr="Greens", p=input$Place, val="estimate", d.title="Travel Time to Work", dec=1, f=1, s="", pre="")})
   
-  ## Travel Departure Time Tab Panel Information
+  ## Travel Departure Time Tab Panel Information ----
   
   output$table_depart <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Departure Time"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -232,7 +220,7 @@ shinyServer(function(input, output, session) {
   
   output$depart_map <- renderLeaflet({create_tract_map(t=census_data, v="AM-Peak", y=input$Year, d.clr="Oranges", p=input$Place, val="share", d.title="AM Peak Departure", dec=0, f=100, s="%", pre="")})
   
-  ## Vehicle Availability Tab Panel Information
+  ## Vehicle Availability Tab Panel Information ----
   
   output$table_vehicles <- DT::renderDataTable({
     datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Vehicle Availability"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
@@ -242,7 +230,7 @@ shinyServer(function(input, output, session) {
   
   output$vehicles_map <- renderLeaflet({create_tract_map(t=census_data, v="Zero-Car", y=input$Year, d.clr="GnBu", p=input$Place, val="share", d.title="Zero Car HH's", dec=1, f=100, s="%", pre="")})
   
-  ## TIP Tab Panel Information
+  ## TIP Tab Panel Information ----
   
   output$tip_map <- renderLeaflet({create_tip_map(p=input$Place, plan.yr="2021-2024 TIP", d.title="Transportation Improvement Program")})
   
@@ -250,7 +238,7 @@ shinyServer(function(input, output, session) {
     datatable(create_project_table(p=input$Place,i=projects.shape,f=final.nms,plan.yr="2021-2024 TIP"), rownames = FALSE, options = list(pageLength = 10, columnDefs = list(list(className = 'dt-center', targets = 4:6)))) %>% formatCurrency(currency.rtp , "$", digits = 0)
   })
   
-  ## RTP Tab Panel Information
+  ## RTP Tab Panel Information ----
   
   output$rtp_map <- renderLeaflet({create_rtp_map(p=input$Place, plan.yr=rtp.status, d.title="Regional Transportation Plan")})
   
