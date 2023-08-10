@@ -11,14 +11,14 @@ create_rental_affordability_table <- function(juris = c('place', 'region')) {
 
   # Assemble Table ----
   
-  desc <- c('Extremely Low Income (<30% AMI)', 
+  desc <- c('Extremely Low Income (≤30% AMI)', 
             'Very Low Income (30-50% AMI)', 
             'Low Income (50-80% AMI)', 
             'Moderate Income (80-100% AMI)', 
             'Greater than 100% of AMI', 
             'All')
   
-  desc2 <- c(desc[1:3], 'Greater than 80% of AMI', 'All')
+  desc2 <- c(desc[1:3], 'Greater than 80% AMI', 'All')
   
   # Table 8 
   t8_head <- c(69, 82, 95, 108, 121, 68)
@@ -50,7 +50,7 @@ create_rental_affordability_table <- function(juris = c('place', 'region')) {
   df <- rbindlist(ra_dfs)
   
   # aggregate two highest categories
-  df[description %in% c('Moderate Income (80-100% AMI)','Greater than 100% of AMI'), description := 'Greater than 80% of AMI']
+  df[description %in% c('Moderate Income (80-100% AMI)','Greater than 100% of AMI'), description := 'Greater than 80% AMI']
   df <- df[, .(estimate = sum(estimate)), by = c('chas_year', 'geography_name', 'col_desc', 'description')]
   
   ## Format Table ----

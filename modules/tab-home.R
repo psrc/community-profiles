@@ -1,4 +1,4 @@
-# Display UI for RDI tab
+# Display main overview page
 
 home_tab_ui <- function(id) {
   ns <- NS(id)
@@ -14,7 +14,7 @@ home_tab_ui <- function(id) {
   The data on this dashboard is divided into six categories:")
   
   note <- p("*Data measures to support analysis of racially disparate impacts are pulled from HUD’s
-                        Comprehensive Housing Affordability Strategy (CHAS) dataset.", style = "font-size: 10pt;")
+            Comprehensive Housing Affordability Strategy (CHAS) dataset.", style = "font-size: 10pt;")
   
   tabPanel(icon("city"),
            h1("Community Profiles"),
@@ -22,7 +22,7 @@ home_tab_ui <- function(id) {
            fluidRow(
              column(width=7,
                     body,
-                    icon("users"),"People Measures", br(),
+                    icon("users"),"People Measures",br(),
                     icon("home"),"Household & Housing Measures", br(),
                     HTML(paste("<b>", "RDI", "</b>")), "Racially Disparate Impacts Measures*", br(),
                     icon("briefcase"),"Job & Income Measures", br(),
@@ -45,13 +45,7 @@ home_tab_server <- function(id, place) {
   
   moduleServer(id, function(input, output, session) { 
     ns <- session$ns
-    
-    ## This section is for all the data on the Main Overview Page
-    
-    # output$general_heading <- renderText({
-    #   paste(input$Place)
-    # })
-    
+  
     output$place_map <- renderLeaflet({
       leaflet() %>%
         addTiles() %>%
