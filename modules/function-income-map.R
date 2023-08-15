@@ -66,7 +66,7 @@ create_income_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
   shp_cut <- st_intersection(shape_tract_all, shape_place)
   
   p <- shp_cut %>% filter(race_ethnicity_grp == 'People of Color')
-  h <- shp_cut %>% filter(grepl("^Hispanic", race_ethnicity_grp))
+  # h <- shp_cut %>% filter(grepl("^Hispanic", race_ethnicity_grp))
   
   # Determine Bins
   rng <- range(shp_cut$share)
@@ -80,9 +80,11 @@ create_income_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
   
   ## Create Map ----
   
-  title <- tags$div(HTML("People of Color (POC) or Hispanic/Latino", tenure_type, " Households<br>with Income less than 80% AMI by Census Tract"))
+  title <- tags$div(HTML(tenure_type, " Households At or Below 80% AMI by Census Tract - POC"))
   
-  shps <- list("People of Color (POC)" = p, "Hispanic/Latino" = h)
+  shps <- list("People of Color (POC)" = p#, 
+               # "Hispanic/Latino" = h
+               )
   
   m <- leaflet(data = shp_cut, options = leafletOptions(zoomControl=FALSE)) %>%
     addProviderTiles(providers$CartoDB.Positron) %>%
@@ -103,7 +105,7 @@ create_income_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
   
   for(s in 1:length(shps)){
     labels <- paste0("<b>Tract ", shps[[s]]$geoid,"</b>", "<br>", shps[[s]]$race_ethnicity_grp, ", ",
-                     str_to_lower(shps[[s]]$tenure),"<br>(Income <80%): ",
+                     str_to_lower(shps[[s]]$tenure),"<br>(Income ≤80%): ",
                      label_percent(accuracy = 0.1, suffix = "%")(shps[[s]]$share)) %>%
       lapply(htmltools::HTML)
     
