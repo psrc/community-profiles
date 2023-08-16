@@ -116,10 +116,44 @@ rdi_income_server <- function(id, shape, place) {
     data <- reactive({
       # pull (currently from SQLite) semi-prepped CHAS
       
-      dfs <- create_income_table(juris = 'place') 
+      p_dfs <- create_income_table(juris = 'place') 
+      r_dfs <- create_income_table(juris = 'region') 
+
+      p_dfs <- map(p_dfs, ~filter(.x, geography_name == place()))
       
-      rdfs <- map(dfs, ~filter(.x, geography_name == place() & tenure == 'Renter occupied'))
-      odfs <- map(dfs, ~filter(.x, geography_name == place() & tenure == 'Owner occupied'))
+      rdfs <- odfs <- list()
+      tables_list <- list(p = p_dfs, r = r_dfs)
+      
+      for(a_list in 1:length(tables_list)) {
+        # extract only renter data
+
+        d <- map(tables_list[[a_list]], ~filter(.x, tenure == 'Renter occupied'))
+        if(names(tables_list[a_list]) == 'p') {
+          names(d) <- paste0('p', names(d))
+          rdfs[[a_list]] <- d
+          
+        } else {
+          names(d) <- paste0('r', names(d))
+          rdfs[[a_list]] <- d
+        }
+      }
+      
+      for(a_list in 1:length(tables_list)) {
+        # extract only owner data
+
+        d <- map(tables_list[[a_list]], ~filter(.x, tenure == 'Owner occupied'))
+        if(names(tables_list[a_list]) == 'p') {
+          names(d) <- paste0('p', names(d))
+          odfs[[a_list]] <- d
+          
+        } else {
+          names(d) <- paste0('r', names(d))
+          odfs[[a_list]] <- d
+        }
+      }
+      
+      rdfs <- list_flatten(rdfs)
+      odfs <- list_flatten(odfs)
       
       return(list(r = rdfs, o = odfs))
     })
@@ -157,7 +191,7 @@ rdi_income_server <- function(id, shape, place) {
       dfs <- map(plot_data(), ~filter_set_levels(.x))
     })
     
-    place_name <- reactive({unique(data()$r$e$geography_name)})
+    place_name <- reactive({unique(data()$r$pe$geography_name)})
     
     map_data <- reactive({
       s <- shape %>% filter(geog_name == place())
@@ -166,15 +200,16 @@ rdi_income_server <- function(id, shape, place) {
     container <- reactive({
       # custom container for DT
       
-      selcols <- colnames(data()$r$e)[which(!(colnames(data()$r$e) %in% c('chas_year', 'geography_name', 'tenure', 'income_grp')))]
-      selcols <- str_replace_all(selcols, "POC", "People of Color (POC)")
+      selcols <- colnames(data()$r$pe)[which(!(colnames(data()$r$pe) %in% c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp')))]
+      selcols <- c(selcols, "All", "Up to 80% AMI")
       
       htmltools::withTags(table(
         class = 'display',
         thead(
           tr(
-            th(rowspan = 2, 'Income'),
-            th(class = 'dt-center', colspan = 9, place_name())
+            th(rowspan = 2, 'Race/Ethnicity'),
+            th(class = 'dt-center', colspan = 7, place_name()),
+            th(class = 'dt-center', colspan = 2, 'Region')
           ),
           tr(
             lapply(selcols, th)
@@ -188,8 +223,18 @@ rdi_income_server <- function(id, shape, place) {
     output$r_e_table <- renderDT({
       # Renter Estimate table display
       
-      exc_cols <- vals$exc_cols
-      d <- data()$r$e[,!..exc_cols]
+      dp <- data()$r[['pe']]
+      dr <- data()$r[['re']]
+     
+      exccols <- setdiff(colnames(dr), str_subset(colnames(dr), '.*\\(.*')) %>% 
+        setdiff(., str_subset(., '^G'))
+      
+      dr <- dr %>% 
+        select(all_of(exccols), -vals$exc_cols)
+      colnames(dr) <- paste0(colnames(dr), '_region')  
+      
+      d <- left_join(dp, dr, by = c('race_ethnicity_grp' = 'race_ethnicity_grp_region')) %>% 
+        select(-chas_year, -geography_name, -tenure)
 
       create_dt_income(table = d, container = container(), source = vals$source)
     })
@@ -197,29 +242,39 @@ rdi_income_server <- function(id, shape, place) {
     output$r_s_table <- renderDT({
       # Renter Share table display
       
-      exc_cols <- vals$exc_cols
-      d <- data()$r$s[,!..exc_cols]
+      dp <- data()$r[['ps']]
+      dr <- data()$r[['rs']]
+      
+      exccols <- setdiff(colnames(dr), str_subset(colnames(dr), '.*\\(.*')) %>% 
+        setdiff(., str_subset(., '^G'))
+      
+      dr <- dr %>% 
+        select(all_of(exccols), -vals$exc_cols)
+      colnames(dr) <- paste0(colnames(dr), '_region')  
+      
+      d <- left_join(dp, dr, by = c('race_ethnicity_grp' = 'race_ethnicity_grp_region')) %>% 
+        select(-chas_year, -geography_name, -tenure)
 
       create_dt_income(table = d, container = container(), source = vals$source) %>%
-        formatPercentage(2:9, 1)
+        formatPercentage(2:10, 1)
     })
     
     output$r_plot <- renderEcharts4r({
       
-      echart_rdi(data = plot_clean_data()$r,
-                 desc_col = race_ethnicity,
-                 str_wrap_num = 15,
-                 group = income_grp,
-                 x = 'race_ethnicity',
-                 y = 'value',
-                 ymax = 1,
-                 stack = 'grp',
-                 title = 'Renter Households',
-                 egrid_left = "15%")|>
-        e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
-        e_legend(bottom=0) |>
-        e_toolbox_feature("dataView") |>
-        e_toolbox_feature("saveAsImage")
+      # echart_rdi(data = plot_clean_data()$r,
+      #            desc_col = race_ethnicity,
+      #            str_wrap_num = 15,
+      #            group = income_grp,
+      #            x = 'race_ethnicity',
+      #            y = 'value',
+      #            ymax = 1,
+      #            stack = 'grp',
+      #            title = 'Renter Households',
+      #            egrid_left = "15%")|>
+      #   e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
+      #   e_legend(bottom=0) |>
+      #   e_toolbox_feature("dataView") |>
+      #   e_toolbox_feature("saveAsImage")
     })
     
     # Owner ----
@@ -227,8 +282,18 @@ rdi_income_server <- function(id, shape, place) {
     output$o_e_table <- renderDT({
       # Owner Estimate table display
       
-      exc_cols <- vals$exc_cols
-      d <- data()$o$e[,!..exc_cols]
+      dp <- data()$o[['pe']]
+      dr <- data()$o[['re']]
+      
+      exccols <- setdiff(colnames(dr), str_subset(colnames(dr), '.*\\(.*')) %>% 
+        setdiff(., str_subset(., '^G'))
+      
+      dr <- dr %>% 
+        select(all_of(exccols), -vals$exc_cols)
+      colnames(dr) <- paste0(colnames(dr), '_region')  
+      
+      d <- left_join(dp, dr, by = c('race_ethnicity_grp' = 'race_ethnicity_grp_region')) %>% 
+        select(-chas_year, -geography_name, -tenure)
 
       create_dt_income(table = d, container = container(), source = vals$source)
     })
@@ -236,29 +301,39 @@ rdi_income_server <- function(id, shape, place) {
     output$o_s_table <- renderDT({
       # Owner Share table display
 
-      exc_cols <- vals$exc_cols
-      d <- data()$o$s[,!..exc_cols]
+      dp <- data()$o[['ps']]
+      dr <- data()$o[['rs']]
+      
+      exccols <- setdiff(colnames(dr), str_subset(colnames(dr), '.*\\(.*')) %>% 
+        setdiff(., str_subset(., '^G'))
+      
+      dr <- dr %>% 
+        select(all_of(exccols), -vals$exc_cols)
+      colnames(dr) <- paste0(colnames(dr), '_region')  
+      
+      d <- left_join(dp, dr, by = c('race_ethnicity_grp' = 'race_ethnicity_grp_region')) %>% 
+        select(-chas_year, -geography_name, -tenure)
 
       create_dt_income(table = d, container = container(), source = vals$source) %>%
-        formatPercentage(2:9, 1)
+        formatPercentage(2:10, 1)
     })
     
     output$o_plot <- renderEcharts4r({
       
-      echart_rdi(data = plot_clean_data()$o,
-                 desc_col = race_ethnicity,
-                 str_wrap_num = 15,
-                 group = income_grp,
-                 x = 'race_ethnicity',
-                 y = 'value',
-                 ymax = 1,
-                 stack = 'grp',
-                 title = 'Owner Households',
-                 egrid_left = "15%")|>
-        e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
-        e_legend(bottom=0) |>
-        e_toolbox_feature("dataView") |>
-        e_toolbox_feature("saveAsImage")
+      # echart_rdi(data = plot_clean_data()$o,
+      #            desc_col = race_ethnicity,
+      #            str_wrap_num = 15,
+      #            group = income_grp,
+      #            x = 'race_ethnicity',
+      #            y = 'value',
+      #            ymax = 1,
+      #            stack = 'grp',
+      #            title = 'Owner Households',
+      #            egrid_left = "15%")|>
+      #   e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
+      #   e_legend(bottom=0) |>
+      #   e_toolbox_feature("dataView") |>
+      #   e_toolbox_feature("saveAsImage")
       
     })
     

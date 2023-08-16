@@ -1,6 +1,6 @@
 # Function to assemble Income table
 
-source('modules/function-query-sqlite-chas.R')
+# source('modules/function-query-sqlite-chas.R')
 
 create_income_table <- function(juris = c('place', 'region')) {
   
@@ -13,7 +13,7 @@ create_income_table <- function(juris = c('place', 'region')) {
             'Very Low-Income (30-50%)',
             'Low-Income (50-80%)',
             'Moderate Income (80-100%)',
-            'Greater than 100% AMI)',
+            'Greater than 100% AMI',
             'All')
   
   cols <- c('variable_name', 'sort','chas_year', 'geography_name', 'estimate', 'moe',  'tenure',
@@ -24,7 +24,7 @@ create_income_table <- function(juris = c('place', 'region')) {
                                household_income == 'greater than 30% but less than or equal to 50% of HAMFI', 'Very Low-Income (30-50%)',
                                household_income == 'greater than 50% but less than or equal to 80% of HAMFI', 'Low-Income (50-80%)',
                                household_income == 'greater than 80% but less than or equal to 100% of HAMFI', 'Moderate Income (80-100%)',
-                               household_income == 'greater than 100% of HAMFI', 'Greater than 100% AMI)')]
+                               household_income == 'greater than 100% of HAMFI', 'Greater than 100% AMI')]
   
   dfs$T1[, race_ethnicity_grp := fcase(grepl("^American Indian ", race_ethnicity), "American Indian or Alaskan Native",
                                        grepl("^Asian ", race_ethnicity), "Asian",
@@ -117,14 +117,14 @@ create_income_table <- function(juris = c('place', 'region')) {
   return(list(e = df_est, s = df_shr))
 }
 
-x <- create_income_table(juris = 'place')
+# x <- create_income_table(juris = 'region')
 
 create_dt_income <- function(table, container, source) {
   datatable(table,
             container = container,
             rownames = FALSE,
             options = list(dom = 'tipr',
-                           columnDefs = list(list(className = 'dt-center', targets = 1:8))),
+                           columnDefs = list(list(className = 'dt-center', targets = 1:9))),
             caption = htmltools::tags$caption(
               style = 'caption-side: bottom; text-align: right;',
               htmltools::em(source)
