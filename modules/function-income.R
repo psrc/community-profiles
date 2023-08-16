@@ -111,9 +111,6 @@ create_income_table <- function(juris = c('place', 'region')) {
   df_est <- dcast.data.table(df_join, chas_year + geography_name + tenure + race_ethnicity_grp ~ income_grp, value.var = 'estimate')
   df_shr <- dcast.data.table(df_join, chas_year + geography_name + tenure + race_ethnicity_grp ~ income_grp, value.var = 'share')
   
-  # df_est <- dcast.data.table(df_join, chas_year + geography_name + tenure + income_grp ~ race_ethnicity_grp, value.var = 'estimate')
-  # df_shr <- dcast.data.table(df_join, chas_year + geography_name + tenure + income_grp ~ race_ethnicity_grp, value.var = 'share')
-  
   return(list(e = df_est, s = df_shr))
 }
 

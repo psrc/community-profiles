@@ -218,23 +218,24 @@ rdi_income_server <- function(id, shape, place) {
       ))
     })
     
+    prep_income_table <- function(place_table, regional_table) {
+      exccols <- setdiff(colnames(regional_table), str_subset(colnames(regional_table), '.*\\(.*')) %>% 
+        setdiff(., str_subset(., '^G'))
+      
+      dr <- regional_table %>% 
+        select(all_of(exccols), -vals$exc_cols)
+      colnames(dr) <- paste0(colnames(dr), '_region')  
+      
+      d <- left_join(place_table, dr, by = c('race_ethnicity_grp' = 'race_ethnicity_grp_region')) %>% 
+        select(-chas_year, -geography_name, -tenure)
+    }
+    
     # Renter ----
     
     output$r_e_table <- renderDT({
       # Renter Estimate table display
-      
-      dp <- data()$r[['pe']]
-      dr <- data()$r[['re']]
-     
-      exccols <- setdiff(colnames(dr), str_subset(colnames(dr), '.*\\(.*')) %>% 
-        setdiff(., str_subset(., '^G'))
-      
-      dr <- dr %>% 
-        select(all_of(exccols), -vals$exc_cols)
-      colnames(dr) <- paste0(colnames(dr), '_region')  
-      
-      d <- left_join(dp, dr, by = c('race_ethnicity_grp' = 'race_ethnicity_grp_region')) %>% 
-        select(-chas_year, -geography_name, -tenure)
+
+      d <- prep_income_table(data()$r[['pe']], data()$r[['re']])
 
       create_dt_income(table = d, container = container(), source = vals$source)
     })
@@ -242,18 +243,7 @@ rdi_income_server <- function(id, shape, place) {
     output$r_s_table <- renderDT({
       # Renter Share table display
       
-      dp <- data()$r[['ps']]
-      dr <- data()$r[['rs']]
-      
-      exccols <- setdiff(colnames(dr), str_subset(colnames(dr), '.*\\(.*')) %>% 
-        setdiff(., str_subset(., '^G'))
-      
-      dr <- dr %>% 
-        select(all_of(exccols), -vals$exc_cols)
-      colnames(dr) <- paste0(colnames(dr), '_region')  
-      
-      d <- left_join(dp, dr, by = c('race_ethnicity_grp' = 'race_ethnicity_grp_region')) %>% 
-        select(-chas_year, -geography_name, -tenure)
+      d <- prep_income_table(data()$r[['ps']], data()$r[['rs']])
 
       create_dt_income(table = d, container = container(), source = vals$source) %>%
         formatPercentage(2:10, 1)
@@ -282,18 +272,7 @@ rdi_income_server <- function(id, shape, place) {
     output$o_e_table <- renderDT({
       # Owner Estimate table display
       
-      dp <- data()$o[['pe']]
-      dr <- data()$o[['re']]
-      
-      exccols <- setdiff(colnames(dr), str_subset(colnames(dr), '.*\\(.*')) %>% 
-        setdiff(., str_subset(., '^G'))
-      
-      dr <- dr %>% 
-        select(all_of(exccols), -vals$exc_cols)
-      colnames(dr) <- paste0(colnames(dr), '_region')  
-      
-      d <- left_join(dp, dr, by = c('race_ethnicity_grp' = 'race_ethnicity_grp_region')) %>% 
-        select(-chas_year, -geography_name, -tenure)
+      d <- prep_income_table(data()$o[['pe']], data()$o[['re']])
 
       create_dt_income(table = d, container = container(), source = vals$source)
     })
@@ -301,18 +280,7 @@ rdi_income_server <- function(id, shape, place) {
     output$o_s_table <- renderDT({
       # Owner Share table display
 
-      dp <- data()$o[['ps']]
-      dr <- data()$o[['rs']]
-      
-      exccols <- setdiff(colnames(dr), str_subset(colnames(dr), '.*\\(.*')) %>% 
-        setdiff(., str_subset(., '^G'))
-      
-      dr <- dr %>% 
-        select(all_of(exccols), -vals$exc_cols)
-      colnames(dr) <- paste0(colnames(dr), '_region')  
-      
-      d <- left_join(dp, dr, by = c('race_ethnicity_grp' = 'race_ethnicity_grp_region')) %>% 
-        select(-chas_year, -geography_name, -tenure)
+      d <- prep_income_table(data()$o[['ps']], data()$o[['rs']])
 
       create_dt_income(table = d, container = container(), source = vals$source) %>%
         formatPercentage(2:10, 1)
