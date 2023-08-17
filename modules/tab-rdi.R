@@ -8,10 +8,10 @@ rdi_tab_ui <- function(id) {
       p("The housing and household level metrics on this page can be used to support analyses of racially disparate impacts (RDI) within a local jurisdiction or community. 
         Topics include racial disparities in Cost Burden, Rental Affordability, Income, and Tenure. 
         The data were drawn from HUD's", 
-        tags$a(href="https://www.huduser.gov/portal/datasets/cp.html","Comprehensive Housing Affordability Strategy (CHAS) dataset", target = "_blank"), ",", 
+        tags$a(href="https://www.huduser.gov/portal/datasets/cp.html","Comprehensive Housing Affordability Strategy (CHAS) dataset,", target = "_blank"), 
         " a custom American Community Survey data product. 
         The People section of this dashboard includes a related measure for", actionLink(ns("link_re"), "Race & Ethnicity"),". Additional
-        housing measures are also available in the Households & Housing section. The Washington Department of Commerce has", tags$a(href="https://deptofcommerce.app.box.com/s/1l217l98jattb87qobtw63pkplzhxege", "published guidance", target = "_blank"), 
+        housing measures are also available in the", actionLink(ns("link_hh"), "Households & Housing"),"section. The Washington Department of Commerce has", tags$a(href="https://deptofcommerce.app.box.com/s/1l217l98jattb87qobtw63pkplzhxege", "published guidance", target = "_blank"), 
         "for jurisdictions looking to address racially disparate impacts in their comprehensive plan update."),
       p("Please allow at least 5 seconds for visuals to load.", style = "font-size: 10pt; margin-top: 2rem;")
     ),
