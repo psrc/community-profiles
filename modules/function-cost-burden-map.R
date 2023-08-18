@@ -29,7 +29,7 @@ create_cost_burden_tract_table <- function() {
   df[, race_ethnicity_grp := fcase(grepl("^American Indian ", race_ethnicity), "People of Color",
                                    grepl("^Asian ", race_ethnicity), "People of Color",
                                    grepl("^Black ", race_ethnicity), "People of Color",
-                                   grepl("^Hispanic, any race", race_ethnicity), "Hispanic or Latino (of any race)",
+                                   grepl("^Hispanic, any race", race_ethnicity), "People of Color",
                                    grepl("^other ", race_ethnicity), "People of Color",
                                    grepl("^Pacific ", race_ethnicity), "People of Color",
                                    grepl("^White ", race_ethnicity), "White",
@@ -63,7 +63,7 @@ create_cost_burden_tract_map <- function(table, tenure_type = c("Owner", "Renter
   shp_cut <- st_intersection(shape_tract_all, shape_place)
 
   p <- shp_cut %>% filter(race_ethnicity_grp == 'People of Color')
-  h <- shp_cut %>% filter(grepl("^Hispanic", race_ethnicity_grp))
+  # h <- shp_cut %>% filter(grepl("^Hispanic", race_ethnicity_grp))
   
   # Determine Bins
   rng <- range(shp_cut$share)
@@ -77,9 +77,11 @@ create_cost_burden_tract_map <- function(table, tenure_type = c("Owner", "Renter
 
   ## Create Map ----
 
-  title <- tags$div(HTML("People of Color (POC) or Hispanic/Latino", tenure_type, " Households<br>with Cost-burden Greater than 30% by Census Tract"))
+  title <- tags$div(HTML("All Cost Burdened ", tenure_type, " Households - POC by Census Tract"))
 
-  shps <- list("People of Color (POC)" = p, "Hispanic/Latino" = h)
+  shps <- list("People of Color (POC)" = p
+               # , "Hispanic/Latino" = h
+               )
 
   m <- leaflet(data = shp_cut, options = leafletOptions(zoomControl=FALSE)) %>%
     addProviderTiles(providers$CartoDB.Positron) %>%
