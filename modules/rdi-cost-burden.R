@@ -116,48 +116,99 @@ rdi_cost_burden_server <- function(id, shape, place) {
     data <- reactive({
       # pull (currently from SQLite) semi-prepped CHAS
 
-      dfs <- create_cost_burden_table(juris = 'place') 
-
-      rdfs <- map(dfs, ~filter(.x, geography_name == place() & tenure == 'Renter occupied'))
-      odfs <- map(dfs, ~filter(.x, geography_name == place() & tenure == 'Owner occupied'))
+      p_dfs <- create_cost_burden_table(juris = 'place') 
+      r_dfs <- create_cost_burden_table(juris = 'region') 
       
+      p_dfs <- map(p_dfs, ~filter(.x, geography_name == place()))
+      
+      rdfs <- odfs <- list()
+      tables_list <- list(p = p_dfs, r = r_dfs)
+      
+      for(a_list in 1:length(tables_list)) {
+        # extract only renter data
+        
+        d <- map(tables_list[[a_list]], ~filter(.x, tenure == 'Renter occupied'))
+        if(names(tables_list[a_list]) == 'p') {
+          names(d) <- paste0('p', names(d))
+          rdfs[[a_list]] <- d
+          
+        } else {
+          names(d) <- paste0('r', names(d))
+          rdfs[[a_list]] <- d
+        }
+      }
+      
+      for(a_list in 1:length(tables_list)) {
+        # extract only owner data
+        
+        d <- map(tables_list[[a_list]], ~filter(.x, tenure == 'Owner occupied'))
+        if(names(tables_list[a_list]) == 'p') {
+          names(d) <- paste0('p', names(d))
+          odfs[[a_list]] <- d
+          
+        } else {
+          names(d) <- paste0('r', names(d))
+          odfs[[a_list]] <- d
+        }
+      }
+      
+      rdfs <- list_flatten(rdfs)
+      odfs <- list_flatten(odfs)
+     
       return(list(r = rdfs, o = odfs))
     })
 
     plot_data <- reactive({
       # data (shares) for renter and owner in long form for plotting
 
-      dfs <- map(data(), ~.x[['s']])
-      
-      pivot_table_longer <- function(table) {
-        table %>% 
-          filter(description %in% c(str_subset(description, "^Total.*"))) %>%
-          pivot_longer(cols = setdiff(colnames(table), c(vals$exc_cols, 'description')),
-                       names_to = 'race_ethnicity',
-                       values_to = 'value')
+      # extract only share tables
+      tables <- list()
+      d <- data()
+      for(i in 1:length(d)) {
+        x <- rbind(pluck(d[[i]], 'ps'), pluck(d[[i]], 'rs'))
+        tables[[i]] <- x
       }
+
+      # pivot longer & filter
+      tables <- map(tables, ~pivot_longer(.x, starts_with('Not')|contains('Cost'), names_to = 'cost_burden', values_to = 'share'))
+      tables <- map(tables, ~filter(.x, cost_burden == str_extract(unique(cost_burden), "Total Cost-Burdened")))
       
-      dfs_share <- map(dfs, ~pivot_table_longer(.x))
+      race_levels <- rev(unique(tables[[1]]$race_ethnicity))
+      tables <- map(tables, ~mutate(.x, race_ethnicity = factor(race_ethnicity, levels = race_levels)) %>% arrange(geography_name, race_ethnicity))
+      
+      return(list(r = tables[[1]], o = tables[[2]]))
+      
+      # dfs <- map(data(), ~.x[['s']])
+      # 
+      # pivot_table_longer <- function(table) {
+      #   table %>% 
+      #     filter(description %in% c(str_subset(description, "^Total.*"))) %>%
+      #     pivot_longer(cols = setdiff(colnames(table), c(vals$exc_cols, 'description')),
+      #                  names_to = 'race_ethnicity',
+      #                  values_to = 'value')
+      # }
+      # 
+      # dfs_share <- map(dfs, ~pivot_table_longer(.x))
     })
 
     plot_clean_data <- reactive({
       # munge long form data (shares) for renter and owner for plotting
 
-      filter_set_levels <- function(table) {
-        df <- table %>% 
-          filter(!race_ethnicity %in% c('POC', 'Total'))
-        
-        desc_rev <- rev(unique(df$race_ethnicity))
-        
-        df %>% 
-          mutate(race_ethnicity = factor(race_ethnicity, levels = desc_rev)) %>%
-          arrange(race_ethnicity)
-      }
-      
-      dfs <- map(plot_data(), ~filter_set_levels(.x))
+      # filter_set_levels <- function(table) {
+      #   df <- table %>%
+      #     filter(!race_ethnicity %in% c('POC', 'Total'))
+      # 
+      #   desc_rev <- rev(unique(df$race_ethnicity))
+      # 
+      #   df %>%
+      #     mutate(race_ethnicity = factor(race_ethnicity, levels = desc_rev)) %>%
+      #     arrange(race_ethnicity)
+      # }
+      # 
+      # dfs <- map(plot_data(), ~filter_set_levels(.x))
     })
     
-    place_name <- reactive({unique(data()$r$e$geography_name)})
+    place_name <- reactive({unique(data()$r$pe$geography_name)})
     
     map_data <- reactive({
       s <- shape %>% filter(geog_name == place())
@@ -166,52 +217,64 @@ rdi_cost_burden_server <- function(id, shape, place) {
     container <- reactive({
       # custom container for DT
       
-      selcols <- colnames(data()$r$e)[which(!(colnames(data()$r$e) %in% c('chas_year', 'geography_name', 'tenure', 'description')))]
-      selcols <- str_replace_all(selcols, "POC", "People of Color (POC)")
+      selcols <- colnames(data()$r$pe)[which(!(colnames(data()$r$pe) %in% c('chas_year', 'geography_name', 'tenure', 'race_ethnicity')))]
+      selcols <- c(selcols, "All", "Total Cost-Burdened")
       
       htmltools::withTags(table(
         class = 'display',
         thead(
           tr(
-            th(rowspan = 2, 'Cost Burden'),
-            th(class = 'dt-center', colspan = 9, place_name())
+            th(rowspan = 2, 'Race/Ethnicity'),
+            th(class = 'dt-center', colspan = 7, place_name()),
+            th(class = 'dt-center', colspan = 2, 'Region')
           ),
           tr(
             lapply(selcols, th)
           )
         )
       ))
+
     })
+    
+    prep_cost_burden_table <- function(place_table, regional_table) {
+      exccols <- setdiff(colnames(regional_table), str_subset(colnames(regional_table), '.*\\(.*')) %>% 
+        setdiff(., str_subset(., '^N.*'))
+      
+      dr <- regional_table %>% 
+        select(all_of(exccols), -vals$exc_cols)
+      colnames(dr) <- paste0(colnames(dr), '_region')  
+
+      d <- left_join(place_table, dr, by = c('race_ethnicity' = 'race_ethnicity_region')) %>% 
+        select(-chas_year, -geography_name, -tenure)
+    }
     
     # Renter ----
     
     output$r_e_table <- renderDT({
       # Renter Estimate table display
       
-      exc_cols <- vals$exc_cols
-      d <- data()$r$e[,!..exc_cols]
-      
+      d <- prep_cost_burden_table(data()$r[['pe']], data()$r[['re']])
+     
       create_dt_cost_burden(table = d, container = container(), source = vals$source)
     })
     
     output$r_s_table <- renderDT({
       # Renter Share table display
-
-      exc_cols <- vals$exc_cols
-      d <- data()$r$s[,!..exc_cols]
+      
+      d <- prep_cost_burden_table(data()$r[['ps']], data()$r[['rs']])
       
       create_dt_cost_burden(table = d, container = container(), source = vals$source) %>%
-        formatPercentage(2:10, 1)
+        formatPercentage(2:9, 1)
     })
 
     output$r_plot <- renderEcharts4r({
-      
-      echart_rdi(data = plot_clean_data()$r,
+
+      echart_rdi(data = plot_data()$r,
                  desc_col = race_ethnicity,
-                 str_wrap_num = 15,
-                 group = description,
+                 str_wrap_num = 20,
+                 group = geography_name,
                  x = 'race_ethnicity',
-                 y = 'value',
+                 y = 'share',
                  title = 'Renter Households',
                  egrid_left = "20%")|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
@@ -225,30 +288,28 @@ rdi_cost_burden_server <- function(id, shape, place) {
     output$o_e_table <- renderDT({
       # Owner Estimate table display
 
-      exc_cols <- vals$exc_cols
-      d <- data()$o$e[,!..exc_cols]
-
+      d <- prep_cost_burden_table(data()$o[['pe']], data()$o[['re']])
+      
       create_dt_cost_burden(table = d, container = container(), source = vals$source)
     })
 
     output$o_s_table <- renderDT({
       # Owner Share table display
 
-      exc_cols <- vals$exc_cols
-      d <- data()$o$s[,!..exc_cols]
-
+      d <- prep_cost_burden_table(data()$o[['ps']], data()$o[['rs']])
+      
       create_dt_cost_burden(table = d, container = container(), source = vals$source) %>%
-        formatPercentage(2:10, 1)
+        formatPercentage(2:9, 1)
     })
     
     output$o_plot <- renderEcharts4r({
       
-      echart_rdi(data = plot_clean_data()$o,
+      echart_rdi(data = plot_data()$o,
                  desc_col = race_ethnicity,
-                 str_wrap_num = 15,
-                 group = description,
+                 str_wrap_num = 20,
+                 group = geography_name,
                  x = 'race_ethnicity',
-                 y = 'value',
+                 y = 'share',
                  title = 'Owner Households',
                  egrid_left = "20%")|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
