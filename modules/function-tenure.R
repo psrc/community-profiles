@@ -49,7 +49,7 @@ create_tenure_table <- function(juris = c('place', 'region')) {
                               grepl("^All", description), "All")]
   
   ## Format Table ----
-  
+
   if(juris == 'region') {
     # aggregate counties to region
     
