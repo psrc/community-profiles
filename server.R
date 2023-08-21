@@ -13,6 +13,12 @@ shinyServer(function(input, output, session) {
     updateTabsetPanel(session, inputId = 'tab_people', selected = 're')
   })
   
+  # link from RDI to Households and Housing
+  observeEvent(input$`rdi-link_hh`, {
+    updateTabsetPanel(session, inputId = 'Navbar', selected = 'housing')
+    updateTabsetPanel(session, inputId = 'tab_housing', selected = 'units')
+  })
+  
   ## This section is for all the high level stats that are displayed in the sidebar ----
   
   output$Population <- renderText({

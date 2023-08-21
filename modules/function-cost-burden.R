@@ -32,7 +32,7 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
                                grepl("^Asian ", race_ethnicity), "Asian",
                                grepl("^Black ", race_ethnicity), "Black or African American",
                                grepl("^Hispanic, any race", race_ethnicity), "Hispanic or Latino (of any race)",
-                               grepl("^other ", race_ethnicity), "Other Race",
+                               grepl("^other ", race_ethnicity), "Other",
                                grepl("^Pacific ", race_ethnicity), "Pacific Islander",
                                grepl("^White ", race_ethnicity), "White",
                                grepl("^All", race_ethnicity), "All")]
@@ -59,7 +59,7 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
   tot <- df[, .(estimate = sum(estimate), race_ethnicity = 'Total'), by = c('geography_name', 'chas_year', 'tenure', 'cost_burden', 'description')]
 
   # poc (for column)
-  poc <- df[!(race_ethnicity %in% str_subset(unique(df$race_ethnicity), "^[W|H].*")), .(estimate = sum(estimate), race_ethnicity = 'POC'), 
+  poc <- df[!(race_ethnicity %in% str_subset(unique(df$race_ethnicity), "^[W].*")), .(estimate = sum(estimate), race_ethnicity = 'POC'), 
             by = c('geography_name', 'chas_year', 'tenure', 'cost_burden', 'description')]
 
   df <- rbindlist(list(df, poc, tot), use.names = TRUE, fill = TRUE)
@@ -69,10 +69,10 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
   race_levels <- c(str_subset(unique(df$race_ethnicity), "^American.*"),
                    str_subset(unique(df$race_ethnicity), "^Asian.*"),
                    str_subset(unique(df$race_ethnicity), "^Black.*"),
+                   str_subset(unique(df$race_ethnicity), "^Hispanic.*"),
                    str_subset(unique(df$race_ethnicity), "^Pacific.*"),
                    str_subset(unique(df$race_ethnicity), "^Other.*"),
                    'POC',
-                   str_subset(unique(df$race_ethnicity), "^Hispanic.*"),
                    str_subset(unique(df$race_ethnicity), "^White.*"),
                    'Total')
   
@@ -85,10 +85,12 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
   
   # calculate shares
   df[, share := estimate/estimate_denom]
+  df <- df[cost_burden != 'Total Not Cost-Burdened'
+           ][, race_ethnicity := str_replace_all(race_ethnicity, "POC", 'People of Color (POC)')]
   
   # calculate estimates
-  df_est <- dcast.data.table(df, chas_year + geography_name + tenure + description ~ race_ethnicity, value.var = 'estimate')
-  df_share <- dcast.data.table(df, chas_year + geography_name + tenure + description ~ race_ethnicity, value.var = 'share')
+  df_est <- dcast.data.table(df, chas_year + geography_name + tenure + race_ethnicity ~ description, value.var = 'estimate')
+  df_share <- dcast.data.table(df, chas_year + geography_name + tenure + race_ethnicity ~ description, value.var = 'share')
   df_share[is.na(df_share)] <- 0
   
   return(list(e = df_est, s = df_share))
@@ -101,7 +103,7 @@ create_dt_cost_burden <- function(table, container, source) {
             container = container,
             rownames = FALSE,
             options = list(dom = 'tipr',
-                           columnDefs = list(list(className = 'dt-center', targets = 1:9))),
+                           columnDefs = list(list(className = 'dt-center', targets = 1:8))),
             caption = htmltools::tags$caption(
               style = 'caption-side: bottom; text-align: right;',
               htmltools::em(source)

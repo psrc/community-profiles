@@ -63,12 +63,13 @@ rdi_rentaff_server <- function(id, shape, place) {
           rename_with(~paste0(.x, '_reg'))
         
       d <- left_join(data()$place, region, by = c('description' = 'description_reg')) %>% 
-        select(description, renter_hh_income, rental_units, ends_with('share'), ends_with('reg'))
+        select(description, renter_hh_income, rental_units, ends_with('share'), ends_with('reg')) %>% 
+        mutate(description = if_else(str_detect(description, '^Extremely.*'), 'Up to 30% AMI', description))
     })
     
     plot_data <- reactive({
       # data in long form for plotting
-      
+
       df <- bind_rows(data()) %>% 
         filter(description != 'All') %>% 
         select(chas_year, geography_name, description, ends_with('share')) %>% 
@@ -85,13 +86,13 @@ rdi_rentaff_server <- function(id, shape, place) {
       plot_data() %>% 
         mutate(type_desc = case_when(type == 'rental_units_share' ~ 'Rental Units', 
                                      type == 'renter_hh_income_share' ~ 'Households')) %>% 
-        mutate(description_short = case_when(description == 'Extremely Low Income (<30% AMI)' ~ '<30% AMI',
+        mutate(description_short = case_when(description == 'Extremely Low Income (≤30% AMI)' ~ '≤30% AMI',
                                              description == 'Very Low Income (30-50% AMI)' ~ '30-50% AMI',
                                              description == 'Low Income (50-80% AMI)' ~ '50-80% AMI',
-                                             description == 'Greater than 80% of AMI' ~ '> 80% AMI'
+                                             description == 'Greater than 80% AMI' ~ '> 80% AMI'
                                              ),
                geography_name = factor(geography_name, levels = geog)) %>%
-        mutate(description_short = factor(description_short, levels = c('> 80% AMI', '50-80% AMI', '30-50% AMI', '<30% AMI'))) %>% 
+        mutate(description_short = factor(description_short, levels = c('> 80% AMI', '50-80% AMI', '30-50% AMI', '≤30% AMI'))) %>% 
         arrange(description_short)
     })
     
@@ -133,34 +134,40 @@ rdi_rentaff_server <- function(id, shape, place) {
     })
     
     output$plot01 <- renderEcharts4r({
-      echart_rdi(data = plot_clean_data(),
-                 filter_type = "renter_hh_income_share",
-                 desc_col = description_short, 
+      d <- plot_clean_data() %>% filter(geography_name == 'Bellevue')
+
+      echart_rdi(data = d,
+                 desc_col = description_short,
                  str_wrap_num = 6,
-                 group = geography_name,
+                 group = type_desc,
                  x = 'description_short',
                  y = 'value',
-                 title = 'Households',
-                 egrid_left = "20%")|> 
+                 title = unique(d$geography_name),
+                 egrid_left = "15%")|>
         e_legend(bottom=0) |>
         e_group("grp")
+      
+      
+  
     })
     
     output$plot02 <- renderEcharts4r({
-      echart_rdi(data = plot_clean_data(),
-                 filter_type = "rental_units_share",
-                 desc_col = description_short, 
+      d <- plot_clean_data() %>% filter(geography_name == 'Region')
+      
+      echart_rdi(data = d,
+                 desc_col = description_short,
                  str_wrap_num = 6,
-                 group = geography_name,
+                 group = type_desc,
                  x = 'description_short',
                  y = 'value',
-                 title = 'Rental Units',
-                 egrid_left = "20%")|>  
+                 title = unique(d$geography_name),
+                 egrid_left = "15%")|>
           e_legend(show=FALSE) |>
           e_toolbox_feature("dataView") |>
           e_toolbox_feature("saveAsImage") |>
           e_group("grp") |>
           e_connect_group("grp")
+
     })
     
     map_data <- reactive({
@@ -178,7 +185,7 @@ rdi_rentaff_server <- function(id, shape, place) {
       
       m <- create_chas_tract_map(shape_tract = s,
                                  shape_place = map_data(), 
-                                 title = paste('Census Tracts of Rental Units', 'Less than 80% AMI', sep = "<br>"))
+                                 title = paste('Rental Units Affordable to Households', 'At or Below 80% AMI', sep = "<br>"))
     })
     
     

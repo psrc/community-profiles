@@ -1,6 +1,6 @@
 # Function to assemble Income table
 
-# source('function-query-sqlite-chas.R')
+# source('modules/function-query-sqlite-chas.R')
 
 create_income_table <- function(juris = c('place', 'region')) {
   
@@ -13,7 +13,7 @@ create_income_table <- function(juris = c('place', 'region')) {
             'Very Low-Income (30-50%)',
             'Low-Income (50-80%)',
             'Moderate Income (80-100%)',
-            'Above Median Income (>100%)',
+            'Greater than 100% AMI',
             'All')
   
   cols <- c('variable_name', 'sort','chas_year', 'geography_name', 'estimate', 'moe',  'tenure',
@@ -24,7 +24,7 @@ create_income_table <- function(juris = c('place', 'region')) {
                                household_income == 'greater than 30% but less than or equal to 50% of HAMFI', 'Very Low-Income (30-50%)',
                                household_income == 'greater than 50% but less than or equal to 80% of HAMFI', 'Low-Income (50-80%)',
                                household_income == 'greater than 80% but less than or equal to 100% of HAMFI', 'Moderate Income (80-100%)',
-                               household_income == 'greater than 100% of HAMFI', 'Above Median Income (>100%)')]
+                               household_income == 'greater than 100% of HAMFI', 'Greater than 100% AMI')]
   
   dfs$T1[, race_ethnicity_grp := fcase(grepl("^American Indian ", race_ethnicity), "American Indian or Alaskan Native",
                                        grepl("^Asian ", race_ethnicity), "Asian",
@@ -43,10 +43,11 @@ create_income_table <- function(juris = c('place', 'region')) {
   race_levels <- c(str_subset(unique(df$race_ethnicity_grp), "^American.*"),
                    str_subset(unique(df$race_ethnicity_grp), "^Asian.*"),
                    str_subset(unique(df$race_ethnicity_grp), "^Black.*"),
+                   str_subset(unique(df$race_ethnicity_grp), "^Hispanic.*"),
                    str_subset(unique(df$race_ethnicity_grp), "^Pacific.*"),
                    str_subset(unique(df$race_ethnicity_grp), "^Other.*"),
+                   'Not Reported',
                    'POC',
-                   str_subset(unique(df$race_ethnicity_grp), "^Hispanic.*"),
                    str_subset(unique(df$race_ethnicity_grp), "^White.*"),
                    'Total')
   
@@ -66,7 +67,7 @@ create_income_table <- function(juris = c('place', 'region')) {
                           by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp')]
   
   # sum POC (totals & by income group)
-  poc <- df_sum[!race_ethnicity_grp %in% c('Total', str_subset(race_ethnicity_grp, "^[H|W].*")), .(estimate = sum(estimate), race_ethnicity_grp = 'POC'),
+  poc <- df_sum[!race_ethnicity_grp %in% c('Total', str_subset(race_ethnicity_grp, "^[W].*")), .(estimate = sum(estimate), race_ethnicity_grp = 'POC'),
                 by = c('chas_year', 'geography_name', 'tenure', 'income_grp')]
 
   tot_poc <- poc[, .(estimate = sum(estimate), income_grp = 'All'), by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp') ]
@@ -85,23 +86,42 @@ create_income_table <- function(juris = c('place', 'region')) {
   
   df_join <- merge(df_all, denom, by =  c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp'), all.x = TRUE)
   
+  # calculate Up to 80%
+  up80 <- df_join[income_grp %in% desc[1:3], .(estimate = sum(estimate), income_grp = 'Up to 80% AMI'), by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp')]
+  up80_join <- merge(up80, denom, by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp'), all.x = TRUE)
+  
+  df_join <- rbindlist(list(df_join, up80_join), use.names=TRUE)
+  
+  # calculate Not Reported
+  re_sum <- df_join[!(race_ethnicity_grp %in% c('POC', 'Total')), .(sum = sum(estimate), race_ethnicity_grp = 'Not Reported'), by = c('chas_year', 'geography_name', 'tenure', 'income_grp')]
+  re_total <- df_join[race_ethnicity_grp == 'Total', .(geography_name, tenure, income_grp, Total = estimate)]
+  re_sum_join <- merge(re_sum, re_total, by = c('geography_name', 'tenure', 'income_grp'), all.x=TRUE)
+  re_sum_join[, estimate := Total - sum][, `:=` (sum = NULL, Total = NULL)]
+  
+  re_sum_all <- re_sum_join[income_grp == 'All', .(geography_name, tenure, denom = estimate)]
+  re_sum_join <- merge(re_sum_join, re_sum_all, by = c('geography_name', 'tenure'), all.x=TRUE)
+  
+  df_join <- rbindlist(list(df_join, re_sum_join), use.names=TRUE)
+  
   # create shares
   df_join[, share := estimate/denom]
   df_join[is.na(share), share := 0]
   
   # pivot wider
-  df_est <- dcast.data.table(df_join, chas_year + geography_name + tenure + income_grp ~ race_ethnicity_grp, value.var = 'estimate')
-  df_shr <- dcast.data.table(df_join, chas_year + geography_name + tenure + income_grp ~ race_ethnicity_grp, value.var = 'share')
+  df_est <- dcast.data.table(df_join, chas_year + geography_name + tenure + race_ethnicity_grp ~ income_grp, value.var = 'estimate')
+  df_shr <- dcast.data.table(df_join, chas_year + geography_name + tenure + race_ethnicity_grp ~ income_grp, value.var = 'share')
   
   return(list(e = df_est, s = df_shr))
 }
+
+# x <- create_income_table(juris = 'region')
 
 create_dt_income <- function(table, container, source) {
   datatable(table,
             container = container,
             rownames = FALSE,
             options = list(dom = 'tipr',
-                           columnDefs = list(list(className = 'dt-center', targets = 1:8))),
+                           columnDefs = list(list(className = 'dt-center', targets = 1:9))),
             caption = htmltools::tags$caption(
               style = 'caption-side: bottom; text-align: right;',
               htmltools::em(source)
