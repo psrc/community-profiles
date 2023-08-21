@@ -12,9 +12,9 @@ create_tenure_table <- function(juris = c('place', 'region')) {
   re_order <- c('American Indian or Alaskan Native', 
                 'Asian', 
                 'Black or African American', 
-                'Pacific Islander',
-                'Other Race', 
                 'Hispanic or Latino (of any race)', 
+                'Pacific Islander',
+                'Other', 
                 'White',
                 'All')
   
@@ -43,7 +43,7 @@ create_tenure_table <- function(juris = c('place', 'region')) {
                               grepl("^Asian ", description), "Asian",
                               grepl("^Black ", description), "Black or African American",
                               grepl("^Hispanic, any race", description), "Hispanic or Latino (of any race)",
-                              grepl("^other ", description), "Other Race",
+                              grepl("^other ", description), "Other",
                               grepl("^Pacific ", description), "Pacific Islander",
                               grepl("^White ", description), "White",
                               grepl("^All", description), "All")]
