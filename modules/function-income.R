@@ -32,7 +32,7 @@ create_income_table <- function(juris = c('place', 'region')) {
                                        grepl("^Hispanic, any race", race_ethnicity), "Hispanic or Latino (of any race)",
                                        grepl("^Pacific ", race_ethnicity), "Pacific Islander",
                                        grepl("^White ", race_ethnicity), "White",
-                                       grepl("^All", race_ethnicity), "Total")]
+                                       grepl("^All", race_ethnicity), "All")]
   
   # exclude high level totals
   df <- dfs$T1[!(sort %in% c(1, 2, 75)),]
@@ -47,9 +47,9 @@ create_income_table <- function(juris = c('place', 'region')) {
                    str_subset(unique(df$race_ethnicity_grp), "^Pacific.*"),
                    str_subset(unique(df$race_ethnicity_grp), "^Other.*"),
                    'Not Reported',
-                   'POC',
+                   'People of Color (POC)',
                    str_subset(unique(df$race_ethnicity_grp), "^White.*"),
-                   'Total')
+                   'All')
   
   df[, race_ethnicity_grp := factor(race_ethnicity_grp, levels = race_levels)]
   
@@ -63,11 +63,11 @@ create_income_table <- function(juris = c('place', 'region')) {
   df_sum <- df[, .(estimate = sum(estimate)), by = c('chas_year', 'geography_name', 'tenure', 'income_grp', 'race_ethnicity_grp')]
   
   # sum each race/ethnicity/POC
-  tot_resp_race <- df_sum[income_grp != 'All' & race_ethnicity_grp != 'Total', .(estimate = sum(estimate), income_grp = 'All'), 
+  tot_resp_race <- df_sum[income_grp != 'All' & race_ethnicity_grp != 'All', .(estimate = sum(estimate), income_grp = 'All'), 
                           by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp')]
   
   # sum POC (totals & by income group)
-  poc <- df_sum[!race_ethnicity_grp %in% c('Total', str_subset(race_ethnicity_grp, "^[W].*")), .(estimate = sum(estimate), race_ethnicity_grp = 'POC'),
+  poc <- df_sum[!race_ethnicity_grp %in% c('All', str_subset(race_ethnicity_grp, "^[W].*")), .(estimate = sum(estimate), race_ethnicity_grp = 'People of Color (POC)'),
                 by = c('chas_year', 'geography_name', 'tenure', 'income_grp')]
 
   tot_poc <- poc[, .(estimate = sum(estimate), income_grp = 'All'), by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp') ]
@@ -80,7 +80,7 @@ create_income_table <- function(juris = c('place', 'region')) {
   setnames(denom, 'estimate', 'denom')
   denom[, income_grp:= NULL]
   
-  all <- df_all[income_grp == 'All' & race_ethnicity_grp == 'Total', ][, income_grp := NULL]
+  all <- df_all[income_grp == 'All' & race_ethnicity_grp == 'All', ][, income_grp := NULL]
   setnames(all, 'estimate', 'denom')
   denom <- rbindlist(list(denom, all))
   
@@ -93,8 +93,8 @@ create_income_table <- function(juris = c('place', 'region')) {
   df_join <- rbindlist(list(df_join, up80_join), use.names=TRUE)
   
   # calculate Not Reported
-  re_sum <- df_join[!(race_ethnicity_grp %in% c('POC', 'Total')), .(sum = sum(estimate), race_ethnicity_grp = 'Not Reported'), by = c('chas_year', 'geography_name', 'tenure', 'income_grp')]
-  re_total <- df_join[race_ethnicity_grp == 'Total', .(geography_name, tenure, income_grp, Total = estimate)]
+  re_sum <- df_join[!(race_ethnicity_grp %in% c('People of Color (POC)', 'All')), .(sum = sum(estimate), race_ethnicity_grp = 'Not Reported'), by = c('chas_year', 'geography_name', 'tenure', 'income_grp')]
+  re_total <- df_join[race_ethnicity_grp == 'All', .(geography_name, tenure, income_grp, Total = estimate)]
   re_sum_join <- merge(re_sum, re_total, by = c('geography_name', 'tenure', 'income_grp'), all.x=TRUE)
   re_sum_join[, estimate := Total - sum][, `:=` (sum = NULL, Total = NULL)]
   
@@ -106,7 +106,7 @@ create_income_table <- function(juris = c('place', 'region')) {
   # create shares
   df_join[, share := estimate/denom]
   df_join[is.na(share), share := 0]
-  
+
   # pivot wider
   df_est <- dcast.data.table(df_join, chas_year + geography_name + tenure + race_ethnicity_grp ~ income_grp, value.var = 'estimate')
   df_shr <- dcast.data.table(df_join, chas_year + geography_name + tenure + race_ethnicity_grp ~ income_grp, value.var = 'share')

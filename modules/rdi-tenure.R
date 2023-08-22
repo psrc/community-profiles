@@ -4,27 +4,43 @@ rdi_tenure_ui <- function(id) {
   ns <- NS(id)
   
   tabPanel(title = "Tenure",
-           div(style = "padding-top: 1rem;",
-               fluidRow(
-                 column(4,
-                        echarts4rOutput(ns('plot01'))),
-                 column(4,
-                        echarts4rOutput(ns('plot02'))),
-                 
-                 column(4,
-                        leafletOutput(ns('map'))
-                 )
-               )# end fluidrow
-           ) # end div
-           , 
-           fluidRow(
-             column(width = 12,
-                    uiOutput(ns('tableui'))
-             )
-             
-           ) # end fluidRow
-  ) # end tabpanel
-  
+           tabsetPanel(
+             # renter ----
+             tabPanel(title = 'Renter',
+                      div(style = "padding-top: 1rem;",
+                          fluidRow(
+                            column(6,
+                                   echarts4rOutput(ns('r_plot'))),
+                            column(6,
+                                   leafletOutput(ns('r_map'))
+                            )
+                          )# end fluidrow
+                      ) # end div
+                      , 
+                      fluidRow(
+                        column(width = 12,
+                               uiOutput(ns('r_tableui'))
+                        )
+                        
+                      ) # end fluidRow
+             ), # end tabPanel Renter 
+             tabPanel(title = 'Owner',
+                      div(style = "padding-top: 1rem;",
+                      fluidRow(
+                      column(6,
+                             echarts4rOutput(ns('o_plot'))),
+                      column(6,
+                             leafletOutput(ns('o_map')))
+                      ), # end FluidRow
+                      fluidRow(
+                        column(width = 12,
+                               uiOutput(ns('o_tableui'))
+                        )
+                        )
+                      ) # end fluidRow
+             ) # end tabPanel
+           ) # end tabsetPanel
+  )# end tabpanel
 }
 
 rdi_tenure_server <- function(id, shape, place) {
@@ -32,10 +48,25 @@ rdi_tenure_server <- function(id, shape, place) {
   moduleServer(id, function(input, output, session) { 
     ns <- session$ns
     
-    output$tableui <- renderUI({
+    vals <- reactiveValues(source = 'Sources: US HUD, 2015-2019 Comprehensive Housing Affordability Strategy (CHAS) Table 9',
+                           id_cols = c('chas_year', 'geography_name', 'description'))
+    
+    output$r_tableui <- renderUI({
       div(
         withSpinner(
-          DTOutput(ns("table")),
+          DTOutput(ns("r_table")),
+          type = 5,
+          color = psrc_colors$pgnobgy_10[sample.int(10, 1)]
+        ),
+        style = 'margin-top: 1rem'
+      )
+      
+    })
+    
+    output$o_tableui <- renderUI({
+      div(
+        withSpinner(
+          DTOutput(ns("o_table")),
           type = 5,
           color = psrc_colors$pgnobgy_10[sample.int(10, 1)]
         ),
@@ -59,36 +90,37 @@ rdi_tenure_server <- function(id, shape, place) {
       # data in wide for display in table
       
       region <- data()$region %>%
-        select(description, renter_occupied, owner_occupied, ends_with('share')) %>%
-        rename_with(~paste0(.x, '_reg'))
+        select(-chas_year, -geography_name) %>%
+        rename_with(~paste0(.x, '_region'))
 
-      d <- left_join(data()$place, region, by = c('description' = 'description_reg')) %>%
-        select(description, renter_occupied, owner_occupied, ends_with('share'), ends_with('reg'))
+      d <- left_join(data()$place, region, by = c('description' = 'description_region'))
+      
+      rdf <- d %>% 
+        select(vals$id_cols, starts_with('all'), starts_with('renter'))
+      odf <- d %>% 
+        select(vals$id_cols, starts_with('all'), starts_with('owner'))
+      
+      return(list(r = rdf, o = odf))
     })
     
     plot_data <- reactive({
       # data in long form for plotting
-      
-      df <- bind_rows(data()) %>%
-        filter(description != 'All') %>%
-        select(chas_year, geography_name, description, ends_with('share')) %>%
+
+      df <- bind_rows(data()) %>% 
+        select(chas_year, geography_name, description, ends_with('share'))%>%
         pivot_longer(cols = ends_with('Share'),
                      names_to = 'type',
                      values_to = 'value')
-    })
+      
+        geog <- c(place(), 'Region')
     
-    plot_clean_data <- reactive({
-      # munge long form data for visual
-      
-      geog <- c(place(), 'Region')
+        desc_rev <- rev(unique(df$description))
 
-      desc_rev <- rev(unique(plot_data()$description))
-      
-      plot_data() %>%
-        mutate(type_desc = case_when(type == 'rental_share' ~ 'Rental Households',
-                                     type == 'owner_share' ~ 'Owner Households')) %>%
-        mutate(description = factor(description, levels = desc_rev)) %>%
-        arrange(description)
+        df %>%
+          mutate(type_desc = case_when(type == 'rental_share' ~ 'Rental Households',
+                                       type == 'owner_share' ~ 'Owner Households')) %>%
+          mutate(description = factor(description, levels = desc_rev)) %>%
+          arrange(description)
     })
     
     place_name <- reactive({unique(data()$place$geography_name)})
@@ -100,58 +132,80 @@ rdi_tenure_server <- function(id, shape, place) {
         class = 'display',
         thead(
           tr(
-            th(rowspan = 2, 'Race/Ethnicity'),
-            th(class = 'dt-center', colspan = 4, place_name()),
-            th(class = 'dt-center', colspan = 4, 'Region')
+            th(rowspan = 2, 'Race/Ethnicity of Householder'),
+            th(class = 'dt-center', colspan = 3, place_name()),
+            th(class = 'dt-center', colspan = 3, 'Region')
           ),
           tr(
-            lapply(rep(c("Renter Households", "Owner Households"), 4), th)
+            lapply(rep(c("Households", "All Households", 'Share'), 2), th)
           )
         )
       ))
     })
     
-    output$table <- renderDT({
+    output$r_table <- renderDT({
       # table display
       
-      source <- 'Sources: US HUD, 2015-2019 Comprehensive Housing Affordability Strategy (CHAS) Table 9'
+      d <- table_data()$r %>% 
+        select(-chas_year, -geography_name) %>% 
+        select(description, renter_occupied, all_units, renter_share, renter_occupied_region, all_units_region, renter_share_region)
       
-      datatable(table_data(),
+      datatable(d,
                 container = container(),
                 rownames = FALSE,
                 options = list(dom = 'tipr',
-                               columnDefs = list(list(className = 'dt-center', targets = 1:8))),
+                               columnDefs = list(list(className = 'dt-center', targets = 1:6))),
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: right;',
-                  htmltools::em(source)
+                  htmltools::em(vals$source)
                 )) %>%
-        formatPercentage(str_subset(colnames(table_data()), ".*share(.)*$"), 1)
+        formatPercentage(str_subset(colnames(d), ".*share(.)*$"), 1)
     })
     
-    output$plot01 <- renderEcharts4r({
-      echart_rdi(data = plot_clean_data(),
+    output$o_table <- renderDT({
+      # table display
+      
+      d <- table_data()$o %>% 
+        select(-chas_year, -geography_name) %>% 
+        select(description, owner_occupied, all_units, owner_share, owner_occupied_region, all_units_region, owner_share_region)
+      
+      datatable(d,
+                container = container(),
+                rownames = FALSE,
+                options = list(dom = 'tipr',
+                               columnDefs = list(list(className = 'dt-center', targets = 1:6))),
+                caption = htmltools::tags$caption(
+                  style = 'caption-side: bottom; text-align: right;',
+                  htmltools::em(vals$source)
+                )) %>%
+        formatPercentage(str_subset(colnames(d), ".*share(.)*$"), 1)
+    })
+    
+    output$r_plot <- renderEcharts4r({
+      
+      echart_rdi(data = plot_data(),
                  filter_type = "renter_share",
-                 desc_col = description, 
-                 str_wrap_num = 15,
+                 desc_col = description,
+                 str_wrap_num = 20,
                  group = geography_name,
                  x = 'description',
                  y = 'value',
                  title = 'Renter Households',
-                 egrid_left = "30%")|>
+                 egrid_left = "20%")|>
           e_legend(bottom=0) |>
           e_group("grp")
     })
     
-    output$plot02 <- renderEcharts4r({
-      echart_rdi(data = plot_clean_data(),
+    output$o_plot <- renderEcharts4r({
+      echart_rdi(data = plot_data(),
                  filter_type = "owner_share",
-                 desc_col = description, 
-                 str_wrap_num = 15,
+                 desc_col = description,
+                 str_wrap_num = 20,
                  group = geography_name,
                  x = 'description',
                  y = 'value',
                  title = 'Owner Households',
-                 egrid_left = "30%")|>
+                 egrid_left = "20%")|>
           e_legend(show=FALSE) |>
           e_toolbox_feature("dataView") |>
           e_toolbox_feature("saveAsImage") |>
@@ -163,14 +217,26 @@ rdi_tenure_server <- function(id, shape, place) {
       s <- shape %>% filter(geog_name == place())
     })
     
-    output$map <- renderLeaflet({
-      shp <- tract.shape %>% 
+    output$r_map <- renderLeaflet({
+      shp <- tract.shape %>%
         filter(census_year == 2010)
 
       d <- create_tenure_tract_table()
 
-      y <- create_tenure_tract_map(table = d, 
-                                   shape_tract = shp, 
+      y <- create_tenure_tract_map(table = d,
+                                   tenure_type = 'Renter',
+                                   shape_tract = shp,
+                                   shape_place = map_data())
+    })
+    
+    output$o_map <- renderLeaflet({
+      shp <- tract.shape %>%
+        filter(census_year == 2010)
+      
+      d <- create_tenure_tract_table()
+      
+      y <- create_tenure_tract_map(table = d,
+                                   shape_tract = shp,
                                    shape_place = map_data())
     })
     

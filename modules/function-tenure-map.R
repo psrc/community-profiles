@@ -9,7 +9,7 @@ create_tenure_tract_table <- function() {
   dfs <- gather_tables(juris = 'tract', chas_tables)
   
   re <- c("People of Color",
-          "Hispanic or Latino (of any race)",
+          # "Hispanic or Latino (of any race)",
           "White",
           'All')
   
@@ -21,13 +21,12 @@ create_tenure_tract_table <- function() {
   ro_head <- c(54,49,44,64,69,59,39,38)
   ro <- dfs$T9[sort %in% ro_head, ]
   
-  
   dfs <- list(o = oo, r = ro)
   for(d in dfs) {
     d[, `:=`(grouping = fcase(grepl("^American Indian ", race_ethnicity), "People of Color",
                               grepl("^Asian ", race_ethnicity), "People of Color",
                               grepl("^Black ", race_ethnicity), "People of Color",
-                              grepl("^Hispanic, any race", race_ethnicity), "Hispanic or Latino (of any race)",
+                              grepl("^Hispanic, any race", race_ethnicity), "People of Color",
                               grepl("^other ", race_ethnicity), "People of Color",
                               grepl("^Pacific ", race_ethnicity), "People of Color",
                               grepl("^White ", race_ethnicity), "White",
@@ -59,7 +58,11 @@ create_tenure_tract_table <- function() {
   return(df)
 }
 
-create_tenure_tract_map <- function(table, shape_tract, shape_place) {
+create_tenure_tract_map <- function(table, tenure_type = c("Owner", "Renter"), shape_tract, shape_place) {
+
+  table <- table %>% 
+    filter(grepl(paste0(str_to_lower(tenure_type), ".*"), tenure)) 
+
   # Generate tract shape cut to place of interest and display in leaflet
   shape_tract_all <- left_join(shape_tract, table, by = c('geoid' = 'tract_geoid'))
   
@@ -67,13 +70,14 @@ create_tenure_tract_map <- function(table, shape_tract, shape_place) {
   shp_cut <- st_intersection(shape_tract_all, shape_place)
 
   # Filter for POC owner
-  po <- shp_cut %>% filter(grouping == 'People of Color' & tenure == 'owner_occupied')
-  # Filter for POC renter
-  pr <- shp_cut %>% filter(grouping == 'People of Color' & tenure == 'renter_occupied')
-  # Filter for Hispanic/Latino owner
-  ho <- shp_cut %>% filter(grepl("^Hispanic", grouping) & tenure == 'owner_occupied')
-  # Filter for Hispanic/Latino renter
-  hr <- shp_cut %>% filter(grepl("^Hispanic", grouping) & tenure == 'renter_occupied')
+  p <- shp_cut %>% filter(grouping == 'People of Color')
+  # po <- shp_cut %>% filter(grouping == 'People of Color' & tenure == 'owner_occupied')
+  # # Filter for POC renter
+  # pr <- shp_cut %>% filter(grouping == 'People of Color' & tenure == 'renter_occupied')
+  # # Filter for Hispanic/Latino owner
+  # ho <- shp_cut %>% filter(grepl("^Hispanic", grouping) & tenure == 'owner_occupied')
+  # # Filter for Hispanic/Latino renter
+  # hr <- shp_cut %>% filter(grepl("^Hispanic", grouping) & tenure == 'renter_occupied')
   
   # Determine Bins
   rng <- range(shp_cut$share)
@@ -87,9 +91,13 @@ create_tenure_tract_map <- function(table, shape_tract, shape_place) {
   
   ## Create Map ----
   
-  title <- tags$div(HTML("Tenure of People of Color (POC) or Hispanic/Latino<br>Households by Census Tract"))
+  title <- tags$div(HTML(tenure_type, " Households -- People of Color (POC) by Census Tract"))
+  # title <- tags$div(HTML("Tenure of People of Color (POC) or Hispanic/Latino<br>Households by Census Tract"))
   
-  shps <- list("POC Owner" = po, "POC Renter" = pr, "Hispanic/Latino Owner" = ho, "Hispanic/Latino Renter" = hr)
+  shps <- list('People of Color (POC)' = p)
+  # shps <- list("POC Owner" = po, "POC Renter" = pr#, 
+  #              # "Hispanic/Latino Owner" = ho, "Hispanic/Latino Renter" = hr
+  #              )
   
   m <- leaflet(data = shp_cut, options = leafletOptions(zoomControl=FALSE)) %>% 
     addProviderTiles(providers$CartoDB.Positron) %>%
