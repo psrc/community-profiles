@@ -219,16 +219,28 @@ rdi_tenure_server <- function(id, shape, place) {
       s <- shape %>% filter(geog_name == place())
     })
     
-    # output$map <- renderLeaflet({
-    #   shp <- tract.shape %>% 
-    #     filter(census_year == 2010)
-    # 
-    #   d <- create_tenure_tract_table()
-    # 
-    #   y <- create_tenure_tract_map(table = d, 
-    #                                shape_tract = shp, 
-    #                                shape_place = map_data())
-    # })
+    output$r_map <- renderLeaflet({
+      shp <- tract.shape %>%
+        filter(census_year == 2010)
+
+      d <- create_tenure_tract_table()
+
+      y <- create_tenure_tract_map(table = d,
+                                   tenure_type = 'Renter',
+                                   shape_tract = shp,
+                                   shape_place = map_data())
+    })
+    
+    output$o_map <- renderLeaflet({
+      shp <- tract.shape %>%
+        filter(census_year == 2010)
+      
+      d <- create_tenure_tract_table()
+      
+      y <- create_tenure_tract_map(table = d,
+                                   shape_tract = shp,
+                                   shape_place = map_data())
+    })
     
     
   }) # end moduleServer
