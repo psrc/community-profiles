@@ -89,8 +89,6 @@ rdi_tenure_server <- function(id, shape, place) {
     table_data <- reactive({
       # data in wide for display in table
       
-      # id_cols <- c('chas_year', 'geography_name', 'description')
-      
       region <- data()$region %>%
         select(-chas_year, -geography_name) %>%
         rename_with(~paste0(.x, '_region'))

@@ -56,7 +56,7 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
   df <- rbindlist(list(df, tot_cb, tot_ncb), use.names = TRUE, fill = TRUE)
   
   # total (for horizontal sum)
-  tot <- df[, .(estimate = sum(estimate), race_ethnicity = 'Total'), by = c('geography_name', 'chas_year', 'tenure', 'cost_burden', 'description')]
+  tot <- df[, .(estimate = sum(estimate), race_ethnicity = 'All'), by = c('geography_name', 'chas_year', 'tenure', 'cost_burden', 'description')]
 
   # poc (for column)
   poc <- df[!(race_ethnicity %in% str_subset(unique(df$race_ethnicity), "^[W].*")), .(estimate = sum(estimate), race_ethnicity = 'POC'), 
@@ -66,27 +66,28 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
   
   # factor description
   df[, description := factor(description, levels = c(names(desc), 'Total Cost-Burdened', 'Total Not Cost-Burdened'))]
+ 
+  # add denominator column
+  df_denom <- df[cost_burden == 'All', 
+                 .(geography_name, chas_year, tenure, race_ethnicity, estimate_denom = estimate)]
+  df <- merge(df, df_denom, by = c('geography_name', 'chas_year', 'tenure', 'race_ethnicity'))  
+
+  # calculate shares
+  df[, share := estimate/estimate_denom]
+  df <- df[cost_burden != 'Total Not Cost-Burdened'
+           ][, race_ethnicity := str_replace_all(race_ethnicity, "POC", 'People of Color (POC)')]
+  
   race_levels <- c(str_subset(unique(df$race_ethnicity), "^American.*"),
                    str_subset(unique(df$race_ethnicity), "^Asian.*"),
                    str_subset(unique(df$race_ethnicity), "^Black.*"),
                    str_subset(unique(df$race_ethnicity), "^Hispanic.*"),
                    str_subset(unique(df$race_ethnicity), "^Pacific.*"),
                    str_subset(unique(df$race_ethnicity), "^Other.*"),
-                   'POC',
+                   'People of Color (POC)',
                    str_subset(unique(df$race_ethnicity), "^White.*"),
-                   'Total')
-  
-  df[, race_ethnicity := factor(race_ethnicity, levels = race_levels)]
-  
-  # add denominator column
-  df_denom <- df[cost_burden == 'All', 
-                 .(geography_name, chas_year, tenure, race_ethnicity, estimate_denom = estimate)]
-  df <- merge(df, df_denom, by = c('geography_name', 'chas_year', 'tenure', 'race_ethnicity'))  
-  
-  # calculate shares
-  df[, share := estimate/estimate_denom]
-  df <- df[cost_burden != 'Total Not Cost-Burdened'
-           ][, race_ethnicity := str_replace_all(race_ethnicity, "POC", 'People of Color (POC)')]
+                   'All')
+
+  df <- df[, race_ethnicity := factor(race_ethnicity, levels = race_levels)][order(race_ethnicity)]
   
   # calculate estimates
   df_est <- dcast.data.table(df, chas_year + geography_name + tenure + race_ethnicity ~ description, value.var = 'estimate')

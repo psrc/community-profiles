@@ -14,7 +14,8 @@ create_tenure_table <- function(juris = c('place', 'region')) {
                 'Black or African American', 
                 'Hispanic or Latino (of any race)', 
                 'Pacific Islander',
-                'Other', 
+                'Other',
+                'People of Color (POC)',
                 'White',
                 'All')
   
@@ -48,6 +49,12 @@ create_tenure_table <- function(juris = c('place', 'region')) {
                               grepl("^White ", description), "White",
                               grepl("^All", description), "All")]
   
+  # POC
+
+  poc <- df[!(description %in% c('All', 'White')), .(estimate = sum(estimate), description = 'People of Color (POC)'), 
+     by = c('chas_year', 'geography_name', 'col_desc')]
+  
+  df <- rbindlist(list(df, poc), use.names=TRUE, fill=TRUE)
   ## Format Table ----
 
   if(juris == 'region') {
@@ -59,7 +66,7 @@ create_tenure_table <- function(juris = c('place', 'region')) {
   
   # pivot wider
   df <- dcast.data.table(df, chas_year + geography_name + description ~ col_desc, value.var = 'estimate')
-  
+
   # reorder rows
   df <- df[, description := factor(description, levels = re_order)][order(description)]
   
