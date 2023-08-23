@@ -69,7 +69,7 @@ rdi_rentaff_server <- function(id, shape, place) {
     
     plot_data <- reactive({
       # data in long form for plotting
-
+      
       df <- bind_rows(data()) %>% 
         filter(description != 'All') %>% 
         select(chas_year, geography_name, description, ends_with('share')) %>% 
@@ -82,7 +82,7 @@ rdi_rentaff_server <- function(id, shape, place) {
       # munge long form data for visual
       
       geog <- c(place(), 'Region')
-
+      
       plot_data() %>% 
         mutate(type_desc = case_when(type == 'rental_units_share' ~ 'Rental Units', 
                                      type == 'renter_hh_income_share' ~ 'Households')) %>% 
@@ -134,7 +134,7 @@ rdi_rentaff_server <- function(id, shape, place) {
     })
     
     output$plot01 <- renderEcharts4r({
-      d <- plot_clean_data() %>% filter(geography_name == 'Bellevue')
+      d <- plot_clean_data() %>% filter(geography_name == place())
 
       echart_rdi(data = d,
                  desc_col = description_short,
@@ -146,9 +146,7 @@ rdi_rentaff_server <- function(id, shape, place) {
                  egrid_left = "15%")|>
         e_legend(bottom=0) |>
         e_group("grp")
-      
-      
-  
+
     })
     
     output$plot02 <- renderEcharts4r({
@@ -177,12 +175,12 @@ rdi_rentaff_server <- function(id, shape, place) {
     output$map <- renderLeaflet({
       shp <- tract.shape %>% 
         filter(census_year == 2010)
-      
+ 
       d <- create_rental_affordability_tract_table()
       
       s <- shp %>%
         left_join(d, by = c('geoid' = 'tract_geoid'))
-      
+ 
       m <- create_chas_tract_map(shape_tract = s,
                                  shape_place = map_data(), 
                                  title = paste('Rental Units Affordable to Households', 'At or Below 80% AMI', sep = "<br>"))

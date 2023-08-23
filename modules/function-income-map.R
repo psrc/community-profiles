@@ -63,7 +63,8 @@ create_income_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
   shape_tract_all <- left_join(shape_tract, table, by = c('geoid' = 'tract_geoid'))
 
   # Trim Tracts for current place
-  shp_cut <- st_intersection(shape_tract_all, shape_place)
+  shape_place_valid <- st_make_valid(shape_place)
+  shp_cut <- st_intersection(shape_tract_all, shape_place_valid)
   
   p <- shp_cut %>% filter(race_ethnicity_grp == 'People of Color')
   # h <- shp_cut %>% filter(grepl("^Hispanic", race_ethnicity_grp))
