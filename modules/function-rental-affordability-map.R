@@ -59,9 +59,10 @@ create_rental_affordability_tract_table <- function() {
 
 create_chas_tract_map <- function(shape_tract, shape_place, title) {
   # Generate tract shape cut to place of interest and display in leaflet
-  
+
   # Trim Tracts for current place
-  shp_cut <- st_intersection(shape_tract, shape_place)
+  shape_place_valid <- st_make_valid(shape_place)
+  shp_cut <- st_intersection(shape_tract, shape_place_valid)
   
   # Determine Bins
   rng <- range(shp_cut$share)

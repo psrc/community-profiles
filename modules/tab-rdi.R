@@ -12,7 +12,7 @@ rdi_tab_ui <- function(id) {
         " a custom American Community Survey data product. 
         The People section of this dashboard includes a related measure for", actionLink(ns("link_re"), "Race & Ethnicity"),". Additional
         housing measures are also available in the", actionLink(ns("link_hh"), "Households & Housing"),"section. The Washington Department of Commerce has", tags$a(href="https://deptofcommerce.app.box.com/s/1l217l98jattb87qobtw63pkplzhxege", "published guidance", target = "_blank"), 
-        "for jurisdictions looking to address racially disparate impacts in their comprehensive plan update."),
+        "on analyzing disparate impacts in comprehensive plans updates."),
       p("Please allow at least 5 seconds for visuals to load.", style = "font-size: 10pt; margin-top: 2rem;")
     ),
     fluidRow(

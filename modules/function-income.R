@@ -98,6 +98,9 @@ create_income_table <- function(juris = c('place', 'region')) {
   re_sum_join <- merge(re_sum, re_total, by = c('geography_name', 'tenure', 'income_grp'), all.x=TRUE)
   re_sum_join[, estimate := Total - sum][, `:=` (sum = NULL, Total = NULL)]
   
+  # any negative differences equals over reporting. Change result to 0.
+  re_sum_join[estimate < 0, estimate := 0]
+  
   re_sum_all <- re_sum_join[income_grp == 'All', .(geography_name, tenure, denom = estimate)]
   re_sum_join <- merge(re_sum_join, re_sum_all, by = c('geography_name', 'tenure'), all.x=TRUE)
   

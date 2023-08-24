@@ -5,8 +5,10 @@ rdi_income_ui <- function(id) {
   
   tabPanel(title = "Income",
            tabsetPanel(
+             id = ns('tab_income'),
              # renter ----
              tabPanel(title = 'Renter',
+                      value = 'renter',
                       div(style = "padding-top: 1rem;",
                           fluidRow(
                             column(6,
@@ -34,6 +36,7 @@ rdi_income_ui <- function(id) {
              # owner ----
              
              tabPanel(title = 'Owner',
+                      value = 'owner',
                       div(style = "padding-top: 1rem;",
                           fluidRow(
                             column(6,
