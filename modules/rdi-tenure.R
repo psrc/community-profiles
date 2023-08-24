@@ -5,8 +5,10 @@ rdi_tenure_ui <- function(id) {
   
   tabPanel(title = "Tenure",
            tabsetPanel(
+             id = ns('tab_tenure'),
              # renter ----
              tabPanel(title = 'Renter',
+                      value = 'renter',
                       div(style = "padding-top: 1rem;",
                           fluidRow(
                             column(6,
@@ -25,6 +27,7 @@ rdi_tenure_ui <- function(id) {
                       ) # end fluidRow
              ), # end tabPanel Renter 
              tabPanel(title = 'Owner',
+                      value = 'owner',
                       div(style = "padding-top: 1rem;",
                       fluidRow(
                       column(6,
@@ -128,6 +131,8 @@ rdi_tenure_server <- function(id, shape, place) {
     container <- reactive({
       # custom container for DT
       
+      ifelse(input$tab_tenure == 'renter', tenure <- 'Renter', tenure <- 'Owner')
+
       htmltools::withTags(table(
         class = 'display',
         thead(
@@ -137,10 +142,11 @@ rdi_tenure_server <- function(id, shape, place) {
             th(class = 'dt-center', colspan = 3, 'Region')
           ),
           tr(
-            lapply(rep(c("Households", "All Households", 'Share'), 2), th)
+            lapply(rep(c(paste(tenure, "Households"), "All Households", 'Share'), 2), th)
           )
         )
       ))
+      
     })
     
     output$r_table <- renderDT({

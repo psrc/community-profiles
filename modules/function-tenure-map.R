@@ -60,8 +60,9 @@ create_tenure_tract_table <- function() {
 
 create_tenure_tract_map <- function(table, tenure_type = c("Owner", "Renter"), shape_tract, shape_place) {
 
+  t <- str_to_lower(tenure_type)
   table <- table %>% 
-    filter(grepl(paste0(str_to_lower(tenure_type), ".*"), tenure)) 
+    filter(tenure == paste0(t, '_occupied'))
 
   # Generate tract shape cut to place of interest and display in leaflet
   shape_tract_all <- left_join(shape_tract, table, by = c('geoid' = 'tract_geoid'))
