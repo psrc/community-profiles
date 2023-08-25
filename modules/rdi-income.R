@@ -192,7 +192,8 @@ rdi_income_server <- function(id, shape, place) {
       # custom container for DT
       
       selcols <- colnames(data()$r$pe)[which(!(colnames(data()$r$pe) %in% c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp')))]
-      selcols <- c(selcols, "All", "Up to 80% AMI")
+      # selcols <- c(selcols, "All", "Up to 80% AMI")
+      selcols <- c(selcols, "Up to 80% AMI", "All")
       
       htmltools::withTags(table(
         class = 'display',

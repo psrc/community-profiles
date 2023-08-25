@@ -92,7 +92,7 @@ create_tenure_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
   
   ## Create Map ----
   
-  title <- tags$div(HTML(tenure_type, " Households -- People of Color (POC) by Census Tract"))
+  title <- tags$div(HTML("POC ", tenure_type, " Households"))
   # title <- tags$div(HTML("Tenure of People of Color (POC) or Hispanic/Latino<br>Households by Census Tract"))
   
   shps <- list('People of Color (POC)' = p)

@@ -81,7 +81,7 @@ create_income_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
   
   ## Create Map ----
   
-  title <- tags$div(HTML(tenure_type, " Households At or Below 80% AMI by Census Tract - POC"))
+  title <- tags$div(HTML("POC ", tenure_type, " Households At or Below 80% AMI"))
   
   shps <- list("People of Color (POC)" = p#, 
                # "Hispanic/Latino" = h

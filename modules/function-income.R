@@ -14,7 +14,15 @@ create_income_table <- function(juris = c('place', 'region')) {
             'Low-Income (50-80%)',
             'Moderate Income (80-100%)',
             'Greater than 100% AMI',
+            'Up to 80% AMI',
             'All')
+  
+  # desc <- c('Extremely Low-Income (≤30% AMI)',
+  #           'Very Low-Income (30-50%)',
+  #           'Low-Income (50-80%)',
+  #           'Moderate Income (80-100%)',
+  #           'Greater than 100% AMI',
+  #           'All')
   
   cols <- c('variable_name', 'sort','chas_year', 'geography_name', 'estimate', 'moe',  'tenure',
             'household_income', 'race_ethnicity', 'income_grp', 'race_ethnicity_grp')
@@ -26,7 +34,7 @@ create_income_table <- function(juris = c('place', 'region')) {
                                household_income == 'greater than 80% but less than or equal to 100% of HAMFI', 'Moderate Income (80-100%)',
                                household_income == 'greater than 100% of HAMFI', 'Greater than 100% AMI')]
   
-  dfs$T1[, race_ethnicity_grp := fcase(grepl("^American Indian ", race_ethnicity), "American Indian or Alaskan Native",
+  dfs$T1[, race_ethnicity_grp := fcase(grepl("^American Indian ", race_ethnicity), "American Indian and Alaska Native",
                                        grepl("^Asian ", race_ethnicity), "Asian",
                                        grepl("^Black ", race_ethnicity), "Black or African American",
                                        grepl("^Hispanic, any race", race_ethnicity), "Hispanic or Latino (of any race)",
@@ -38,7 +46,7 @@ create_income_table <- function(juris = c('place', 'region')) {
   df <- dfs$T1[!(sort %in% c(1, 2, 75)),]
   
   # factors & levels
-  df <- df[, ..cols][, income_grp := factor(income_grp, levels = desc)]
+  df <- df[, ..cols]
   
   race_levels <- c(str_subset(unique(df$race_ethnicity_grp), "^American.*"),
                    str_subset(unique(df$race_ethnicity_grp), "^Asian.*"),
@@ -46,9 +54,9 @@ create_income_table <- function(juris = c('place', 'region')) {
                    str_subset(unique(df$race_ethnicity_grp), "^Hispanic.*"),
                    str_subset(unique(df$race_ethnicity_grp), "^Pacific.*"),
                    str_subset(unique(df$race_ethnicity_grp), "^Other.*"),
-                   'Not Reported',
                    'People of Color (POC)',
                    str_subset(unique(df$race_ethnicity_grp), "^White.*"),
+                   'Not Reported',
                    'All')
   
   df[, race_ethnicity_grp := factor(race_ethnicity_grp, levels = race_levels)]
@@ -91,6 +99,8 @@ create_income_table <- function(juris = c('place', 'region')) {
   up80_join <- merge(up80, denom, by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp'), all.x = TRUE)
   
   df_join <- rbindlist(list(df_join, up80_join), use.names=TRUE)
+  
+  df_join <- df_join[, income_grp := factor(income_grp, levels = desc)]
   
   # calculate Not Reported
   re_sum <- df_join[!(race_ethnicity_grp %in% c('People of Color (POC)', 'All')), .(sum = sum(estimate), race_ethnicity_grp = 'Not Reported'), by = c('chas_year', 'geography_name', 'tenure', 'income_grp')]
