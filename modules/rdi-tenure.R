@@ -212,7 +212,7 @@ rdi_tenure_server <- function(id, shape, place) {
                  y = 'value',
                  title = 'Owner Households',
                  egrid_left = "20%")|>
-          e_legend(show=FALSE) |>
+          e_legend(bottom=0) |>
           e_toolbox_feature("dataView") |>
           e_toolbox_feature("saveAsImage") |>
           e_group("grp") |>
