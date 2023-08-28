@@ -244,6 +244,7 @@ rdi_tenure_server <- function(id, shape, place) {
       d <- create_tenure_tract_table()
       
       y <- create_tenure_tract_map(table = d,
+                                   tenure_type = 'Owner',
                                    shape_tract = shp,
                                    shape_place = map_data())
     })
