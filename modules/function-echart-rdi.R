@@ -25,7 +25,8 @@ echart_rdi <- function(data, filter_type = NULL, desc_col, str_wrap_num, group, 
   e %>% 
     e_charts_(x = x, stack = stack) |>
     e_bar_(y) |>
-    e_y_axis(splitNumber = 3, max = ymax) |>
+    e_y_axis(max = ymax) |>
+    # e_y_axis(splitNumber = 3, max = ymax) |>
     e_x_axis(axisLabel = list(interval = 0L),
              axisTick = list(alignWithLabel = TRUE)) |>
     e_flip_coords() |>

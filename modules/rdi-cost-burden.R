@@ -171,43 +171,14 @@ rdi_cost_burden_server <- function(id, shape, place) {
 
       # pivot longer & filter
       tables <- map(tables, ~pivot_longer(.x, starts_with('Not')|contains('Cost'), names_to = 'cost_burden', values_to = 'share'))
-      tables <- map(tables, ~filter(.x, cost_burden == str_extract(unique(cost_burden), "Total Cost-Burdened")))
-      
+      tables <- map(tables, ~filter(.x, cost_burden == "Total Cost-Burdened (>30%)"))
+
       race_levels <- rev(unique(tables[[1]]$race_ethnicity))
       tables <- map(tables, ~mutate(.x, race_ethnicity = factor(race_ethnicity, levels = race_levels)) %>% arrange(geography_name, race_ethnicity))
       
       return(list(r = tables[[1]], o = tables[[2]]))
-      
-      # dfs <- map(data(), ~.x[['s']])
-      # 
-      # pivot_table_longer <- function(table) {
-      #   table %>% 
-      #     filter(description %in% c(str_subset(description, "^Total.*"))) %>%
-      #     pivot_longer(cols = setdiff(colnames(table), c(vals$exc_cols, 'description')),
-      #                  names_to = 'race_ethnicity',
-      #                  values_to = 'value')
-      # }
-      # 
-      # dfs_share <- map(dfs, ~pivot_table_longer(.x))
     })
 
-    plot_clean_data <- reactive({
-      # munge long form data (shares) for renter and owner for plotting
-
-      # filter_set_levels <- function(table) {
-      #   df <- table %>%
-      #     filter(!race_ethnicity %in% c('POC', 'Total'))
-      # 
-      #   desc_rev <- rev(unique(df$race_ethnicity))
-      # 
-      #   df %>%
-      #     mutate(race_ethnicity = factor(race_ethnicity, levels = desc_rev)) %>%
-      #     arrange(race_ethnicity)
-      # }
-      # 
-      # dfs <- map(plot_data(), ~filter_set_levels(.x))
-    })
-    
     place_name <- reactive({unique(data()$r$pe$geography_name)})
     
     map_data <- reactive({
@@ -218,7 +189,7 @@ rdi_cost_burden_server <- function(id, shape, place) {
       # custom container for DT
       
       selcols <- colnames(data()$r$pe)[which(!(colnames(data()$r$pe) %in% c('chas_year', 'geography_name', 'tenure', 'race_ethnicity')))]
-      selcols <- c(selcols, "All", "Total Cost-Burdened")
+      selcols <- c(selcols, "Total Cost-Burdened (>30%)", "All")
       
       htmltools::withTags(table(
         class = 'display',
@@ -237,11 +208,9 @@ rdi_cost_burden_server <- function(id, shape, place) {
     })
     
     prep_cost_burden_table <- function(place_table, regional_table) {
-      exccols <- setdiff(colnames(regional_table), str_subset(colnames(regional_table), '.*\\(.*')) %>% 
-        setdiff(., str_subset(., '^N.*'))
-      
+
       dr <- regional_table %>% 
-        select(all_of(exccols), -vals$exc_cols)
+        select(race_ethnicity, `Total Cost-Burdened (>30%)`, All)
       colnames(dr) <- paste0(colnames(dr), '_region')  
 
       d <- left_join(place_table, dr, by = c('race_ethnicity' = 'race_ethnicity_region')) %>% 
@@ -254,7 +223,7 @@ rdi_cost_burden_server <- function(id, shape, place) {
       # Renter Estimate table display
       
       d <- prep_cost_burden_table(data()$r[['pe']], data()$r[['re']])
-     
+
       create_dt_cost_burden(table = d, container = container(), source = vals$source)
     })
     
@@ -275,7 +244,8 @@ rdi_cost_burden_server <- function(id, shape, place) {
                  group = geography_name,
                  x = 'race_ethnicity',
                  y = 'share',
-                 title = 'Renter Households',
+                 ymax = 1,
+                 title = 'Cost-Burdened Renter Households (>30%)',
                  egrid_left = "20%")|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
         e_legend(bottom=0) |>
@@ -310,7 +280,8 @@ rdi_cost_burden_server <- function(id, shape, place) {
                  group = geography_name,
                  x = 'race_ethnicity',
                  y = 'share',
-                 title = 'Owner Households',
+                 ymax = 1,
+                 title = 'Cost-Burdened Owner Households (>30%)',
                  egrid_left = "20%")|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
         e_legend(bottom=0) |>

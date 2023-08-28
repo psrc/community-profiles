@@ -9,7 +9,7 @@ create_tenure_table <- function(juris = c('place', 'region')) {
   ifelse(juris == 'place', j <- 'place', j <- 'county')
   dfs <- gather_tables(j, chas_table_codes)
   
-  re_order <- c('American Indian or Alaskan Native', 
+  re_order <- c('American Indian and Alaska Native', 
                 'Asian', 
                 'Black or African American', 
                 'Hispanic or Latino (of any race)', 
@@ -40,7 +40,7 @@ create_tenure_table <- function(juris = c('place', 'region')) {
   
   # Format Race/Ethnicity data
   df[, description := race_ethnicity
-     ][, description := fcase(grepl("^American Indian ", description), "American Indian or Alaskan Native",
+     ][, description := fcase(grepl("^American Indian ", description), "American Indian and Alaska Native",
                               grepl("^Asian ", description), "Asian",
                               grepl("^Black ", description), "Black or African American",
                               grepl("^Hispanic, any race", description), "Hispanic or Latino (of any race)",

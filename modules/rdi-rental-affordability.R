@@ -6,6 +6,12 @@ rdi_rentaff_ui <- function(id) {
   tabPanel(title = "Rental Affordability",
            div(style = "padding-top: 1rem;",
            fluidRow(
+             
+             fluidRow(column(8,
+                             div('Renter Households and Affordable Rental Units by AMI', 
+                                 style = 'text-align: center; margin-bottom: 1rem; font-size: 10pt; font-weight: bold;')),
+                      column(4)),
+             
              column(4,
                     echarts4rOutput(ns('plot01'))),
              column(4,
@@ -61,10 +67,10 @@ rdi_rentaff_server <- function(id, shape, place) {
       region <- data()$region %>% 
         select(description, renter_hh_income, rental_units, ends_with('share')) %>% 
           rename_with(~paste0(.x, '_reg'))
-        
+
       d <- left_join(data()$place, region, by = c('description' = 'description_reg')) %>% 
         select(description, renter_hh_income, rental_units, ends_with('share'), ends_with('reg')) %>% 
-        mutate(description = if_else(str_detect(description, '^Extremely.*'), 'Up to 30% AMI', description))
+        mutate(description = str_replace_all(description, 'Low Income', 'Low-Income'))
     })
     
     plot_data <- reactive({
@@ -85,7 +91,7 @@ rdi_rentaff_server <- function(id, shape, place) {
       
       plot_data() %>% 
         mutate(type_desc = case_when(type == 'rental_units_share' ~ 'Rental Units', 
-                                     type == 'renter_hh_income_share' ~ 'Households')) %>% 
+                                     type == 'renter_hh_income_share' ~ 'Renter Households')) %>% 
         mutate(description_short = case_when(description == 'Extremely Low Income (≤30% AMI)' ~ '≤30% AMI',
                                              description == 'Very Low Income (30-50% AMI)' ~ '30-50% AMI',
                                              description == 'Low Income (50-80% AMI)' ~ '50-80% AMI',
@@ -105,12 +111,12 @@ rdi_rentaff_server <- function(id, shape, place) {
         class = 'display',
         thead(
           tr(
-            th(rowspan = 2, 'Affordability'),
+            th(rowspan = 2, 'Income/Affordability'),
             th(class = 'dt-center', colspan = 4, place_name()),
             th(class = 'dt-center', colspan = 4, 'Region')
           ),
           tr(
-            lapply(rep(c("Households", "Rental Units"), 4), th)
+            lapply(rep(c("Renter Households", "Rental Units"), 4), th)
           )
         )
       ))
@@ -142,6 +148,7 @@ rdi_rentaff_server <- function(id, shape, place) {
                  group = type_desc,
                  x = 'description_short',
                  y = 'value',
+                 ymax = 1,
                  title = unique(d$geography_name),
                  egrid_left = "15%")|>
         e_legend(bottom=0) |>
@@ -158,6 +165,7 @@ rdi_rentaff_server <- function(id, shape, place) {
                  group = type_desc,
                  x = 'description_short',
                  y = 'value',
+                 ymax = 1,
                  title = unique(d$geography_name),
                  egrid_left = "15%")|>
           e_legend(show=FALSE) |>

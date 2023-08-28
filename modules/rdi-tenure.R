@@ -196,6 +196,7 @@ rdi_tenure_server <- function(id, shape, place) {
                  group = geography_name,
                  x = 'description',
                  y = 'value',
+                 ymax = 1,
                  title = 'Renter Households',
                  egrid_left = "20%")|>
           e_legend(bottom=0) |>
@@ -210,9 +211,10 @@ rdi_tenure_server <- function(id, shape, place) {
                  group = geography_name,
                  x = 'description',
                  y = 'value',
+                 ymax = 1,
                  title = 'Owner Households',
                  egrid_left = "20%")|>
-          e_legend(show=FALSE) |>
+          e_legend(bottom=0) |>
           e_toolbox_feature("dataView") |>
           e_toolbox_feature("saveAsImage") |>
           e_group("grp") |>
@@ -242,6 +244,7 @@ rdi_tenure_server <- function(id, shape, place) {
       d <- create_tenure_tract_table()
       
       y <- create_tenure_tract_map(table = d,
+                                   tenure_type = 'Owner',
                                    shape_tract = shp,
                                    shape_place = map_data())
     })

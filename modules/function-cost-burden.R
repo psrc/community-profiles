@@ -28,7 +28,7 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
                             cost_burden ==  "not computed (no/negative income)", "Not Calculated",
                             cost_burden == "All", "All")]
   
-  df[, race_ethnicity := fcase(grepl("^American Indian ", race_ethnicity), "American Indian or Alaskan Native",
+  df[, race_ethnicity := fcase(grepl("^American Indian ", race_ethnicity), "American Indian and Alaska Native",
                                grepl("^Asian ", race_ethnicity), "Asian",
                                grepl("^Black ", race_ethnicity), "Black or African American",
                                grepl("^Hispanic, any race", race_ethnicity), "Hispanic or Latino (of any race)",
@@ -46,9 +46,9 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
   
   # total cost/not-cost burdened (new rows)
   tot_cb <- df[description %in% c("Cost-Burdened (30-50%)", "Severely Cost-Burdened (>50%)"), 
-               .(estimate = sum(estimate), cost_burden = 'Total Cost-Burdened', description = 'Total Cost-Burdened'),
+               .(estimate = sum(estimate), cost_burden = 'Total Cost-Burdened (>30%)', description = 'Total Cost-Burdened (>30%)'),
                by = c('geography_name', 'chas_year', 'tenure', 'race_ethnicity')] 
-  
+
   tot_ncb <- df[description %in% c('Not Calculated', 'No Cost Burden'), 
                 .(estimate = sum(estimate), cost_burden = 'Total Not Cost-Burdened', description = 'Total Not Cost-Burdened'), 
                 by = c('geography_name', 'chas_year', 'tenure', 'race_ethnicity')] 
@@ -65,7 +65,8 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
   df <- rbindlist(list(df, poc, tot), use.names = TRUE, fill = TRUE)
   
   # factor description
-  df[, description := factor(description, levels = c(names(desc), 'Total Cost-Burdened', 'Total Not Cost-Burdened'))]
+  df[, description := factor(description, levels = c(names(desc)[1:4], 'Total Cost-Burdened (>30%)', 'All', 'Total Not Cost-Burdened'))]
+  # df[, description := factor(description, levels = c(names(desc), 'Total Cost-Burdened', 'Total Not Cost-Burdened'))]
  
   # add denominator column
   df_denom <- df[cost_burden == 'All', 

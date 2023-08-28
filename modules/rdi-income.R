@@ -192,7 +192,8 @@ rdi_income_server <- function(id, shape, place) {
       # custom container for DT
       
       selcols <- colnames(data()$r$pe)[which(!(colnames(data()$r$pe) %in% c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp')))]
-      selcols <- c(selcols, "All", "Up to 80% AMI")
+      # selcols <- c(selcols, "All", "Up to 80% AMI")
+      selcols <- c(selcols, "Up to 80% AMI", "All")
       
       htmltools::withTags(table(
         class = 'display',
@@ -248,6 +249,7 @@ rdi_income_server <- function(id, shape, place) {
                  group = geography_name,
                  x = 'race_ethnicity_grp',
                  y = 'share',
+                 ymax = 1,
                  title = 'Renter Households At or Below 80% AMI',
                  egrid_left = "20%")|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
@@ -283,6 +285,7 @@ rdi_income_server <- function(id, shape, place) {
                  group = geography_name,
                  x = 'race_ethnicity_grp',
                  y = 'share',
+                 ymax = 1,
                  title = 'Owner Households At or Below 80% AMI',
                  egrid_left = "20%")|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
