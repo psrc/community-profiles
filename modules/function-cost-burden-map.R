@@ -78,7 +78,7 @@ create_cost_burden_tract_map <- function(table, tenure_type = c("Owner", "Renter
 
   ## Create Map ----
 
-  title <- tags$div(HTML("Cost Burdened POC ", tenure_type, " Households"))
+  title <- tags$div(HTML("Cost-Burdened POC ", tenure_type, " Households"))
 
   shps <- list("People of Color (POC)" = p
                # , "Hispanic/Latino" = h
