@@ -6,6 +6,12 @@ rdi_rentaff_ui <- function(id) {
   tabPanel(title = "Rental Affordability",
            div(style = "padding-top: 1rem;",
            fluidRow(
+             
+             fluidRow(column(8,
+                             div('Renter Households and Affordable Rental Units by AMI', 
+                                 style = 'text-align: center; margin-bottom: 1rem; font-size: 10pt; font-weight: bold;')),
+                      column(4)),
+             
              column(4,
                     echarts4rOutput(ns('plot01'))),
              column(4,
@@ -142,6 +148,7 @@ rdi_rentaff_server <- function(id, shape, place) {
                  group = type_desc,
                  x = 'description_short',
                  y = 'value',
+                 ymax = 1,
                  title = unique(d$geography_name),
                  egrid_left = "15%")|>
         e_legend(bottom=0) |>
@@ -158,6 +165,7 @@ rdi_rentaff_server <- function(id, shape, place) {
                  group = type_desc,
                  x = 'description_short',
                  y = 'value',
+                 ymax = 1,
                  title = unique(d$geography_name),
                  egrid_left = "15%")|>
           e_legend(show=FALSE) |>

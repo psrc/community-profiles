@@ -196,6 +196,7 @@ rdi_tenure_server <- function(id, shape, place) {
                  group = geography_name,
                  x = 'description',
                  y = 'value',
+                 ymax = 1,
                  title = 'Renter Households',
                  egrid_left = "20%")|>
           e_legend(bottom=0) |>
@@ -210,6 +211,7 @@ rdi_tenure_server <- function(id, shape, place) {
                  group = geography_name,
                  x = 'description',
                  y = 'value',
+                 ymax = 1,
                  title = 'Owner Households',
                  egrid_left = "20%")|>
           e_legend(bottom=0) |>

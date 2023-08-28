@@ -249,6 +249,7 @@ rdi_income_server <- function(id, shape, place) {
                  group = geography_name,
                  x = 'race_ethnicity_grp',
                  y = 'share',
+                 ymax = 1,
                  title = 'Renter Households At or Below 80% AMI',
                  egrid_left = "20%")|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
@@ -284,6 +285,7 @@ rdi_income_server <- function(id, shape, place) {
                  group = geography_name,
                  x = 'race_ethnicity_grp',
                  y = 'share',
+                 ymax = 1,
                  title = 'Owner Households At or Below 80% AMI',
                  egrid_left = "20%")|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>

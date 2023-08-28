@@ -244,6 +244,7 @@ rdi_cost_burden_server <- function(id, shape, place) {
                  group = geography_name,
                  x = 'race_ethnicity',
                  y = 'share',
+                 ymax = 1,
                  title = 'Cost-Burdened Renter Households (>30%)',
                  egrid_left = "20%")|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
@@ -279,6 +280,7 @@ rdi_cost_burden_server <- function(id, shape, place) {
                  group = geography_name,
                  x = 'race_ethnicity',
                  y = 'share',
+                 ymax = 1,
                  title = 'Cost-Burdened Owner Households (>30%)',
                  egrid_left = "20%")|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
