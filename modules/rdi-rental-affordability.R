@@ -52,8 +52,10 @@ rdi_rentaff_server <- function(id, shape, place) {
     
     data <- reactive({
       # pull (currently from SQLite) semi-prepped CHAS
-
-      df <- create_rental_affordability_table(juris = 'place') %>% 
+      # if(place() %in% c('King County', 'Kitsap County', 'Pierce County', 'Snohomish County')) browser()
+      
+      ifelse(str_detect(place(), ".*County"), j <- 'county', j <- 'place') 
+      df <- create_rental_affordability_table(juris = j) %>% 
         filter(geography_name == place())
 
       df_region <- create_rental_affordability_table(juris = 'region')

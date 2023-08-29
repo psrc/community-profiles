@@ -2,7 +2,7 @@
 
 # source('modules/function-query-sqlite-chas.R')
 
-create_rental_affordability_table <- function(juris = c('place', 'region')) {
+create_rental_affordability_table <- function(juris = c('place', 'county', 'region')) {
   # gather tables T8, T15C, and T14B to create formatted Rental Affordability table
   
   chas_tables <- c('T8', 'T15C', 'T14B')
@@ -54,7 +54,7 @@ create_rental_affordability_table <- function(juris = c('place', 'region')) {
   df <- df[, .(estimate = sum(estimate)), by = c('chas_year', 'geography_name', 'col_desc', 'description')]
   
   ## Format Table ----
-  
+
   if(juris == 'region') {
     # aggregate counties to region
     
@@ -81,3 +81,5 @@ create_rental_affordability_table <- function(juris = c('place', 'region')) {
   # calculate shares
   df_ra[, `:=` (renter_hh_income_share = renter_hh_income/renter_hh_income_All, rental_units_share = rental_units/rental_units_All)]
 }
+
+# x <- create_rental_affordability_table(juris = 'county')
