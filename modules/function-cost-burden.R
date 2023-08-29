@@ -3,14 +3,14 @@
 
 # source('modules/function-query-sqlite-chas.R')
 
-create_cost_burden_table <- function(juris = c('place', 'region')) {
+create_cost_burden_table <- function(juris = c('place', 'county', 'region')) {
   # gather tables T9 to create formatted Cost Burden table
   
   chas_tables <- 'T9'
   ifelse(juris == 'place', j <- 'place', j <- 'county')
   dfs <- gather_tables(j, chas_tables)
   df <- dfs$T9[!(sort %in% c(1, 2, 38))]
-  
+
   # Assemble Table ----
   
   desc <- c("less than or equal to 30%",
@@ -98,7 +98,7 @@ create_cost_burden_table <- function(juris = c('place', 'region')) {
   return(list(e = df_est, s = df_share))
 }
 
-# x <- create_cost_burden_table(juris = 'place')
+# x <- create_cost_burden_table(juris = 'county')
 
 create_dt_cost_burden <- function(table, container, source) {
   datatable(table,

@@ -115,8 +115,10 @@ rdi_cost_burden_server <- function(id, shape, place) {
 
     data <- reactive({
       # pull (currently from SQLite) semi-prepped CHAS
-
-      p_dfs <- create_cost_burden_table(juris = 'place') 
+      
+      ifelse(str_detect(place(), ".*County"), j <- 'county', j <- 'place') 
+ 
+      p_dfs <- create_cost_burden_table(juris = j)
       r_dfs <- create_cost_burden_table(juris = 'region') 
       
       p_dfs <- map(p_dfs, ~filter(.x, geography_name == place()))
@@ -196,7 +198,7 @@ rdi_cost_burden_server <- function(id, shape, place) {
         thead(
           tr(
             th(rowspan = 2, 'Race/Ethnicity'),
-            th(class = 'dt-center', colspan = 7, place_name()),
+            th(class = 'dt-center', colspan = 6, place_name()),
             th(class = 'dt-center', colspan = 2, 'Region')
           ),
           tr(
