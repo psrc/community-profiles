@@ -1,6 +1,6 @@
 library(tidyverse)
 library(data.table)
-# source('modules/function-query-sqlite-chas.R')
+source('modules/function-query-sqlite-chas.R')
 
 create_tenure_tract_table <- function() {
   # Generate tract level table for RDI Tenure metric. To be used in tract map.
@@ -62,6 +62,7 @@ create_tenure_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
 
   t <- str_to_lower(tenure_type)
   table <- table %>% 
+    mutate(share = replace_na(share, 0)) %>% 
     filter(tenure == paste0(t, '_occupied'))
 
   # Generate tract shape cut to place of interest and display in leaflet
@@ -149,3 +150,14 @@ create_tenure_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
   
   return(m)
 }
+
+# shp <- tract.shape %>%
+#   filter(census_year == 2010)
+# 
+# pl <- community.shape %>%
+#   filter(geog_name == 'Kitsap County')
+# 
+# 
+# d <- create_tenure_tract_table()
+# 
+# create_tenure_tract_map(table = d, tenure_type = "Renter", shape_tract = shp, shape_place = pl)
