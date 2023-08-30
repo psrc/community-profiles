@@ -106,14 +106,6 @@ create_tenure_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
     addLayersControl(baseGroups = c("Base Map"),
                      overlayGroups = c("Place Boundary", names(shps)),
                      options = layersControlOptions(collapsed = TRUE)) %>%
-    addPolygons(data = shape_place,
-                fillColor = "76787A",
-                weight = 4,
-                opacity = 1.0,
-                color = "#91268F",
-                dashArray = "4",
-                fillOpacity = 0.0,
-                group = "Place Boundary") %>%
     addControl(title, position = "topleft")
   
   ### add layers ----
@@ -146,6 +138,14 @@ create_tenure_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
   }
   
   m <- m %>% 
+    addPolygons(data = shape_place,
+                fillColor = "76787A",
+                weight = 4,
+                opacity = 1.0,
+                color = "#91268F",
+                dashArray = "4",
+                fillOpacity = 0.0,
+                group = "Place Boundary") %>%
     hideGroup(c(names(shps)[2:5]))
   
   return(m)

@@ -85,16 +85,8 @@ create_chas_tract_map <- function(shape_tract, shape_place, title) {
   m <- leaflet(data = shp_cut, options = leafletOptions(zoomControl=FALSE)) %>% 
     addProviderTiles(providers$CartoDB.Positron) %>%
     addLayersControl(baseGroups = c("Base Map"),
-                     overlayGroups = c("Place Boundary","Census Tracts"),
+                     overlayGroups = c("Place Boundary", "Census Tracts"),
                      options = layersControlOptions(collapsed = TRUE)) %>%
-    addPolygons(data = shape_place,
-                fillColor = "76787A",
-                weight = 4,
-                opacity = 1.0,
-                color = "#91268F",
-                dashArray = "4",
-                fillOpacity = 0.0,
-                group = "Place Boundary")%>%
     addPolygons(fillColor = pal(shp_cut$share),
                 weight = 1.0,
                 opacity = 1,
@@ -113,6 +105,14 @@ create_chas_tract_map <- function(shape_tract, shape_place, title) {
                   textsize = "15px",
                   direction = "auto"),
                 group = "Census Tracts") %>%
+    addPolygons(data = shape_place,
+                fillColor = "76787A",
+                weight = 4,
+                opacity = 1.0,
+                color = "#91268F",
+                dashArray = "4",
+                fillOpacity = 0.0,
+                group = "Place Boundary")%>%
     addControl(title, position = "topleft")
   
   return(m)
