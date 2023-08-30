@@ -2,7 +2,7 @@
 
 # source('modules/function-query-sqlite-chas.R')
 
-create_income_table <- function(juris = c('place', 'region')) {
+create_income_table <- function(juris = c('place', 'county', 'region')) {
   
   chas_tables <- 'T1'
   ifelse(juris == 'place', j <- 'place', j <- 'county')
@@ -16,13 +16,6 @@ create_income_table <- function(juris = c('place', 'region')) {
             'Greater than 100% AMI',
             'Up to 80% AMI',
             'All')
-  
-  # desc <- c('Extremely Low-Income (≤30% AMI)',
-  #           'Very Low-Income (30-50%)',
-  #           'Low-Income (50-80%)',
-  #           'Moderate Income (80-100%)',
-  #           'Greater than 100% AMI',
-  #           'All')
   
   cols <- c('variable_name', 'sort','chas_year', 'geography_name', 'estimate', 'moe',  'tenure',
             'household_income', 'race_ethnicity', 'income_grp', 'race_ethnicity_grp')
@@ -128,6 +121,8 @@ create_income_table <- function(juris = c('place', 'region')) {
 }
 
 # x <- create_income_table(juris = 'region')
+# y <- create_income_table(juris = 'county')
+# z <- create_income_table(juris = 'place')
 
 create_dt_income <- function(table, container, source) {
   datatable(table,
