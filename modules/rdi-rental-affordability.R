@@ -23,12 +23,14 @@ rdi_rentaff_ui <- function(id) {
            )# end fluidrow
            ) # end div
            , 
+           div(style = "margin-top: 1.5rem;",
            fluidRow(
                column(width = 12,
                       uiOutput(ns('tableui'))
                       )
              
            ) # end fluidRow
+           )
   ) # end tabpanel
   
 }
@@ -132,7 +134,9 @@ rdi_rentaff_server <- function(id, shape, place) {
       datatable(table_data(),
                 container = container(),
                 rownames = FALSE,
-                options = list(dom = 'tipr',
+                extensions = 'Buttons',
+                options = list(dom = 'Btipr',
+                               buttons = c('copy', 'csv', 'excel'), 
                                columnDefs = list(list(className = 'dt-center', targets = 1:8))),
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: right;',
