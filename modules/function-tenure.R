@@ -3,7 +3,7 @@
 
 # source('modules/function-query-sqlite-chas.R')
 
-create_tenure_table <- function(juris = c('place', 'region')) {
+create_tenure_table <- function(juris = c('place', 'county', 'region')) {
 
   chas_table_codes <- 'T9'
   ifelse(juris == 'place', j <- 'place', j <- 'county')

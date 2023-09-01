@@ -16,7 +16,7 @@ create_rental_affordability_tract_table <- function() {
             'Very Low Income (30-50% AMI)',
             'Low Income (50-80% AMI)',
             'Moderate Income (80-100% AMI)',
-            'Greater than 100% of AMI',
+            'Greater than 100% of AMI', # fyi: not necessary but missing from tables below 
             'All')
   
   # Table 15C
@@ -38,7 +38,7 @@ create_rental_affordability_tract_table <- function() {
   cols <- c('variable_name', 'sort','chas_year', 'tract_geoid', 'estimate', 'moe',  'col_desc', 'description')
   ra_dfs <- map(list(t15c, t14b), ~.x[, ..cols])
   df <- rbindlist(ra_dfs)
-  
+
   df_sum <- df[, . (estimate = sum(estimate)), by = c('chas_year', 'tract_geoid', 'description')
   ][,  grouping := fcase(description == 'All', 'All',
                          description == 'Extremely Low Income (<30% AMI)','Less than 80% AMI',
@@ -47,7 +47,7 @@ create_rental_affordability_tract_table <- function() {
                          description == 'Moderate Income (80-100% AMI)', 'Greater than 80% AMI')]
   
   df_sum <- df_sum[, .(estimate = sum(estimate)), by = c('chas_year', 'tract_geoid', 'grouping')]
-  
+
   df_denom <- df_sum[grouping == 'All', .(tract_geoid, denom = estimate)]
   
   df_calc <- merge(df_sum, df_denom, by = 'tract_geoid')
@@ -63,13 +63,15 @@ create_chas_tract_map <- function(shape_tract, shape_place, title) {
   # Trim Tracts for current place
   shape_place_valid <- st_make_valid(shape_place)
   shp_cut <- st_intersection(shape_tract, shape_place_valid)
+  # replace Nan with 0
+  shp_cut$share <- shp_cut$share %>% replace_na(0)
   
   # Determine Bins
   rng <- range(shp_cut$share)
   max_bin <- max(abs(rng))
   round_to <- 10^floor(log10(max_bin))
   max_bin <- ceiling(max_bin/round_to) * round_to
-  breaks <- (max_bin*c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1))
+  breaks <- (max_bin*c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1, 1.5))
   bins <- c(0, breaks)
   
   pal <- colorBin("Purples", domain = shp_cut$share, bins = bins)
@@ -83,16 +85,8 @@ create_chas_tract_map <- function(shape_tract, shape_place, title) {
   m <- leaflet(data = shp_cut, options = leafletOptions(zoomControl=FALSE)) %>% 
     addProviderTiles(providers$CartoDB.Positron) %>%
     addLayersControl(baseGroups = c("Base Map"),
-                     overlayGroups = c("Place Boundary","Census Tracts"),
+                     overlayGroups = c("Place Boundary", "Census Tracts"),
                      options = layersControlOptions(collapsed = TRUE)) %>%
-    addPolygons(data = shape_place,
-                fillColor = "76787A",
-                weight = 4,
-                opacity = 1.0,
-                color = "#91268F",
-                dashArray = "4",
-                fillOpacity = 0.0,
-                group = "Place Boundary")%>%
     addPolygons(fillColor = pal(shp_cut$share),
                 weight = 1.0,
                 opacity = 1,
@@ -111,9 +105,30 @@ create_chas_tract_map <- function(shape_tract, shape_place, title) {
                   textsize = "15px",
                   direction = "auto"),
                 group = "Census Tracts") %>%
+    addPolygons(data = shape_place,
+                fillColor = "76787A",
+                weight = 4,
+                opacity = 1.0,
+                color = "#91268F",
+                dashArray = "4",
+                fillOpacity = 0.0,
+                group = "Place Boundary")%>%
     addControl(title, position = "topleft")
   
   return(m)
 }
 
+# shp <- tract.shape %>%
+#   filter(census_year == 2010)
+# 
+# pl <- community.shape %>%
+#   filter(geog_name == 'Snohomish County')
+# 
+# 
+# d <- create_rental_affordability_tract_table()
+# 
+# s <- shp %>%
+#   left_join(d, by = c('geoid' = 'tract_geoid'))
+# 
+# create_chas_tract_map(shape_tract = s, shape_place = pl, title = 'Something')
 

@@ -119,7 +119,9 @@ rdi_income_server <- function(id, shape, place) {
     data <- reactive({
       # pull (currently from SQLite) semi-prepped CHAS
       
-      p_dfs <- create_income_table(juris = 'place') 
+      ifelse(str_detect(place(), ".*County"), j <- 'county', j <- 'place')
+      # p_dfs <- create_income_table(juris = 'place') 
+      p_dfs <- create_income_table(juris = j)
       r_dfs <- create_income_table(juris = 'region') 
 
       p_dfs <- map(p_dfs, ~filter(.x, geography_name == place()))
@@ -192,7 +194,6 @@ rdi_income_server <- function(id, shape, place) {
       # custom container for DT
       
       selcols <- colnames(data()$r$pe)[which(!(colnames(data()$r$pe) %in% c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp')))]
-      # selcols <- c(selcols, "All", "Up to 80% AMI")
       selcols <- c(selcols, "Up to 80% AMI", "All")
       
       htmltools::withTags(table(

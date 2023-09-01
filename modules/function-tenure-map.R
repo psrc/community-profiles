@@ -1,6 +1,6 @@
 library(tidyverse)
 library(data.table)
-# source('modules/function-query-sqlite-chas.R')
+source('modules/function-query-sqlite-chas.R')
 
 create_tenure_tract_table <- function() {
   # Generate tract level table for RDI Tenure metric. To be used in tract map.
@@ -62,6 +62,7 @@ create_tenure_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
 
   t <- str_to_lower(tenure_type)
   table <- table %>% 
+    mutate(share = replace_na(share, 0)) %>% 
     filter(tenure == paste0(t, '_occupied'))
 
   # Generate tract shape cut to place of interest and display in leaflet
@@ -105,14 +106,6 @@ create_tenure_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
     addLayersControl(baseGroups = c("Base Map"),
                      overlayGroups = c("Place Boundary", names(shps)),
                      options = layersControlOptions(collapsed = TRUE)) %>%
-    addPolygons(data = shape_place,
-                fillColor = "76787A",
-                weight = 4,
-                opacity = 1.0,
-                color = "#91268F",
-                dashArray = "4",
-                fillOpacity = 0.0,
-                group = "Place Boundary") %>%
     addControl(title, position = "topleft")
   
   ### add layers ----
@@ -145,7 +138,26 @@ create_tenure_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
   }
   
   m <- m %>% 
+    addPolygons(data = shape_place,
+                fillColor = "76787A",
+                weight = 4,
+                opacity = 1.0,
+                color = "#91268F",
+                dashArray = "4",
+                fillOpacity = 0.0,
+                group = "Place Boundary") %>%
     hideGroup(c(names(shps)[2:5]))
   
   return(m)
 }
+
+# shp <- tract.shape %>%
+#   filter(census_year == 2010)
+# 
+# pl <- community.shape %>%
+#   filter(geog_name == 'Kitsap County')
+# 
+# 
+# d <- create_tenure_tract_table()
+# 
+# create_tenure_tract_map(table = d, tenure_type = "Renter", shape_tract = shp, shape_place = pl)
