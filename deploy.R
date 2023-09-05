@@ -7,3 +7,7 @@ deployApp(account = 'psrcwa',
           appTitle = 'TEST Community Profiles')
 
 # official version ----
+
+deployApp(account = 'psrcwa',
+          appName = 'community-profiles',
+          appTitle = 'Community Profiles')
