@@ -12,10 +12,10 @@ rdi_tab_ui <- function(id) {
         housing measures are also available in the", actionLink(ns("link_hh"), "Households & Housing"),"section. The Washington Department of Commerce has", tags$a(href="https://deptofcommerce.app.box.com/s/1l217l98jattb87qobtw63pkplzhxege", "published guidance", target = "_blank"), 
         "on analyzing disparate impacts in comprehensive plans updates.")
   
-  footer <- "Caution Flag for Small Populations: The American Community Survey (ACS) and HUD's Comprehensive Housing Affordability Strategy (CHAS) estimates are based 
+  footer <- p(tags$b("Caution Flag for Small Populations"),": The American Community Survey (ACS) and HUD's Comprehensive Housing Affordability Strategy (CHAS) estimates are based 
              on a sample of the population and have sampling error. Sampling error is the difference between the sample value and the population value (if one were to 
              survey the entire population). To help users understand the degree of sample error in a given estimate, the data sources publish a Margin of Error for 
-             every estimate. The Margin of Error allows the user to assess the reliability of the estimates."
+             every estimate. The Margin of Error allows the user to assess the reliability of the estimates.")
   
   footer02 <- p("To determine margins of error for estimates of interest, data users may refer directly to the published ", tags$a(href="https://data.census.gov/", "ACS"), 
                 " and ",  tags$a(href="https://www.huduser.gov/portal/datasets/cp.html", "CHAS"), " data tables or reach out to ", tags$a(href="https://www.psrc.org/", "PSRC"), " for assistance, we would be happy to help you.")

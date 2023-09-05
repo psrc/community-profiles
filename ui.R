@@ -329,7 +329,7 @@ shinyUI(
                                       If you have any questions about the data or are curious what else we might have, please click",
                                     tags$a(class = "source_url", href="https://www.psrc.org/contact/information-center", "here", target="_blank"),
                                     " and we will be happy to help.",
-                                    style = "font-size: 10pt;")
+                                    style = "font-size: 10pt; margin-top: 2rem;")
                 ) # end of NavBar Page
       ) # end of main panel
     ) # end of sidebar layout
