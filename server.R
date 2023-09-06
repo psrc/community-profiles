@@ -251,6 +251,6 @@ shinyServer(function(input, output, session) {
   output$table_rtp <- DT::renderDataTable({
     datatable(create_project_table(p=input$Place,i=projects.shape,f=final.nms,plan.yr=rtp.status), rownames = FALSE, options = list(pageLength = 10, columnDefs = list(list(className = 'dt-center', targets = 4:6)))) %>% formatCurrency(currency.rtp , "$", digits = 0)
   })
-  
+
   
 })
