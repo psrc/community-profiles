@@ -288,42 +288,8 @@ shinyUI(
                                     
                            ), # end of Projects and Funding tabPanel 
                            
-                           tabPanel(icon("info-circle"),
-                                    h1("Data Sources"),
-                                    "The data in this portal comes from a few key sources:",
-                                    hr(),
-                                    h2("Census Data"),
-                                    "The Census Data used in this portal is stored in PSRC's central database but is available from the US Census Bureau. All tables can be downloaded either via the Census API (https://www.census.gov/data/developers/data-sets/acs-5year.html) or the Census Data page (https://data.census.gov/cedsci/).",
-                                    br(),
-                                    h3("Census Tables:"),
-                                    "Travel Time to Work: Table B08303",
-                                    br(),
-                                    "Departure Time to Work: Table B08302",
-                                    br(),
-                                    "Age: Data Profile 5 (DP05)",
-                                    br(),
-                                    "Disability: Data Profile 2 (DP02)",
-                                    br(),
-                                    "Housing Units: Data Profile 4 (DP04)",
-                                    br(),
-                                    "Home Value: Data Profile 4 (DP04)",
-                                    br(),
-                                    "Income: Data Profile 3 (DP03)",
-                                    br(),
-                                    "Industry: Data Profile 3 (DP03)",
-                                    br(),
-                                    "Mode Share: Data Profile 3 (DP03)",
-                                    br(),
-                                    "Monthly Rent: Data Profile 4 (DP04)",
-                                    br(),
-                                    "Occupation: Data Profile 3 (DP03)",
-                                    br(),
-                                    "Race: Data Profile 5 (DP05)",
-                                    br(),
-                                    "Vehicles Available: Data Profile 4 (DP04)",
-                                    br()
-                           ), # end of Data tabset panel
-                           
+                           source_tab_ui("source"),
+                          
                            footer = p("Click on the icon at the top of the page that corresponds to the metrics that you are interested in 
                                       and you will get access to those measures. 
                                       If you have any questions about the data or are curious what else we might have, please click",
