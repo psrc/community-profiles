@@ -141,54 +141,59 @@ shinyUI(
                            ),
                            
                            tabPanel(icon("briefcase"),
-                                    "The job and income metrics on this page cover the topics of Educational Attainment, Occupation of residents, Industry of residents and Median Income for houesholds. ",
-                                    "Job and income characteristics are summarized in Data Profile 3 (DP03) and Educational Attainment is included in DP02. ",
-                                    "Data profiles are a summarization of a variety of Census Detailed Tables contained within the American Community Survey datasets and are a great resource for high level statistics for a community however detailed information requires the use of specific ACS tables.",
-                                    
-                                    tabsetPanel(
-                                      
-                                      tabPanel("Educational Attainment",
-                                               fluidRow(
-                                                 column(width = 6, plotlyOutput("plot_edu")),
-                                                 column(width = 6, leafletOutput("edu_map"))
-                                               ), # end of fluid row
-                                               fluidRow(
-                                                 column(width = 12,hr(),DT::dataTableOutput("table_edu"))
-                                               ) # end of fluid Row
-                                      ), # end of educational attainment tab panel
-                                      
-                                      tabPanel("Occupation",
-                                               fluidRow(
-                                                 column(width = 6, plotlyOutput("plot_occupation")),
-                                                 column(width = 6, leafletOutput("occupation_map"))
-                                               ), # end of fluid row
-                                               fluidRow(
-                                                 column(width = 12,hr(),DT::dataTableOutput("table_occupation"))
-                                               ) # end of fluid Row
-                                      ), # end of occupation tab panel
-                                      
-                                      tabPanel("Industry",
-                                               fluidRow(
-                                                 column(width = 6, plotlyOutput("plot_industry")),
-                                                 column(width = 6, leafletOutput("industry_map"))
-                                               ), # end of fluid row
-                                               fluidRow(
-                                                 column(width = 12,hr(),DT::dataTableOutput("table_industry"))
-                                               ) # end of fluid Row
-                                      ), # end of industry tab panel
-                                      
-                                      tabPanel("Income",
-                                               fluidRow(
-                                                 column(width = 6, plotlyOutput("plot_income")),
-                                                 column(width = 6, leafletOutput("income_map"))
-                                               ), # end of fluid row
-                                               fluidRow(
-                                                 column(width = 12,hr(),DT::dataTableOutput("table_income"))
-                                               ) # end of fluid Row
-                                      ) # end of income tab panel
-                                      
-                                    ) # end of jobs and income tabset panel
-                           ), # end of jobs and income Tab Panel
+                                    briefcase_tab_ui("briefcase")
+                                    ),
+                           
+                           
+                           # tabPanel(icon("briefcase"),
+                           #          "The job and income metrics on this page cover the topics of Educational Attainment, Occupation of residents, Industry of residents and Median Income for houesholds. ",
+                           #          "Job and income characteristics are summarized in Data Profile 3 (DP03) and Educational Attainment is included in DP02. ",
+                           #          "Data profiles are a summarization of a variety of Census Detailed Tables contained within the American Community Survey datasets and are a great resource for high level statistics for a community however detailed information requires the use of specific ACS tables.",
+                           #          
+                           #          tabsetPanel(
+                           #            
+                           #            tabPanel("Educational Attainment",
+                           #                     fluidRow(
+                           #                       column(width = 6, plotlyOutput("plot_edu")),
+                           #                       column(width = 6, leafletOutput("edu_map"))
+                           #                     ), # end of fluid row
+                           #                     fluidRow(
+                           #                       column(width = 12,hr(),DT::dataTableOutput("table_edu"))
+                           #                     ) # end of fluid Row
+                           #            ), # end of educational attainment tab panel
+                           #            
+                           #            tabPanel("Occupation",
+                           #                     fluidRow(
+                           #                       column(width = 6, plotlyOutput("plot_occupation")),
+                           #                       column(width = 6, leafletOutput("occupation_map"))
+                           #                     ), # end of fluid row
+                           #                     fluidRow(
+                           #                       column(width = 12,hr(),DT::dataTableOutput("table_occupation"))
+                           #                     ) # end of fluid Row
+                           #            ), # end of occupation tab panel
+                           #            
+                           #            tabPanel("Industry",
+                           #                     fluidRow(
+                           #                       column(width = 6, plotlyOutput("plot_industry")),
+                           #                       column(width = 6, leafletOutput("industry_map"))
+                           #                     ), # end of fluid row
+                           #                     fluidRow(
+                           #                       column(width = 12,hr(),DT::dataTableOutput("table_industry"))
+                           #                     ) # end of fluid Row
+                           #            ), # end of industry tab panel
+                           #            
+                           #            tabPanel("Income",
+                           #                     fluidRow(
+                           #                       column(width = 6, plotlyOutput("plot_income")),
+                           #                       column(width = 6, leafletOutput("income_map"))
+                           #                     ), # end of fluid row
+                           #                     fluidRow(
+                           #                       column(width = 12,hr(),DT::dataTableOutput("table_income"))
+                           #                     ) # end of fluid Row
+                           #            ) # end of income tab panel
+                           #            
+                           #          ) # end of jobs and income tabset panel
+                           # ), # end of jobs and income Tab Panel
                            
                            tabPanel(icon("car"),
                                     

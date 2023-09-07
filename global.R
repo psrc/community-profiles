@@ -187,7 +187,7 @@ create_summary_chart <- function(d, p, y, v, val, f=1, dec=0, s="", d.title, d.c
 
 
 create_tract_map <- function(t, y, p, v, val, d.clr, d.title, pre="", s="", dec=0, f=1) {
-  
+
   if (y == "2016-2020 ACS Data") {
     tracts <- tract.shape %>% filter(census_year==2020)
   } else {
