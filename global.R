@@ -141,6 +141,78 @@ find_rgeo_data <- function(p, v) {
   return(c)
 }
 
+create_summary_echart <- function(d, p, y, v, val, f=1, dec=0, s="", d.title, d.clr) {
+
+  js <- paste("function(params, ticket, callback) {
+                                       var fmt = new Intl.NumberFormat('en', {\"style\":\"percent\",\"minimumFractionDigits\":1,\"maximumFractionDigits\":1,\"currency\":\"USD\"});\n
+                                       var idx = 0;\n
+                                       if (params.name == params.value[0]) {\n
+                                       idx = 1;\n        }\n
+                                       return(params.marker + ' ' +\n'",
+                                               d.title ," in ' + params.seriesName + ': ' + fmt.format(parseFloat(params.value[idx]))
+                                              )
+                                       }")
+  
+  t <- d %>% 
+    filter(geog_name %in% c(p,"Region") & acs_year == y & Category == v) %>%
+    select(Label, .data[[val]], geog_name) %>%
+    filter(!(str_detect(Label, "Total"))) %>%
+    mutate(Label = str_wrap(Label, 20))
+  
+  lv <- t %>% filter(geog_name == p) %>% select(Label) %>% pull()
+  
+  t <- t %>% 
+    mutate(Label = factor(Label, levels = lv)) %>%
+    mutate(geog_name = factor(geog_name, levels = c(p, "Region")))
+  
+  t.max <- t %>% select(.data[[val]]) %>% pull() %>% max() %>% as.numeric()
+  t.max <- t.max * 1.25
+  
+  w.pal <- c(d.clr,"#999999")
+
+  # g <- ggplotly(
+  #   ggplot(data=t, 
+  #          aes(x=`Label`, 
+  #              y=get(eval(val)),
+  #              fill=geog_name,
+  #              text= paste0("<b>", d.title, " in ",geog_name, ": ","</b>",prettyNum(round(get(eval(val))*f, dec), big.mark = ","),s)
+  #          )) +
+  #     geom_bar(stat="identity", position = "dodge") +
+  #     scale_fill_manual(values = w.pal) + 
+  #     scale_y_continuous(labels = label_percent(accuracy = 1), limits = c(0, t.max))+
+  #     coord_flip() +
+  #     theme(legend.position = "bottom",
+  #           axis.title.y=element_blank(), 
+  #           axis.title.x=element_blank(),
+  #           axis.text=element_text(size=10),
+  #           axis.title=element_text(size=12,face="bold"),
+  #           panel.grid.major = element_blank(),
+  #           panel.grid.minor = element_blank(),
+  #           panel.border = element_blank(),
+  #           axis.line = element_blank())
+  #   ,tooltip = c("text")) %>% layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.1, title = ""))
+  
+  e <- t %>% 
+    group_by(geog_name) %>% 
+    e_charts_(x = "Label", stack = NULL) |>
+    e_bar_(val) |>
+    # e_y_axis(max = ymax) |>
+    # e_y_axis(splitNumber = 3, max = ymax) |>
+    e_x_axis(axisLabel = list(interval = 0L),
+             axisTick = list(alignWithLabel = TRUE)) |>
+    e_flip_coords() |>
+    e_grid(left = '21%', top = '10%') |>
+    e_color(w.pal) |>
+    e_tooltip(formatter =  e_tooltip_item_formatter("percent", digits = 1)) |>
+    e_tooltip(formatter =  htmlwidgets::JS(js)) |>
+    e_x_axis(formatter = e_axis_formatter("percent", digits = 0)) |>
+    e_legend(bottom=0) |>
+    e_toolbox_feature("dataView") |>
+    e_toolbox_feature("saveAsImage")
+  
+  return(e)
+}
+
 create_summary_chart <- function(d, p, y, v, val, f=1, dec=0, s="", d.title, d.clr) {
   
   t <- d %>% 
@@ -159,20 +231,20 @@ create_summary_chart <- function(d, p, y, v, val, f=1, dec=0, s="", d.title, d.c
   t.max <- t.max * 1.25
   
   w.pal <- c(d.clr,"#999999")
-  
+
   g <- ggplotly(
-    ggplot(data=t, 
-           aes(x=`Label`, 
+    ggplot(data=t,
+           aes(x=`Label`,
                y=get(eval(val)),
                fill=geog_name,
                text= paste0("<b>", d.title, " in ",geog_name, ": ","</b>",prettyNum(round(get(eval(val))*f, dec), big.mark = ","),s)
            )) +
       geom_bar(stat="identity", position = "dodge") +
-      scale_fill_manual(values = w.pal) + 
+      scale_fill_manual(values = w.pal) +
       scale_y_continuous(labels = label_percent(accuracy = 1), limits = c(0, t.max))+
       coord_flip() +
       theme(legend.position = "bottom",
-            axis.title.y=element_blank(), 
+            axis.title.y=element_blank(),
             axis.title.x=element_blank(),
             axis.text=element_text(size=10),
             axis.title=element_text(size=12,face="bold"),
@@ -181,7 +253,7 @@ create_summary_chart <- function(d, p, y, v, val, f=1, dec=0, s="", d.title, d.c
             panel.border = element_blank(),
             axis.line = element_blank())
     ,tooltip = c("text")) %>% layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.1, title = ""))
-  
+
   return(g)
 }
 

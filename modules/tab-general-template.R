@@ -6,7 +6,8 @@ general_tab_ui <- function(id, subtab_title) {
   tabPanel(subtab_title,
            fluidRow(
              column(width = 6, 
-                    plotlyOutput(ns("plot")
+                    echarts4rOutput(ns("plot")
+                    # plotlyOutput(ns("plot")
                     )
              ),
              column(width = 6, 
@@ -47,9 +48,9 @@ general_tab_server <- function(id, census_data, place, year, numeric_variables, 
 
     })
 
-    output$plot <- renderPlotly({
+    output$plot <- renderEcharts4r({
 
-      create_summary_chart(d = census_data,
+      create_summary_echart(d = census_data,
                            p = place(),
                            y = year(),
                            v = plot_v,
