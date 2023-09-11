@@ -1,3 +1,5 @@
+echarts4r::e_common(font_family = "Poppins")
+
 echart_rdi <- function(data, filter_type = NULL, desc_col, str_wrap_num, group, x, y, ymax = NULL, stack = NULL, title, egrid_left) {
   # function to produce an echart for RDI subtabs
   
