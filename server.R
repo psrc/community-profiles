@@ -157,6 +157,7 @@ shinyServer(function(input, output, session) {
   output$ownership_map <- renderLeaflet({create_tract_map(t=census_data, v="Home-Owner", y=input$Year, d.clr="GnBu", p=input$Place, val="share", d.title="% Home Ownership", dec=1, f=100, s="%", pre="")})
   
   # briefcase section ----
+  ## Educational Attainment, Occupation/Industry of residents, Median HH Income
 
   briefcase_tab_server(id = "briefcase", 
                        census_data = census_data, 
@@ -165,46 +166,7 @@ shinyServer(function(input, output, session) {
                        numeric_variables = numeric_variables, 
                        percent_variables = percent_variables)
   
-  # ## Educational Attainment Tab Panel Information ----
-  # 
-  # output$table_edu <- DT::renderDataTable({
-  #   datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Educational Attainment"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  # })
-  # 
-  # output$plot_edu <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Educational Attainment", val="share", f=100, dec=1, d.title="% of Total Population",s="%",d.clr="#91268F")})
-  # 
-  # output$edu_map <- renderLeaflet({create_tract_map(t=census_data, v="College-Degree", y=input$Year, d.clr="Purples", p=input$Place, val="share", d.title="College Degree", dec=1, f=100, s="%")})
-  # 
-  # ## Occupation Tab Panel Information ----
-  # 
-  # output$table_occupation <- DT::renderDataTable({
-  #   datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Occupation"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  # })
-  # 
-  # output$plot_occupation <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Occupation", val="share", f=100, dec=1, d.title="% of Total Workers",s="%",d.clr="#8CC63E")})
-  # 
-  # output$occupation_map <- renderLeaflet({create_tract_map(t=census_data, v="Office", y=input$Year, d.clr="Greens", p=input$Place, val="share", d.title="% Office Workers", dec=1, f=100, s="%", pre="")})
-  # 
-  # ## Industry Tab Panel Information ----
-  # 
-  # output$table_industry <- DT::renderDataTable({
-  #   datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Industry"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  # })
-  # 
-  # output$plot_industry <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Industry", val="share", f=100, dec=1, d.title="% of Total Workers",s="%",d.clr="#F05A28")})
-  # 
-  # output$industry_map <- renderLeaflet({create_tract_map(t=census_data, v="Retail-Accomodations", y=input$Year, d.clr="Oranges", p=input$Place, val="share", d.title="% Retail-Accom. Workers", dec=1, f=100, s="%", pre="")})
-  # 
-  # ## Income Tab Panel Information ----
-  # 
-  # output$table_income <- DT::renderDataTable({
-  #   datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Household Income"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  # })
-  # 
-  # output$plot_income <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Household Income", val="share", f=100, dec=1, d.title="% of Total Households",s="%",d.clr="#00A7A0")})
-  # 
-  # output$income_map <- renderLeaflet({create_tract_map(t=census_data, v="Income", y=input$Year, d.clr="GnBu", p=input$Place, val="estimate", d.title="Median HH Income", dec=0, f=1, s="", pre="$")})
-  # 
+  # car section ----
   ## Mode Share Tab Panel Information ----
   
   output$table_modes <- DT::renderDataTable({
