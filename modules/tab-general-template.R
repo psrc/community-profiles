@@ -25,8 +25,7 @@ general_tab_ui <- function(id, subtab_title) {
 }
 
 general_tab_server <- function(id, census_data, place, year, numeric_variables, percent_variables,
-                               table_v, plot_v, map_v, map_title) {
-  # input$Place input$Year
+                               table_v, plot_v, plot_title, plot_color, map_v, map_title, map_color) {
   
   moduleServer(id, function(input, output, session) { 
     ns <- session$ns
@@ -55,9 +54,9 @@ general_tab_server <- function(id, census_data, place, year, numeric_variables, 
                            val="share",
                            f = 100,
                            dec = 1,
-                           d.title = "% of Total Population",
+                           d.title = plot_title, #"% of Total Population"
                            s = "%",
-                           d.clr = "#91268F")
+                           d.clr = plot_color) # "#91268F"
 
       })
 
@@ -66,7 +65,7 @@ general_tab_server <- function(id, census_data, place, year, numeric_variables, 
       create_tract_map(t = census_data, 
                        v = map_v, 
                        y = year(), 
-                       d.clr = "Purples", 
+                       d.clr = map_color, # "Purples"
                        p = place(), 
                        val = "share", 
                        d.title = map_title, 
