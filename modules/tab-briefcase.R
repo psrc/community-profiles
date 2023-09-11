@@ -4,7 +4,8 @@ briefcase_tab_ui <- function(id) {
   ns <- NS(id)
   intro <- p("The job and income metrics on this page cover the topics of Educational Attainment, Occupation of residents, Industry of residents and Median Income for houesholds. ",
              "Job and income characteristics are summarized in Data Profile 3 (DP03) and Educational Attainment is included in DP02. ",
-             "Data profiles are a summarization of a variety of Census Detailed Tables contained within the American Community Survey datasets and are a great resource for high level statistics for a community however detailed information requires the use of specific ACS tables."
+             "Data profiles are a summarization of a variety of Census Detailed Tables contained within the American Community Survey 
+             datasets and are a great resource for high level statistics for a community however detailed information requires the use of specific ACS tables."
   )
   
   div(
@@ -19,16 +20,14 @@ briefcase_tab_ui <- function(id) {
 }
 
 briefcase_tab_server <- function(id, census_data, year, place, numeric_variables, percent_variables) {
-  # input$Place input$Year
-  
+
   moduleServer(id, function(input, output, session) { 
     ns <- session$ns
-    # browser()
-    
+
     general_tab_server(id = 'ea', 
                        census_data = census_data, 
-                       place = reactive(place()), #showing up as null one layer down
-                       year = reactive(year()),  #showing up as null one layer down
+                       place = reactive(place()),
+                       year = reactive(year()),
                        numeric_variables = numeric_variables, 
                        percent_variables = percent_variables,
                        table_v = "Educational Attainment", 

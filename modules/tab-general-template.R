@@ -31,35 +31,35 @@ general_tab_server <- function(id, census_data, place, year, numeric_variables, 
   moduleServer(id, function(input, output, session) { 
     ns <- session$ns
     
-    # output$table <- renderDT({
-    #   
-    #   d <- create_summary_table(t = census_data,
-    #                             p = place(),
-    #                             y = year(),
-    #                             v = table_v)
-    #   datatable(
-    #     d,
-    #     rownames = FALSE, 
-    #     options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% 
-    #     formatCurrency(numeric_variables, "", digits = 0) %>% 
-    #     formatPercentage(percent_variables, 1)
-    #   
-    # })
-    # 
-    # output$plot <- renderPlotly({
-    #   
-    #   create_summary_chart(d = census_data, 
-    #                        p = place(), 
-    #                        y = year(), 
-    #                        v = plot_v, 
-    #                        val="share", 
-    #                        f = 100, 
-    #                        dec = 1, 
-    #                        d.title = "% of Total Population",
-    #                        s = "%",
-    #                        d.clr = "#91268F")
-    #   
-    #   })
+    output$table <- renderDT({
+
+      d <- create_summary_table(t = census_data,
+                                p = place(),
+                                y = year(),
+                                v = table_v)
+      datatable(
+        d,
+        rownames = FALSE,
+        options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>%
+        formatCurrency(numeric_variables, "", digits = 0) %>%
+        formatPercentage(percent_variables, 1)
+
+    })
+
+    output$plot <- renderPlotly({
+
+      create_summary_chart(d = census_data,
+                           p = place(),
+                           y = year(),
+                           v = plot_v,
+                           val="share",
+                           f = 100,
+                           dec = 1,
+                           d.title = "% of Total Population",
+                           s = "%",
+                           d.clr = "#91268F")
+
+      })
 
     output$map <- renderLeaflet({
   
