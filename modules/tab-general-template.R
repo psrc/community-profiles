@@ -12,7 +12,8 @@ general_tab_ui <- function(id, subtab_title) {
              column(width = 6, 
                     leafletOutput(ns("map")
                     )
-             )
+             ),
+             style = "margin-top: 1rem;"
            ), 
            fluidRow(
              column(width = 12, 
@@ -25,8 +26,8 @@ general_tab_ui <- function(id, subtab_title) {
 }
 
 general_tab_server <- function(id, census_data, place, year, numeric_variables, percent_variables,
-                               table_v, plot_v, map_v, map_title) {
-  # input$Place input$Year
+                               table_v, plot_v, plot_title, plot_color, 
+                               map_v, map_title, map_color, map_value, map_suffix, map_prefix) {
   
   moduleServer(id, function(input, output, session) { 
     ns <- session$ns
@@ -55,9 +56,9 @@ general_tab_server <- function(id, census_data, place, year, numeric_variables, 
                            val="share",
                            f = 100,
                            dec = 1,
-                           d.title = "% of Total Population",
+                           d.title = plot_title, 
                            s = "%",
-                           d.clr = "#91268F")
+                           d.clr = plot_color)
 
       })
 
@@ -66,13 +67,14 @@ general_tab_server <- function(id, census_data, place, year, numeric_variables, 
       create_tract_map(t = census_data, 
                        v = map_v, 
                        y = year(), 
-                       d.clr = "Purples", 
+                       d.clr = map_color,
                        p = place(), 
-                       val = "share", 
+                       val = map_value,
                        d.title = map_title, 
                        dec = 1, 
                        f = 100, 
-                       s = "%")
+                       s = map_suffix,
+                       pre = map_prefix)
       })
     
     
