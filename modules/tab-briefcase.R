@@ -42,7 +42,10 @@ briefcase_tab_server <- function(id, census_data, year, place, numeric_variables
                        plot_color = "#91268F",
                        map_v = "College-Degree", 
                        map_title = "College Degree",
-                       map_color = "Purples")
+                       map_color = "Purples",
+                       map_value = "share",
+                       map_suffix = "%",
+                       map_prefix = "")
     
     general_tab_server(id = 'occ', 
                        census_data = census_data, 
@@ -56,7 +59,10 @@ briefcase_tab_server <- function(id, census_data, year, place, numeric_variables
                        plot_color = "#8CC63E",
                        map_v = "Office", 
                        map_title = "% Office Workers",
-                       map_color = "Greens")
+                       map_color = "Greens",
+                       map_value = "share",
+                       map_suffix = "%",
+                       map_prefix = "")
     
     general_tab_server(id = 'ind', 
                        census_data = census_data, 
@@ -70,7 +76,10 @@ briefcase_tab_server <- function(id, census_data, year, place, numeric_variables
                        plot_color = "#F05A28",
                        map_v = "Retail-Accomodations", 
                        map_title = "% Retail-Accom. Workers",
-                       map_color = "Oranges")
+                       map_color = "Oranges",
+                       map_value = "share",
+                       map_suffix = "%",
+                       map_prefix = "")
     
     general_tab_server(id = 'inc', 
                        census_data = census_data, 
@@ -84,7 +93,10 @@ briefcase_tab_server <- function(id, census_data, year, place, numeric_variables
                        plot_color = "#00A7A0",
                        map_v = "Income", 
                        map_title = "Median HH Income",
-                       map_color = "GnBu")
+                       map_color = "GnBu",
+                       map_value = "estimate",
+                       map_suffix = "",
+                       map_prefix = "$")
     
   }) # end moduleServer
   
