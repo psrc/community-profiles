@@ -169,33 +169,40 @@ shinyServer(function(input, output, session) {
   # car section ----
   ## Mode Share Tab Panel Information ----
   
-  output$table_modes <- DT::renderDataTable({
-    datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Mode Share"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  })
+  car_tab_server(id = "car", 
+                  census_data = census_data, 
+                  place = reactive(input$Place),
+                  year = reactive(input$Year),
+                  numeric_variables = numeric_variables, 
+                  percent_variables = percent_variables)
   
-  output$plot_modes <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Mode Share", val="share", f=100, dec=1, d.title="% of Total Workers",s="%",d.clr="#91268F")})
-  
-  output$modes_map <- renderLeaflet({create_tract_map(t=census_data, v="Non-Vehicle", y=input$Year, d.clr="Purples", p=input$Place, val="share", d.title="Non-Vehicle Modes to Work", dec=0, f=100, s="%", pre="")})
+  # output$table_modes <- DT::renderDataTable({
+  #   datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Mode Share"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
+  # })
+  # 
+  # output$plot_modes <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Mode Share", val="share", f=100, dec=1, d.title="% of Total Workers",s="%",d.clr="#91268F")})
+  # 
+  # output$modes_map <- renderLeaflet({create_tract_map(t=census_data, v="Non-Vehicle", y=input$Year, d.clr="Purples", p=input$Place, val="share", d.title="Non-Vehicle Modes to Work", dec=0, f=100, s="%", pre="")})
   
   ## Travel Time Tab Panel Information ----
   
-  output$table_time <- DT::renderDataTable({
-    datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Travel Time"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  })
-  
-  output$plot_time <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Travel Time", val="share", f=100, dec=1, d.title="% of Total Workers",s="%",d.clr="#8CC63E")})
-  
-  output$time_map <- renderLeaflet({create_tract_map(t=census_data, v="Time", y=input$Year, d.clr="Greens", p=input$Place, val="estimate", d.title="Travel Time to Work", dec=1, f=1, s="", pre="")})
+  # output$table_time <- DT::renderDataTable({
+  #   datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Travel Time"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
+  # })
+  # 
+  # output$plot_time <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Travel Time", val="share", f=100, dec=1, d.title="% of Total Workers",s="%",d.clr="#8CC63E")})
+  # 
+  # output$time_map <- renderLeaflet({create_tract_map(t=census_data, v="Time", y=input$Year, d.clr="Greens", p=input$Place, val="estimate", d.title="Travel Time to Work", dec=1, f=1, s="", pre="")})
   
   ## Travel Departure Time Tab Panel Information ----
   
-  output$table_depart <- DT::renderDataTable({
-    datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Departure Time"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  })
-  
-  output$plot_depart <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Departure Time", val="share", f=100, dec=1, d.title="% of Total Workers",s="%",d.clr="#F05A28")})
-  
-  output$depart_map <- renderLeaflet({create_tract_map(t=census_data, v="AM-Peak", y=input$Year, d.clr="Oranges", p=input$Place, val="share", d.title="AM Peak Departure", dec=0, f=100, s="%", pre="")})
+  # output$table_depart <- DT::renderDataTable({
+  #   datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Departure Time"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
+  # })
+  # 
+  # output$plot_depart <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Departure Time", val="share", f=100, dec=1, d.title="% of Total Workers",s="%",d.clr="#F05A28")})
+  # 
+  # output$depart_map <- renderLeaflet({create_tract_map(t=census_data, v="AM-Peak", y=input$Year, d.clr="Oranges", p=input$Place, val="share", d.title="AM Peak Departure", dec=0, f=100, s="%", pre="")})
   
   ## Vehicle Availability Tab Panel Information ----
   

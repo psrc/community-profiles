@@ -4,7 +4,7 @@ library(shiny)
 library(shinyjs)
 library(shinyBS)
 
-library(ggplot2)
+# library(ggplot2)
 library(scales)
 library(plotly)
 library(foreign)
@@ -32,14 +32,14 @@ plan.clrs <- list("Approved" = "#AD5CAB",
                   "Unprogrammed" = "#FBD6C9",
                   "2021-2024 TIP" = "#A9D46E")
 
-# Jurisdiction Data -------------------------------------------------------
+# Jurisdiction Data ----
 jurisdictions <- as_tibble(fread('data//jurisdictions.csv'))
 census_data <- as_tibble(fread('data//census_data_by_place.csv')) %>%
   mutate(Label = gsub("Education & Health Services", "Health & Edu", Label)) %>%
   mutate(Label = gsub("Entertainment, Accommodation & Food Services", "Food & Entertainment", Label)) %>%
   mutate(acs_year = paste0(census_year-4,"-", census_year," ACS Data"))
 
-# Shapefiles --------------------------------------------------------------
+# Shapefiles ----
 wgs84 <- 4326
 
 city.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/City_Boundaries/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>%
@@ -115,7 +115,7 @@ final.nms <- c("ID","Sponsor","Type","Title","Improvement","Completion","Status"
 currency.rtp <- c("Cost")
 rtp.status <- c("Approved","Conditionally Approved","ROW Conditionally Approved","Candidate", "Financially Constrained", "Unprogrammed")
 
-# Functions ---------------------------------------------------------------
+# Functions ----
 return_estimate <- function(t, p, y, v, val, d) {
   
   r <- t %>%

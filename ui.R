@@ -145,55 +145,59 @@ shinyUI(
                                     ),
                            
                            tabPanel(icon("car"),
-                                    
-                                    "The travel related metrics on this page cover the topics of Mode Share, Travel Time and Time of Departure for Work related travel as well as the number of Vehicles Available for households in the community. ",
-                                    "Mode Share and Vehicle Availability are metrics from Data Profile 3 (DP03) and DP04 respectively. Detailed Travel Time comes from table B08303 and Departure Time is from table B08302. ",
-                                    "Data profiles are a summarization of a variety of Census Detailed Tables contained within the American Community Survey datasets and are a great resource for high level statistics for a community however detailed information requires the use of specific ACS tables.",
-                                    
-                                    tabsetPanel(
-                                      tabPanel("Mode Share to Work",
-                                               fluidRow(
-                                                 column(width = 6, plotlyOutput("plot_modes")),
-                                                 column(width = 6, leafletOutput("modes_map"))
-                                               ), # end of fluid row
-                                               fluidRow(
-                                                 column(width = 12,hr(),DT::dataTableOutput("table_modes"))
-                                               ) # end of fluid Row
-                                      ), # end of mode share tab panel
-                                      
-                                      tabPanel("Travel Time to Work",
-                                               fluidRow(
-                                                 column(width = 6, plotlyOutput("plot_time")),
-                                                 column(width = 6, leafletOutput("time_map"))
-                                               ), # end of fluid row
-                                               fluidRow(
-                                                 column(width = 12,hr(),DT::dataTableOutput("table_time"))
-                                               ) # end of fluid Row
-                                      ), # end of travel time tab panel
-                                      
-                                      tabPanel("Departure Time to Work",
-                                               fluidRow(
-                                                 column(width = 6, plotlyOutput("plot_depart")),
-                                                 column(width = 6, leafletOutput("depart_map"))
-                                               ), # end of fluid row
-                                               fluidRow(
-                                                 column(width = 12,hr(),DT::dataTableOutput("table_depart"))
-                                               ) # end of fluid Row
-                                      ), # end of departure time tab panel
-                                      
-                                      tabPanel("Vehicles Available",
-                                               fluidRow(
-                                                 column(width = 6, plotlyOutput("plot_vehicles")),
-                                                 column(width = 6, leafletOutput("vehicles_map"))
-                                               ), # end of fluid row
-                                               fluidRow(
-                                                 column(width = 12,hr(),DT::dataTableOutput("table_vehicles"))
-                                               ) # end of fluid Row
-                                      ) # end of Vehicle Availability tab panel 
-                                      
-                                    ) # end of Transportation TabSet
-                                    
-                           ), # end of Transportation tabPanel
+                                    car_tab_ui("car")
+                           ),
+                           
+                           # tabPanel(icon("car"),
+                           #          
+                           #          "The travel related metrics on this page cover the topics of Mode Share, Travel Time and Time of Departure for Work related travel as well as the number of Vehicles Available for households in the community. ",
+                           #          "Mode Share and Vehicle Availability are metrics from Data Profile 3 (DP03) and DP04 respectively. Detailed Travel Time comes from table B08303 and Departure Time is from table B08302. ",
+                           #          "Data profiles are a summarization of a variety of Census Detailed Tables contained within the American Community Survey datasets and are a great resource for high level statistics for a community however detailed information requires the use of specific ACS tables.",
+                           #          
+                           #          tabsetPanel(
+                           #            tabPanel("Mode Share to Work",
+                           #                     fluidRow(
+                           #                       column(width = 6, plotlyOutput("plot_modes")),
+                           #                       column(width = 6, leafletOutput("modes_map"))
+                           #                     ), # end of fluid row
+                           #                     fluidRow(
+                           #                       column(width = 12,hr(),DT::dataTableOutput("table_modes"))
+                           #                     ) # end of fluid Row
+                           #            ), # end of mode share tab panel
+                           #            
+                           #            tabPanel("Travel Time to Work",
+                           #                     fluidRow(
+                           #                       column(width = 6, plotlyOutput("plot_time")),
+                           #                       column(width = 6, leafletOutput("time_map"))
+                           #                     ), # end of fluid row
+                           #                     fluidRow(
+                           #                       column(width = 12,hr(),DT::dataTableOutput("table_time"))
+                           #                     ) # end of fluid Row
+                           #            ), # end of travel time tab panel
+                           #            
+                           #            tabPanel("Departure Time to Work",
+                           #                     fluidRow(
+                           #                       column(width = 6, plotlyOutput("plot_depart")),
+                           #                       column(width = 6, leafletOutput("depart_map"))
+                           #                     ), # end of fluid row
+                           #                     fluidRow(
+                           #                       column(width = 12,hr(),DT::dataTableOutput("table_depart"))
+                           #                     ) # end of fluid Row
+                           #            ), # end of departure time tab panel
+                           #            
+                           #            tabPanel("Vehicles Available",
+                           #                     fluidRow(
+                           #                       column(width = 6, plotlyOutput("plot_vehicles")),
+                           #                       column(width = 6, leafletOutput("vehicles_map"))
+                           #                     ), # end of fluid row
+                           #                     fluidRow(
+                           #                       column(width = 12,hr(),DT::dataTableOutput("table_vehicles"))
+                           #                     ) # end of fluid Row
+                           #            ) # end of Vehicle Availability tab panel 
+                           #            
+                           #          ) # end of Transportation TabSet
+                           #          
+                           # ), # end of Transportation tabPanel
                            
                            tabPanel(icon("wrench"),
                                     
