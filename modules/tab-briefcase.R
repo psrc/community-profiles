@@ -44,6 +44,7 @@ briefcase_tab_server <- function(id, census_data, year, place, numeric_variables
                        map_title = "College Degree",
                        map_color = "Purples",
                        map_value = "share",
+                       map_f = 100,
                        map_suffix = "%",
                        map_prefix = "")
     
@@ -61,6 +62,7 @@ briefcase_tab_server <- function(id, census_data, year, place, numeric_variables
                        map_title = "% Office Workers",
                        map_color = "Greens",
                        map_value = "share",
+                       map_f = 100,
                        map_suffix = "%",
                        map_prefix = "")
     
@@ -78,6 +80,7 @@ briefcase_tab_server <- function(id, census_data, year, place, numeric_variables
                        map_title = "% Retail-Accom. Workers",
                        map_color = "Oranges",
                        map_value = "share",
+                       map_f = 100,
                        map_suffix = "%",
                        map_prefix = "")
     
@@ -95,6 +98,7 @@ briefcase_tab_server <- function(id, census_data, year, place, numeric_variables
                        map_title = "Median HH Income",
                        map_color = "GnBu",
                        map_value = "estimate",
+                       map_f = 1,
                        map_suffix = "",
                        map_prefix = "$")
     

@@ -170,28 +170,6 @@ create_summary_echart <- function(d, p, y, v, val, f=1, dec=0, s="", d.title, d.
   
   w.pal <- c(d.clr,"#999999")
 
-  # g <- ggplotly(
-  #   ggplot(data=t, 
-  #          aes(x=`Label`, 
-  #              y=get(eval(val)),
-  #              fill=geog_name,
-  #              text= paste0("<b>", d.title, " in ",geog_name, ": ","</b>",prettyNum(round(get(eval(val))*f, dec), big.mark = ","),s)
-  #          )) +
-  #     geom_bar(stat="identity", position = "dodge") +
-  #     scale_fill_manual(values = w.pal) + 
-  #     scale_y_continuous(labels = label_percent(accuracy = 1), limits = c(0, t.max))+
-  #     coord_flip() +
-  #     theme(legend.position = "bottom",
-  #           axis.title.y=element_blank(), 
-  #           axis.title.x=element_blank(),
-  #           axis.text=element_text(size=10),
-  #           axis.title=element_text(size=12,face="bold"),
-  #           panel.grid.major = element_blank(),
-  #           panel.grid.minor = element_blank(),
-  #           panel.border = element_blank(),
-  #           axis.line = element_blank())
-  #   ,tooltip = c("text")) %>% layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.1, title = ""))
-  
   e <- t %>% 
     group_by(geog_name) %>% 
     e_charts_(x = "Label", stack = NULL) |>

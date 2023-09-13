@@ -1,13 +1,13 @@
 # Display single tabset containing plot, leaflet map, DT
 
-general_tab_ui <- function(id, subtab_title) {
+general_tab_ui <- function(id, subtab_title, value = NULL) {
   ns <- NS(id)
   
   tabPanel(subtab_title,
+           value = value,
            fluidRow(
              column(width = 6, 
                     echarts4rOutput(ns("plot")
-                    # plotlyOutput(ns("plot")
                     )
              ),
              column(width = 6, 
@@ -28,7 +28,7 @@ general_tab_ui <- function(id, subtab_title) {
 
 general_tab_server <- function(id, census_data, place, year, numeric_variables, percent_variables,
                                table_v, plot_v, plot_title, plot_color, 
-                               map_v, map_title, map_color, map_value, map_suffix, map_prefix) {
+                               map_v, map_title, map_color, map_value, map_f = 1, map_suffix, map_prefix) {
   
   moduleServer(id, function(input, output, session) { 
     ns <- session$ns
@@ -73,7 +73,7 @@ general_tab_server <- function(id, census_data, place, year, numeric_variables, 
                        val = map_value,
                        d.title = map_title, 
                        dec = 1, 
-                       f = 100, 
+                       f = map_f, 
                        s = map_suffix,
                        pre = map_prefix)
       })

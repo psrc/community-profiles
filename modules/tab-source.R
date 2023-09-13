@@ -17,10 +17,10 @@ source_tab_ui <- function(id) {
                     "Race: Data Profile 5 (DP05)",
                     "Vehicles Available: Data Profile 4 (DP04)")
   
-  census_about <- p("The Census Data used in this portal is stored in PSRC's central database but is available from the US Census Bureau. 
-             All tables can be downloaded either via the", 
-             tags$a(href="https://www.census.gov/data/developers/data-sets/acs-5year.html", "Census API", target="_blank"), 
-             "or the", tags$a(href="https://data.census.gov/cedsci/", "Census Data", target="_blank"), "page.")
+  census_about <- p("The Census Data used in this portal is stored in PSRC's central database but is available from the US Census Bureau.
+                    All tables can be downloaded either via the", 
+                    tags$a(href="https://www.census.gov/data/developers/data-sets/acs-5year.html", "Census API", target="_blank"), 
+                    "or the", tags$a(href="https://data.census.gov/cedsci/", "Census Data", target="_blank"), "page.")
   
   tabPanel(icon("info-circle"),
            h1("Data Sources"),
@@ -30,8 +30,12 @@ source_tab_ui <- function(id) {
            h3("Census Tables:"),
            
            htmltools::withTags(
-             lapply(data_sources, p)
+             lapply(data_sources, function(x) div(x, style = "margin-bottom: .2rem;"))
            )
+           
+           # htmltools::withTags(
+           #   lapply(data_sources, p)
+           # )
            
   ) # end tabPanel
 }

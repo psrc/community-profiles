@@ -86,55 +86,8 @@ shinyUI(
                            ), # end of Demographics Tab Panel
                            
                            tabPanel(icon("home"),
-                                    "The housing and household level metrics on this page cover the topics of Housing Type, Home Values, Monthly Rental Cost and Home Ownership. ",
-                                    "Data Profile 4 (DP04) includes a wealth of information on housing and household characteristics. ",
-                                    "Data profiles are a summarization of a variety of Census Detailed Tables contained within the American Community Survey datasets and are a great resource for high level statistics for a community however detailed information requires the use of specific ACS tables.",
                                     value = 'housing',
-                                    tabsetPanel(
-                                      id = 'tab_housing',
-                                      tabPanel("Housing Units",
-                                               value = 'units',
-                                               fluidRow(
-                                                 column(width = 6, plotlyOutput("plot_housingtype")),
-                                                 column(width = 6, leafletOutput("housingtype_map"))
-                                               ), # end of fluid row
-                                               fluidRow(
-                                                 column(width = 12,hr(),DT::dataTableOutput("table_housingtype"))
-                                               ) # end of fluid Row
-                                      ), # end of units tab panel
-                                      
-                                      tabPanel("Home Value",
-                                               fluidRow(
-                                                 column(width = 6, plotlyOutput("plot_homevalue")),
-                                                 column(width = 6, leafletOutput("homevalue_map"))
-                                               ), # end of fluid row
-                                               fluidRow(
-                                                 column(width = 12,hr(),DT::dataTableOutput("table_homevalue"))
-                                               ) # end of fluid Row
-                                      ), # end of Home Value tab panel
-                                      
-                                      tabPanel("Monthly Rent",
-                                               fluidRow(
-                                                 column(width = 6, plotlyOutput("plot_monthlyrent")),
-                                                 column(width = 6, leafletOutput("monthlyrent_map"))
-                                               ), # end of fluid row
-                                               fluidRow(
-                                                 column(width = 12,hr(),DT::dataTableOutput("table_monthlyrent"))
-                                               ) # end of fluid Row
-                                      ), # end of Monthly Rent tab panel
-                                      
-                                      tabPanel("Home Ownership",
-                                               fluidRow(
-                                                 column(width = 6, plotlyOutput("plot_ownership")),
-                                                 column(width = 6, leafletOutput("ownership_map"))
-                                               ), # end of fluid row
-                                               fluidRow(
-                                                 column(width = 12,hr(),DT::dataTableOutput("table_ownership"))
-                                               ) # end of fluid Row
-                                      ) # end of Home Ownership tab panel 
-                                      
-                                    ) # end of Housing tabset panel
-                           ), # end of Housing Tab Panel
+                                    house_tab_ui("house")),
 
                            tabPanel("RDI",
                                     rdi_tab_ui("rdi")),

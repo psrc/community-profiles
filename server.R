@@ -16,7 +16,7 @@ shinyServer(function(input, output, session) {
   # link from RDI to Households and Housing
   observeEvent(input$`rdi-link_hh`, {
     updateTabsetPanel(session, inputId = 'Navbar', selected = 'housing')
-    updateTabsetPanel(session, inputId = 'tab_housing', selected = 'units')
+    updateTabsetPanel(session, inputId = input$`house-tabset`, selected = input$`house-units`)
   })
   
   ## This section is for all the high level stats that are displayed in the sidebar ----
@@ -115,46 +115,15 @@ shinyServer(function(input, output, session) {
   
   output$disability_map <- renderLeaflet({create_tract_map(t=census_data, v="Disabled", y=input$Year, d.clr="GnBu", p=input$Place, val="share", d.title="People with a Disability", dec=1, f=100, s="%")})
   
+  # house section ----
+  ## Housing Type, Home Values, Monthly Rental Cost and Home Ownership
   
-  ## Housing Type Tab Panel Information ----
-  
-  output$table_housingtype <- DT::renderDataTable({
-    datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Housing Type"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  })
-  
-  output$plot_housingtype <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Housing Type", val="share", f=100, dec=1, d.title="% of Total Housing Units",s="%",d.clr="#91268F")})
-  
-  output$housingtype_map <- renderLeaflet({create_tract_map(t=census_data, v="Middle-Housing", y=input$Year, d.clr="Purples", p=input$Place, val="share", d.title="Medium Density Housing", dec=1, f=100, s="%")})
-  
-  ## Home Value Tab Panel Information ----
-  
-  output$table_homevalue <- DT::renderDataTable({
-    datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Home Value"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  })
-  
-  output$plot_homevalue <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Home Value", val="share", f=100, dec=1, d.title="% of Total Ownership Units",s="%",d.clr="#8CC63E")})
-  
-  output$homevalue_map <- renderLeaflet({create_tract_map(t=census_data, v="Home-Value", y=input$Year, d.clr="Greens", p=input$Place, val="estimate", d.title="Median Value", dec=0, f=1, s="", pre="$")})
-  
-  ## Monthly Rent Tab Panel Information ----
-  
-  output$table_monthlyrent <- DT::renderDataTable({
-    datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Monthly Rent"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  })
-  
-  output$plot_monthlyrent <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Monthly Rent", val="share", f=100, dec=1, d.title="% of Total Rental Units",s="%",d.clr="#F05A28")})
-  
-  output$monthlyrent_map <- renderLeaflet({create_tract_map(t=census_data, v="Rent", y=input$Year, d.clr="Oranges", p=input$Place, val="estimate", d.title="Median Rent", dec=0, f=1, s="", pre="$")})
-  
-  ## Home Ownership Tab Panel Information ----
-  
-  output$table_ownership <- DT::renderDataTable({
-    datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Home Ownership"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  })
-  
-  output$plot_ownership <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Home Ownership", val="share", f=100, dec=1, d.title="% of Total Households",s="%",d.clr="#00A7A0")})
-  
-  output$ownership_map <- renderLeaflet({create_tract_map(t=census_data, v="Home-Owner", y=input$Year, d.clr="GnBu", p=input$Place, val="share", d.title="% Home Ownership", dec=1, f=100, s="%", pre="")})
+  house_tab_server(id = "house", 
+                   census_data = census_data, 
+                   place = reactive(input$Place),
+                   year = reactive(input$Year),
+                   numeric_variables = numeric_variables, 
+                   percent_variables = percent_variables)
   
   # briefcase section ----
   ## Educational Attainment, Occupation/Industry of residents, Median HH Income
