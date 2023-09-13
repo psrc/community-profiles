@@ -34,7 +34,7 @@ tip_rtp_tab_server <- function(id, place, plan_year, type = c('tip', 'rtp')) {
       d <- create_project_table(p = place(),
                                 i = projects.shape,
                                 f = final.nms,
-                                plan.yr = plan_year) #"2021-2024 TIP" rtp.status
+                                plan.yr = plan_year)
       
       datatable(d, 
                 rownames = FALSE, 
