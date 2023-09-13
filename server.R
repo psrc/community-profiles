@@ -1,23 +1,7 @@
 # Define server logic required to draw the map for the main panel
 shinyServer(function(input, output, session) {
   
-  # RDI ----
   
-  rdi_tab_server("rdi", 
-                 shape = community.shape,
-                 place = reactive({input$Place}))
-  
-  # link from RDI to Race & Ethnicity tab in People/demographics
-  observeEvent(input$`rdi-link_re`, {
-    updateTabsetPanel(session, inputId = 'Navbar', selected = 'people')
-    updateTabsetPanel(session, inputId = 'tab_people', selected = 're')
-  })
-  
-  # link from RDI to Households and Housing
-  observeEvent(input$`rdi-link_hh`, {
-    updateTabsetPanel(session, inputId = 'Navbar', selected = 'housing')
-    updateTabsetPanel(session, inputId = input$`house-tabset`, selected = input$`house-units`)
-  })
   
   ## This section is for all the high level stats that are displayed in the sidebar ----
   
@@ -75,45 +59,15 @@ shinyServer(function(input, output, session) {
 
   home_tab_server("home", place = reactive({input$Place}))
   
-  ## Age Tab Panel Information ----
+  # people tab ----
+  ## Age, Race & Ethnicity, Health Coverage and Disability Status
   
-  output$table_age <- DT::renderDataTable({
-    datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Age"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  })
-  
-  output$plot_age <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Age", val="share", f=100, dec=1, d.title="% of Total Population",s="%",d.clr="#91268F")})
-  
-  output$age_map <- renderLeaflet({create_tract_map(t=census_data, v="Age", y=input$Year, d.clr="Purples", p=input$Place, val="estimate", d.title="Median Age", dec=1)})
-  
-  ## Race Tab Panel Information ----
-  
-  output$table_race <- DT::renderDataTable({
-    datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Race"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  })
-  
-  output$plot_race <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Race", val="share", f=100, dec=1, d.title="% of Total Population",s="%",d.clr="#8CC63E")})
-  
-  output$race_map <- renderLeaflet({create_tract_map(t=census_data, v="People-of-Color", y=input$Year, d.clr="Greens", p=input$Place, val="share", d.title="People of Color", dec=1, f=100, s="%")})
-  
-  ## Health Insurance Tab Panel Information ----
-  
-  output$table_health <- DT::renderDataTable({
-    datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Health Coverage"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  })
-  
-  output$plot_health <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Health Coverage", val="share", f=100, dec=1, d.title="% of Total Population",s="%",d.clr="#F05A28")})
-  
-  output$health_map <- renderLeaflet({create_tract_map(t=census_data, v="Health-Insurance", y=input$Year, d.clr="Oranges", p=input$Place, val="share", d.title="No Health Coverage", dec=1, f=100, s="%")})
-  
-  ## Disability Tab Panel Information ----
-  
-  output$table_disability <- DT::renderDataTable({
-    datatable(create_summary_table(t=census_data,p=input$Place,y=input$Year,v="Disability"),rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>% formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-  })
-  
-  output$plot_disability <- renderPlotly({create_summary_chart(d=census_data, p=input$Place, y=input$Year, v="Disability", val="share", f=100, dec=1, d.title="% of Total Population",s="%",d.clr="#00A7A0")})
-  
-  output$disability_map <- renderLeaflet({create_tract_map(t=census_data, v="Disabled", y=input$Year, d.clr="GnBu", p=input$Place, val="share", d.title="People with a Disability", dec=1, f=100, s="%")})
+  people_tab_server("people",
+                    census_data = census_data, 
+                    place = reactive(input$Place),
+                    year = reactive(input$Year),
+                    numeric_variables = numeric_variables, 
+                    percent_variables = percent_variables)
   
   # house section ----
   ## Housing Type, Home Values, Monthly Rental Cost and Home Ownership
@@ -124,6 +78,24 @@ shinyServer(function(input, output, session) {
                    year = reactive(input$Year),
                    numeric_variables = numeric_variables, 
                    percent_variables = percent_variables)
+  
+  # RDI ----
+  
+  rdi_tab_server("rdi", 
+                 shape = community.shape,
+                 place = reactive({input$Place}))
+  
+  # link from RDI to Race & Ethnicity tab in People/demographics
+  observeEvent(input$`rdi-link_re`, {
+    updateTabsetPanel(session, inputId = 'Navbar', selected = 'people')
+    updateTabsetPanel(session, inputId = input$`people-tabset`, selected = input$`people-re`) #'tab_people''re'
+  })
+  
+  # link from RDI to Households and Housing
+  observeEvent(input$`rdi-link_hh`, {
+    updateTabsetPanel(session, inputId = 'Navbar', selected = 'housing')
+    updateTabsetPanel(session, inputId = input$`house-tabset`, selected = input$`house-units`)
+  })
   
   # briefcase section ----
   ## Educational Attainment, Occupation/Industry of residents, Median HH Income
