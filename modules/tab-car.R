@@ -47,6 +47,7 @@ car_tab_server <- function(id, census_data, year, place, numeric_variables, perc
                        map_title = "Non-Vehicle Modes to Work",
                        map_color = "Purples",
                        map_value = "share",
+                       map_f = 100,
                        map_suffix = "%",
                        map_prefix = "")
     
@@ -64,6 +65,7 @@ car_tab_server <- function(id, census_data, year, place, numeric_variables, perc
                        map_title = "Travel Time to Work",
                        map_color = "Greens",
                        map_value = "estimate",
+                       map_f = 1,
                        map_suffix = "",
                        map_prefix = "")
     
@@ -81,6 +83,7 @@ car_tab_server <- function(id, census_data, year, place, numeric_variables, perc
                        map_title = "AM Peak Departure",
                        map_color = "Oranges",
                        map_value = "share",
+                       map_f = 100,
                        map_suffix = "%",
                        map_prefix = "")
     
@@ -98,33 +101,9 @@ car_tab_server <- function(id, census_data, year, place, numeric_variables, perc
                        map_title = "Zero Car HH's",
                        map_color = "GnBu",
                        map_value = "share",
+                       map_f = 100,
                        map_suffix = "%",
                        map_prefix = "")
-    
-    # output$table_vehicles <- DT::renderDataTable({
-    #   datatable(create_summary_table(t=census_data,
-    #                                  p=input$Place,
-    #                                  y=input$Year,
-    #                                  v="Vehicle Availability"),
-    #             rownames = FALSE, options = list(pageLength = 15, columnDefs = list(list(className = 'dt-center', targets =1:4)))) %>%
-    #     formatCurrency(numeric_variables, "", digits = 0) %>% formatPercentage(percent_variables, 1)
-    # })
-    # 
-    # output$plot_vehicles <- renderPlotly({create_summary_chart(d=census_data, 
-    #                                                            p=input$Place, 
-    #                                                            y=input$Year, 
-    #                                                            v="Vehicle Availability", val="share", f=100, dec=1, 
-    #                                                            d.title="% of Total Households",s="%",d.clr="#00A7A0")})
-    # 
-    # output$vehicles_map <- renderLeaflet({create_tract_map(t=census_data, 
-    #                                                        v="Zero-Car", 
-    #                                                        y=input$Year, 
-    #                                                        d.clr="GnBu", 
-    #                                                        p=input$Place, 
-    #                                                        val="share", 
-    #                                                        d.title="Zero Car HH's", dec=1, f=100,
-    #                                                        s="%", pre="")})
-    
     
   }) # end moduleServer
   
