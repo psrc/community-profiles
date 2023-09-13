@@ -3,7 +3,7 @@
 source_tab_ui <- function(id) {
   ns <- NS(id)
   
-  data_sources <- c("Travel Time to Work: Table B08303",
+  census_sources <- c("Travel Time to Work: Table B08303",
                     "Departure Time to Work: Table B08302",
                     "Age: Data Profile 5 (DP05)",
                     "Disability: Data Profile 2 (DP02)",
@@ -22,6 +22,18 @@ source_tab_ui <- function(id) {
                     tags$a(href="https://www.census.gov/data/developers/data-sets/acs-5year.html", "Census API", target="_blank"), 
                     "or the", tags$a(href="https://data.census.gov/cedsci/", "Census Data", target="_blank"), "page.")
   
+  chas_about <- p("The housing and household level metrics in the Racially Disparate Impacts section of this portal 
+                  were developed using the U.S. Department of Housing and Urban Development’s Comprehensive Housing 
+                  Affordability Strategy (CHAS) dataset. All CHAS tables can be downloaded from the ",
+                  tags$a(href="https://www.huduser.gov/portal/datasets/cp.html", "huduser data portal"))
+  
+  chas_sources <- c("Table 1. Occupied Housing Units by Tenure, 1 of 4 Housing Problems, Household Income, and Race/Ethnicity",
+                    "Table 8. Occupied Housing Units by Tenure, Household Income, Cost Burden, and Kitchen and Plumbing Facilities",
+                    "Table 9. Occupied Housing Units by Tenure, Race/Ethnicity, and Cost Burden",
+                    "Table 14b. Vacant-for-Rent Housing Units by Kitchen and Plumbing Facilities, Rent Category, and Number of Bedrooms",
+                    "Table 15c. Renter Occupied Housing Units by Kitchen and Plumbing Facilities, Rent Category, Household Income, and Number of Bedrooms")
+  
+  
   tabPanel(icon("info-circle"),
            h1("Data Sources"),
            p("The data in this portal comes from a few key sources:"),
@@ -30,12 +42,16 @@ source_tab_ui <- function(id) {
            h3("Census Tables:"),
            
            htmltools::withTags(
-             lapply(data_sources, function(x) div(x, style = "margin-bottom: .2rem;"))
-           )
+             lapply(census_sources, function(x) div(x, style = "margin-bottom: .2rem;"))
+           ),
            
-           # htmltools::withTags(
-           #   lapply(data_sources, p)
-           # )
+           h2('CHAS Data'),
+           chas_about,
+           h3('CHAS Tables:'),
+           
+           htmltools::withTags(
+             lapply(chas_sources, function(x) div(x, style = "margin-bottom: .2rem;"))
+           )
            
   ) # end tabPanel
 }
