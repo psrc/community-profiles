@@ -25,7 +25,7 @@ source_tab_ui <- function(id) {
   chas_about <- p("The housing and household level metrics in the Racially Disparate Impacts section of this portal 
                   were developed using the U.S. Department of Housing and Urban Development’s Comprehensive Housing 
                   Affordability Strategy (CHAS) dataset. All CHAS tables can be downloaded from the ",
-                  tags$a(href="https://www.huduser.gov/portal/datasets/cp.html", "huduser data portal"))
+                  tags$a(href="https://www.huduser.gov/portal/datasets/cp.html", "huduser data portal.", target="_blank"))
   
   chas_sources <- c("Table 1. Occupied Housing Units by Tenure, 1 of 4 Housing Problems, Household Income, and Race/Ethnicity",
                     "Table 8. Occupied Housing Units by Tenure, Household Income, Cost Burden, and Kitchen and Plumbing Facilities",

@@ -203,7 +203,7 @@ rdi_tenure_server <- function(id, shape, place) {
                  y = 'value',
                  ymax = 1,
                  title = 'Renter Households',
-                 egrid_left = "20%")|>
+                 egrid_left = "25%")|>
           e_legend(bottom=0) |>
           e_group("grp")
     })
@@ -218,7 +218,7 @@ rdi_tenure_server <- function(id, shape, place) {
                  y = 'value',
                  ymax = 1,
                  title = 'Owner Households',
-                 egrid_left = "20%")|>
+                 egrid_left = "25%")|>
           e_legend(bottom=0) |>
           e_toolbox_feature("dataView") |>
           e_toolbox_feature("saveAsImage") |>
