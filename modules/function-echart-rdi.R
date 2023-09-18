@@ -1,6 +1,6 @@
 echarts4r::e_common(font_family = "Poppins")
 
-echart_rdi <- function(data, filter_type = NULL, desc_col, str_wrap_num, group, x, y, ymax = NULL, stack = NULL, title, egrid_left) {
+echart_rdi <- function(data, filter_type = NULL, desc_col, str_wrap_num, group, x, y, ymax = NULL, stack = NULL, title, egrid_left, palette_colors) {
   # function to produce an echart for RDI subtabs
   
   js <- "function(params, ticket, callback) {
@@ -36,7 +36,8 @@ echart_rdi <- function(data, filter_type = NULL, desc_col, str_wrap_num, group, 
     e_title(text = title,
             left = 'center',
             textStyle = list(fontSize = 12)) |>
-    e_color(psrc_colors$obgnpgy_5) |>
+    e_color(palette_colors) |>
+    # e_color(psrc_colors$obgnpgy_5) |>
     e_tooltip(formatter =  e_tooltip_item_formatter("percent", digits = 1)) |>
     e_tooltip(formatter =  htmlwidgets::JS(js)) |>
     e_x_axis(formatter = e_axis_formatter("percent", digits = 0))

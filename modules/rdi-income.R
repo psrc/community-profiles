@@ -252,7 +252,8 @@ rdi_income_server <- function(id, shape, place) {
                  y = 'share',
                  ymax = 1,
                  title = 'Renter Households At or Below 80% AMI',
-                 egrid_left = "25%")|>
+                 egrid_left = "25%",
+                 palette_colors = c("#F05A28","#999999"))|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
         e_legend(bottom=0) |>
         e_toolbox_feature("dataView") |>
@@ -288,7 +289,8 @@ rdi_income_server <- function(id, shape, place) {
                  y = 'share',
                  ymax = 1,
                  title = 'Owner Households At or Below 80% AMI',
-                 egrid_left = "25%")|>
+                 egrid_left = "25%",
+                 palette_colors = c("#F05A28","#999999"))|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
         e_legend(bottom=0) |>
         e_toolbox_feature("dataView") |>

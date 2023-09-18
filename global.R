@@ -312,7 +312,7 @@ create_tract_map <- function(t, y, p, v, val, d.clr, d.title, pre="", s="", dec=
                 color = "#91268F",
                 dashArray = "4",
                 fillOpacity = 0.0,
-                group = "City Boundary")%>% 
+                group = "Place Boundary")%>% 
     addControl(title, position = "topleft")
   
   return(working_map)

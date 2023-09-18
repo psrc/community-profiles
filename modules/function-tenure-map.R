@@ -1,6 +1,6 @@
-library(tidyverse)
-library(data.table)
-source('modules/function-query-sqlite-chas.R')
+# library(tidyverse)
+# library(data.table)
+# source('modules/function-query-sqlite-chas.R')
 
 create_tenure_tract_table <- function() {
   # Generate tract level table for RDI Tenure metric. To be used in tract map.
@@ -91,7 +91,7 @@ create_tenure_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
   breaks <- (max_bin*c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1))
   bins <- c(0, breaks)
   
-  pal <- colorBin("Purples", domain = shp_cut$share, bins = bins)
+  pal <- colorBin("GnBu", domain = shp_cut$share, bins = bins)
   
   ## Create Map ----
   

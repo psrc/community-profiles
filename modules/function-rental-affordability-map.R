@@ -77,7 +77,7 @@ create_chas_tract_map <- function(shape_tract, shape_place, title) {
   breaks <- (max_bin*c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1, 1.5))
   bins <- c(0, breaks)
   
-  pal <- colorBin("Purples", domain = shp_cut$share, bins = bins)
+  pal <- colorBin("Greens", domain = shp_cut$share, bins = bins)
   
   title <- tags$div(HTML(title))
   labels <- paste0("<b>Tract ", shp_cut$geoid,"</b>", "<br>< 80% AMI: ", label_percent(accuracy = 0.1, suffix = "%")(shp_cut$share)) %>%

@@ -152,7 +152,8 @@ rdi_rentaff_server <- function(id, shape, place) {
                  y = 'value',
                  ymax = 1,
                  title = unique(d$geography_name),
-                 egrid_left = "15%")|>
+                 egrid_left = "15%",
+                 palette_colors = c("#8CC63E","#999999"))|>
         e_legend(bottom=0) |>
         e_group("grp")
 
@@ -169,7 +170,8 @@ rdi_rentaff_server <- function(id, shape, place) {
                  y = 'value',
                  ymax = 1,
                  title = unique(d$geography_name),
-                 egrid_left = "15%")|>
+                 egrid_left = "15%",
+                 palette_colors = c("#8CC63E","#999999"))|>
           e_legend(show=FALSE) |>
           e_toolbox_feature("dataView") |>
           e_toolbox_feature("saveAsImage") |>

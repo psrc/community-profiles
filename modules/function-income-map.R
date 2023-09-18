@@ -79,7 +79,7 @@ create_income_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
   breaks <- (max_bin*c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1))
   bins <- c(0, breaks)
   
-  pal <- colorBin("Purples", domain = shp_cut$share, bins = bins)
+  pal <- colorBin("Oranges", domain = shp_cut$share, bins = bins)
   
   ## Create Map ----
   
