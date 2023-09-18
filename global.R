@@ -287,14 +287,6 @@ create_tract_map <- function(t, y, p, v, val, d.clr, d.title, pre="", s="", dec=
     addLayersControl(baseGroups = c("Base Map"),
                      overlayGroups = c("Census Tracts","Place Boundary"),
                      options = layersControlOptions(collapsed = TRUE)) %>%
-    addPolygons(data = city,
-                fillColor = "76787A",
-                weight = 4,
-                opacity = 1.0,
-                color = "#91268F",
-                dashArray = "4",
-                fillOpacity = 0.0,
-                group = "City Boundary")%>% 
     addPolygons(fillColor = pal(current_value$value),
                 weight = 1.0,
                 opacity = 1,
@@ -313,6 +305,14 @@ create_tract_map <- function(t, y, p, v, val, d.clr, d.title, pre="", s="", dec=
                   textsize = "15px",
                   direction = "auto"),
                 group = "Census Tracts") %>%
+    addPolygons(data = city,
+                fillColor = "76787A",
+                weight = 3,
+                opacity = .75,
+                color = "#91268F",
+                dashArray = "4",
+                fillOpacity = 0.0,
+                group = "City Boundary")%>% 
     addControl(title, position = "topleft")
   
   return(working_map)
