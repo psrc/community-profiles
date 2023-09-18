@@ -61,7 +61,9 @@ create_cost_burden_tract_map <- function(table, tenure_type = c("Owner", "Renter
 
   # Trim Tracts for current place
   shape_place_valid <- st_make_valid(shape_place)
-  shp_cut <- st_intersection(shape_tract_all, shape_place_valid)
+  shp_cut_ids <- st_intersection(shape_tract_all, shape_place_valid)
+  shp_cut <- shape_tract_all %>% 
+    filter(geoid %in% shp_cut_ids$geoid)
 
   p <- shp_cut %>% filter(race_ethnicity_grp == 'People of Color')
   # h <- shp_cut %>% filter(grepl("^Hispanic", race_ethnicity_grp))
@@ -134,12 +136,12 @@ create_cost_burden_tract_map <- function(table, tenure_type = c("Owner", "Renter
   return(m)
 }
 
-# shp <- tract.shape %>% 
+# shp <- tract.shape %>%
 #   filter(census_year == 2010)
 # 
-# pl <- community.shape %>% 
+# pl <- community.shape %>%
 #   filter(geog_name == 'Bellevue')
 # 
-# x <- create_cost_burden_table()
+# x <- create_cost_burden_tract_table()
 # 
 # create_cost_burden_tract_map(table = x, tenure_type = "Renter", shape_tract = shp, shape_place = pl)

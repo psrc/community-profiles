@@ -69,7 +69,9 @@ create_tenure_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
   shape_tract_all <- left_join(shape_tract, table, by = c('geoid' = 'tract_geoid'))
   shape_place_valid <- st_make_valid(shape_place)
   # Trim Tracts for current place
-  shp_cut <- st_intersection(shape_tract_all, shape_place_valid)
+  shp_cut_ids <- st_intersection(shape_tract_all, shape_place_valid)
+  shp_cut <- shape_tract_all %>% 
+    filter(geoid %in% shp_cut_ids$geoid)
 
   # Filter for POC owner
   p <- shp_cut %>% filter(grouping == 'People of Color')
