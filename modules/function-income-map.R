@@ -115,8 +115,9 @@ create_income_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
                     weight =5,
                     color = "76787A",
                     dashArray ="",
-                    fillOpacity = 0.7,
-                    bringToFront = TRUE),
+                    fillOpacity = 0.7#,
+                    # bringToFront = TRUE
+                    ),
                   label = labels,
                   labelOptions = labelOptions(
                     style = list("font-weight" = "normal", padding = "3px 8px"),
@@ -127,12 +128,11 @@ create_income_tract_map <- function(table, tenure_type = c("Owner", "Renter"), s
   
   m <- m %>%
     addPolygons(data = shape_place,
-                fillColor = "76787A",
+                fill = FALSE,
                 weight = 3,
                 opacity = 1.0,
                 color = "#91268F",
                 dashArray = "4",
-                fillOpacity = 0.0,
                 group = "Place Boundary") %>%
     hideGroup(c(names(shps)[2]))
   

@@ -100,8 +100,9 @@ create_chas_tract_map <- function(shape_tract, shape_place, title) {
                   weight =5,
                   color = "76787A",
                   dashArray ="",
-                  fillOpacity = 0.7,
-                  bringToFront = TRUE),
+                  fillOpacity = 0.7#,
+                  # bringToFront = TRUE
+                  ),
                 label = labels,
                 labelOptions = labelOptions(
                   style = list("font-weight" = "normal", padding = "3px 8px"),
@@ -109,12 +110,11 @@ create_chas_tract_map <- function(shape_tract, shape_place, title) {
                   direction = "auto"),
                 group = "Census Tracts") %>%
     addPolygons(data = shape_place,
-                fillColor = "76787A",
+                fill = FALSE,
                 weight = 3,
                 opacity = 1.0,
                 color = "#91268F",
                 dashArray = "4",
-                fillOpacity = 0.0,
                 group = "Place Boundary")%>%
     addControl(title, position = "topleft")
   
