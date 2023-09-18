@@ -20,7 +20,7 @@ rdi_tab_ui <- function(id) {
   footer02 <- p("To determine margins of error for estimates of interest, data users may refer directly to the published ", tags$a(href="https://data.census.gov/", "ACS"), 
                 " and ",  tags$a(href="https://www.huduser.gov/portal/datasets/cp.html", "CHAS"), " data tables or reach out to ", tags$a(href="https://www.psrc.org/", "PSRC"), " for assistance, we would be happy to help you.")
   
-  disclaimer <- p("Please allow at least 5 seconds for visuals to load.", style = "font-size: 10pt; margin-top: 2rem;")
+  disclaimer <- p("Please allow at least 5 seconds for visuals to load or update.", style = "font-size: 10pt; margin-top: 2rem;")
   
   div(
     fluidRow(

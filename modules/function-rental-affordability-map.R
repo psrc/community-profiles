@@ -62,7 +62,10 @@ create_chas_tract_map <- function(shape_tract, shape_place, title) {
 
   # Trim Tracts for current place
   shape_place_valid <- st_make_valid(shape_place)
-  shp_cut <- st_intersection(shape_tract, shape_place_valid)
+  shp_cut_ids <- st_intersection(shape_tract, shape_place_valid)
+  shp_cut <- shape_tract %>% 
+    filter(geoid %in% shp_cut_ids$geoid)
+  
   # replace Nan with 0
   shp_cut$share <- shp_cut$share %>% replace_na(0)
   
