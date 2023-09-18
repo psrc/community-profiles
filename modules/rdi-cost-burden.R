@@ -248,7 +248,8 @@ rdi_cost_burden_server <- function(id, shape, place) {
                  y = 'share',
                  ymax = 1,
                  title = 'Cost-Burdened Renter Households (>30%)',
-                 egrid_left = "25%")|>
+                 egrid_left = "25%",
+                 palette_colors = c("#91268F","#999999"))|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
         e_legend(bottom=0) |>
         e_toolbox_feature("dataView") |>
@@ -284,7 +285,8 @@ rdi_cost_burden_server <- function(id, shape, place) {
                  y = 'share',
                  ymax = 1,
                  title = 'Cost-Burdened Owner Households (>30%)',
-                 egrid_left = "25%")|>
+                 egrid_left = "25%",
+                 palette_colors = c("#91268F","#999999"))|>
         e_x_axis(formatter = e_axis_formatter("percent", digits = 0))|>
         e_legend(bottom=0) |>
         e_toolbox_feature("dataView") |>
