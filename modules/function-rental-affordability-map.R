@@ -110,7 +110,7 @@ create_chas_tract_map <- function(shape_tract, shape_place, title) {
                 group = "Census Tracts") %>%
     addPolygons(data = shape_place,
                 fillColor = "76787A",
-                weight = 4,
+                weight = 3,
                 opacity = 1.0,
                 color = "#91268F",
                 dashArray = "4",

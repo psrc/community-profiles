@@ -125,7 +125,7 @@ create_cost_burden_tract_map <- function(table, tenure_type = c("Owner", "Renter
   m <- m %>%
     addPolygons(data = shape_place,
                 fillColor = "76787A",
-                weight = 4,
+                weight = 3,
                 opacity = 1.0,
                 color = "#91268F",
                 dashArray = "4",
