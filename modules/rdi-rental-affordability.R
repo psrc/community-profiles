@@ -65,7 +65,7 @@ rdi_rentaff_server <- function(id, shape, place) {
     
     table_data <- reactive({
       # data in wide for display in table
-      
+
       region <- data()$region %>% 
         select(description, renter_hh_income, rental_units, ends_with('share')) %>% 
           rename_with(~paste0(.x, '_reg'))
@@ -73,6 +73,10 @@ rdi_rentaff_server <- function(id, shape, place) {
       d <- left_join(data()$place, region, by = c('description' = 'description_reg')) %>% 
         select(description, renter_hh_income, rental_units, ends_with('share'), ends_with('reg')) %>% 
         mutate(description = str_replace_all(description, 'Low Income', 'Low-Income'))
+      
+      e <- d %>% 
+        relocate(renter_hh_income_share, .after = rental_units) %>% 
+        relocate(renter_hh_income_share_reg, .after = rental_units_reg)
     })
     
     plot_data <- reactive({
