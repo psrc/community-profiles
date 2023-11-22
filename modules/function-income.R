@@ -108,7 +108,7 @@ create_income_table <- function(juris = c('place', 'county', 'region')) {
   df_join <- df_join[, income_grp := factor(income_grp, levels = desc)]
   
   # calculate Not Reported
-  #### FIGURE OUT MOE ----
+
   re_sum <- df_join[!(race_ethnicity_grp %in% c('People of Color (POC)', 'All')), 
                     .(sum = sum(estimate), 
                       moe_sum = moe_sum(moe, estimate),
@@ -119,17 +119,15 @@ create_income_table <- function(juris = c('place', 'county', 'region')) {
   re_sum_join <- merge(re_sum, re_total, by = c('geography_name', 'tenure', 'income_grp'), all.x=TRUE)
   re_sum_join[, estimate := Total - sum]
   #re_sum_join[, estimate := Total - sum][, `:=` (sum = NULL, Total = NULL)]
+
+  # Calculate MOE difference ----
+  re_sum_join <- re_sum_join %>%
+    rowwise() %>%
+    mutate(moe = moe_sum(estimate = c(Total, sum),
+                         moe = c(moe_total, moe_sum))) %>% 
+    as.data.table()
   
-  browser()
-  #### HOW TO CALC MOE DIFFERENCE?
-  
-  # test <- re_sum_join %>% 
-  #   rowwise() %>% 
-  #   mutate(estimate_moe = moe_sum(estimate = c(Total, sum),
-  #                                 moe = c(moe_total, moe_sum)))
-  
-  
-  
+  re_sum_join[, `:=` (sum = NULL, Total = NULL, moe_sum = NULL, moe_total = NULL)]
   
   # any negative differences equals over reporting. Change result to 0.
   re_sum_join[estimate < 0, estimate := 0]
@@ -137,11 +135,16 @@ create_income_table <- function(juris = c('place', 'county', 'region')) {
   re_sum_all <- re_sum_join[income_grp == 'All', .(geography_name, tenure, denom = estimate)]
   re_sum_join <- merge(re_sum_join, re_sum_all, by = c('geography_name', 'tenure'), all.x=TRUE)
   
-  df_join <- rbindlist(list(df_join, re_sum_join), use.names=TRUE)
-  
+  df_join <- rbindlist(list(df_join, re_sum_join), use.names = TRUE, fill = TRUE)
+  browser()
   # create shares
-  df_join[, share := estimate/denom]
+  df_join[, share := estimate/denom
+          ][, share_moe := moe_prop(num = estimate, 
+                                    denom = denom, 
+                                    moe_num = moe, 
+                                    moe_denom = moe_denom)]
   df_join[is.na(share), share := 0]
+  df_join[is.na(share_moe), share_moe := 0]
 
   # pivot wider
   df_est <- dcast.data.table(df_join, chas_year + geography_name + tenure + race_ethnicity_grp ~ income_grp, value.var = 'estimate')
