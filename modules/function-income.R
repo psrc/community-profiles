@@ -1,6 +1,6 @@
 # Function to assemble Income table
 
-source('modules/function-query-sqlite-chas.R')
+# source('modules/function-query-sqlite-chas.R')
 
 create_income_table <- function(juris = c('place', 'county', 'region')) {
   
@@ -56,8 +56,8 @@ create_income_table <- function(juris = c('place', 'county', 'region')) {
   
   if(juris == 'region') {
     # aggregate counties to region
-    
-    df <- df[, .(estimate = sum(estimate)), by = c('variable_name', 'sort', 'chas_year', 'income_grp', 'race_ethnicity_grp', 'tenure')
+
+    df <- df[, .(estimate = sum(estimate), moe = moe_sum(moe, estimate)), by = c('variable_name', 'sort', 'chas_year', 'income_grp', 'race_ethnicity_grp', 'tenure')
     ][, geography_name := 'Region'] 
   }
   
@@ -136,7 +136,7 @@ create_income_table <- function(juris = c('place', 'county', 'region')) {
   re_sum_join <- merge(re_sum_join, re_sum_all, by = c('geography_name', 'tenure'), all.x=TRUE)
   
   df_join <- rbindlist(list(df_join, re_sum_join), use.names = TRUE, fill = TRUE)
-  browser()
+
   # create shares
   df_join[, share := estimate/denom
           ][, share_moe := moe_prop(num = estimate, 
@@ -155,7 +155,7 @@ create_income_table <- function(juris = c('place', 'county', 'region')) {
 
 # x <- create_income_table(juris = 'region')
 # y <- create_income_table(juris = 'county')
-z <- create_income_table(juris = 'place')
+# z <- create_income_table(juris = 'place')
 
 create_dt_income <- function(table, container, source) {
   datatable(table,
