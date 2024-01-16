@@ -17,7 +17,7 @@ create_rental_affordability_table <- function(juris = c('place', 'county', 'regi
             'Moderate Income (80-100% AMI)', 
             'Greater than 100% of AMI', 
             'All')
-  
+
   desc2 <- c(desc[1:3], 'Greater than 80% AMI', 'All')
   
   # Table 8 
@@ -51,35 +51,50 @@ create_rental_affordability_table <- function(juris = c('place', 'county', 'regi
   
   # aggregate two highest categories
   df[description %in% c('Moderate Income (80-100% AMI)','Greater than 100% of AMI'), description := 'Greater than 80% AMI']
-  df <- df[, .(estimate = sum(estimate)), by = c('chas_year', 'geography_name', 'col_desc', 'description')]
+
+  df <- df[, .(estimate = sum(estimate), moe = moe_sum(moe, estimate)), by = c('chas_year', 'geography_name', 'col_desc', 'description')]
+  # df <- df[, .(estimate = sum(estimate)), by = c('chas_year', 'geography_name', 'col_desc', 'description')]
   
   ## Format Table ----
 
   if(juris == 'region') {
     # aggregate counties to region
-    
-    df <- df[, .(estimate = sum(estimate)), by = c('chas_year', 'description', 'col_desc')
+
+    df <- df[, .(estimate = sum(estimate), moe = moe_sum(moe, estimate)), by = c('chas_year', 'description', 'col_desc')
              ][, geography_name := 'Region'] 
   }
+  
+  
+  # sum Rental Unit Affordability & Vacant Rental Units for Total Rental Units by geography & Income/Affordability
+  df_ra <- df[col_desc %in% c("rental_unit_affordability", "vacant_rental_units") , .(estimate = sum(estimate), moe = moe_sum(moe, estimate)), 
+              by = c('chas_year', 'geography_name', 'description')
+              ][, col_desc := 'rental_units']
+  
+  d <- rbindlist(list(df_ra, df[col_desc %in% c('renter_hh_income', 'rental_units')]), use.names=TRUE) 
+  
+  # set-up denominators
+  d_tot <- d[description == 'All', ][, description := NULL]
+  setnames(d_tot, c('estimate', 'moe'), c('estimate_denom', 'moe_denom'))
+ 
+  dt <- merge(d, d_tot, by = c('chas_year', 'geography_name', 'col_desc'))
+  dt[, share := estimate/estimate_denom][, share_moe := moe_prop(num = estimate, denom = estimate_denom, moe_num = moe, moe_denom = moe_denom)]
+  
+  # Exclude MOE until ready
+  cols <- c('chas_year', 'geography_name', 'description', 'col_desc', 'estimate', 'share')
+  dt <- dt[, ..cols]
 
   # pivot wider
-  df <- dcast.data.table(df, chas_year + geography_name + description ~ col_desc, value.var = 'estimate')
+  dt_wide <- dcast.data.table(dt, chas_year + geography_name + description ~ col_desc, value.var = c('estimate', 'share'))
   
+  new_names <- c('rental_units', 'renter_hh_income')
+  new_names <- c(new_names, paste0(new_names, '_share'))
+  setnames(dt_wide, colnames(dt_wide)[4:7], new_names)
+  setcolorder(dt_wide, c('chas_year', 'geography_name', 'description', new_names))
+
   # reorder rows
-  df <- df[, description := factor(description, levels = desc2)][order(description)]
+  dt_wide <- dt_wide[, description := factor(description, levels = desc2)][order(description)]
   
-  # order columns
-  setcolorder(df, c('chas_year', 'geography_name', 'description', 'renter_hh_income', 'rental_unit_affordability', 'vacant_rental_units'))
-  
-  # Calculate Table ----
-  df_ra <- df[, rental_units := rental_unit_affordability + vacant_rental_units]
-  
-  # create column with denominator
-  df_tot <- dcast.data.table(df_ra, chas_year + geography_name ~ description, value.var = c('renter_hh_income', 'rental_units'), subset = .(description == 'All'))
-  df_ra <- merge(df_ra, df_tot, by = c('chas_year', 'geography_name'))
-  
-  # calculate shares
-  df_ra[, `:=` (renter_hh_income_share = renter_hh_income/renter_hh_income_All, rental_units_share = rental_units/rental_units_All)]
+  return(dt_wide)
 }
 
-# x <- create_rental_affordability_table(juris = 'county')
+# x <- create_rental_affordability_table(juris = 'place')

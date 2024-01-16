@@ -1,4 +1,4 @@
-# Function to assemble Cost Burden table
+# Function to assemble Cost Burden table, returns list object, 'e' for estimates and 's' for shares
 # Written by Eric Clute
 
 # source('modules/function-query-sqlite-chas.R')
@@ -40,26 +40,41 @@ create_cost_burden_table <- function(juris = c('place', 'county', 'region')) {
   if(juris == 'region') {
     # aggregate counties to region
     
-    df <- df[, .(estimate = sum(estimate)), by = c('variable_name', 'sort', 'chas_year', 'description', 'cost_burden', 'race_ethnicity', 'tenure')
+    df <- df[, .(estimate = sum(estimate), 
+                 moe = moe_sum(moe, estimate)), 
+             by = c('variable_name', 'sort', 'chas_year', 'description', 'cost_burden', 'race_ethnicity', 'tenure')
     ][, geography_name := 'Region'] 
   }
   
   # total cost/not-cost burdened (new rows)
-  tot_cb <- df[description %in% c("Cost-Burdened (30-50%)", "Severely Cost-Burdened (>50%)"), 
-               .(estimate = sum(estimate), cost_burden = 'Total Cost-Burdened (>30%)', description = 'Total Cost-Burdened (>30%)'),
-               by = c('geography_name', 'chas_year', 'tenure', 'race_ethnicity')] 
+  tot_cb <- df[description %in% c("Cost-Burdened (30-50%)", "Severely Cost-Burdened (>50%)"),
+               .(estimate = sum(estimate), 
+                 moe = moe_sum(moe, estimate), 
+                 cost_burden = 'Total Cost-Burdened (>30%)', 
+                 description = 'Total Cost-Burdened (>30%)'),
+               by = c('geography_name', 'chas_year', 'tenure', 'race_ethnicity')]
 
   tot_ncb <- df[description %in% c('Not Calculated', 'No Cost Burden'), 
-                .(estimate = sum(estimate), cost_burden = 'Total Not Cost-Burdened', description = 'Total Not Cost-Burdened'), 
+                .(estimate = sum(estimate), 
+                  moe = moe_sum(moe, estimate), 
+                  cost_burden = 'Total Not Cost-Burdened', 
+                  description = 'Total Not Cost-Burdened'), 
                 by = c('geography_name', 'chas_year', 'tenure', 'race_ethnicity')] 
   
   df <- rbindlist(list(df, tot_cb, tot_ncb), use.names = TRUE, fill = TRUE)
-  
-  # total (for horizontal sum)
-  tot <- df[, .(estimate = sum(estimate), race_ethnicity = 'All'), by = c('geography_name', 'chas_year', 'tenure', 'cost_burden', 'description')]
 
-  # poc (for column)
-  poc <- df[!(race_ethnicity %in% str_subset(unique(df$race_ethnicity), "^[W].*")), .(estimate = sum(estimate), race_ethnicity = 'POC'), 
+  # Extra categories
+  ## total (by cost-burden/description)
+  tot <- df[, .(estimate = sum(estimate), 
+                moe = moe_sum(moe, estimate), 
+                race_ethnicity = 'All'), 
+            by = c('geography_name', 'chas_year', 'tenure', 'cost_burden', 'description')]
+
+  ## poc (extra race category)
+  poc <- df[!(race_ethnicity %in% str_subset(unique(df$race_ethnicity), "^[W].*")), 
+            .(estimate = sum(estimate), 
+              moe = moe_sum(moe, estimate),
+              race_ethnicity = 'POC'), 
             by = c('geography_name', 'chas_year', 'tenure', 'cost_burden', 'description')]
 
   df <- rbindlist(list(df, poc, tot), use.names = TRUE, fill = TRUE)
@@ -70,11 +85,13 @@ create_cost_burden_table <- function(juris = c('place', 'county', 'region')) {
  
   # add denominator column
   df_denom <- df[cost_burden == 'All', 
-                 .(geography_name, chas_year, tenure, race_ethnicity, estimate_denom = estimate)]
+                 .(geography_name, chas_year, tenure, race_ethnicity, estimate_denom = estimate, moe_denom = moe)]
   df <- merge(df, df_denom, by = c('geography_name', 'chas_year', 'tenure', 'race_ethnicity'))  
 
   # calculate shares
-  df[, share := estimate/estimate_denom]
+  df[, `:=` (share = estimate/estimate_denom, 
+             share_moe = moe_prop(num = estimate, denom = estimate_denom, moe_num = moe, moe_denom = moe_denom))]
+  
   df <- df[cost_burden != 'Total Not Cost-Burdened'
            ][, race_ethnicity := str_replace_all(race_ethnicity, "POC", 'People of Color (POC)')]
   
@@ -89,6 +106,11 @@ create_cost_burden_table <- function(juris = c('place', 'county', 'region')) {
                    'All')
 
   df <- df[, race_ethnicity := factor(race_ethnicity, levels = race_levels)][order(race_ethnicity)]
+
+  # # calculate estimates with MOE when ready ----
+  # df_est <- dcast.data.table(df, chas_year + geography_name + tenure + race_ethnicity ~ description, value.var = c('estimate', 'moe'))
+  # df_share <- dcast.data.table(df, chas_year + geography_name + tenure + race_ethnicity ~ description, value.var = c('share', 'share_moe'))
+  # df_share[is.na(df_share)] <- 0
   
   # calculate estimates
   df_est <- dcast.data.table(df, chas_year + geography_name + tenure + race_ethnicity ~ description, value.var = 'estimate')
@@ -98,7 +120,7 @@ create_cost_burden_table <- function(juris = c('place', 'county', 'region')) {
   return(list(e = df_est, s = df_share))
 }
 
-# x <- create_cost_burden_table(juris = 'county')
+# x <- create_cost_burden_table(juris = 'place')
 
 create_dt_cost_burden <- function(table, container, source) {
   datatable(table,

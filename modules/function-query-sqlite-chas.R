@@ -3,6 +3,7 @@ library(odbc)
 library(DBI)
 library(tidyverse)
 library(data.table)
+library(tidycensus)
 
 sqldb.connect <- function() {
   # connect to SQLite db

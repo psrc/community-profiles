@@ -8,7 +8,7 @@ create_tenure_table <- function(juris = c('place', 'county', 'region')) {
   chas_table_codes <- 'T9'
   ifelse(juris == 'place', j <- 'place', j <- 'county')
   dfs <- gather_tables(j, chas_table_codes)
-  
+
   re_order <- c('American Indian and Alaska Native', 
                 'Asian', 
                 'Black or African American', 
@@ -48,35 +48,46 @@ create_tenure_table <- function(juris = c('place', 'county', 'region')) {
                               grepl("^Pacific ", description), "Pacific Islander",
                               grepl("^White ", description), "White",
                               grepl("^All", description), "All")]
-  
-  # POC
 
-  poc <- df[!(description %in% c('All', 'White')), .(estimate = sum(estimate), description = 'People of Color (POC)'), 
+  # POC
+  poc <- df[!(description %in% c('All', 'White')), .(estimate = sum(estimate), 
+                                                     moe = moe_sum(moe = moe, estimate = estimate), 
+                                                     description = 'People of Color (POC)'), 
      by = c('chas_year', 'geography_name', 'col_desc')]
   
   df <- rbindlist(list(df, poc), use.names=TRUE, fill=TRUE)
+  
   ## Format Table ----
 
   if(juris == 'region') {
     # aggregate counties to region
-    
-    df <- df[, .(estimate = sum(estimate)), by = c('variable_name', 'sort', 'chas_year', 'description', 'col_desc')
+
+    df <- df[, .(estimate = sum(estimate), moe = moe_sum(moe = moe, estimate = estimate)), 
+             by = c('variable_name', 'sort', 'chas_year', 'description', 'col_desc')
     ][, geography_name := 'Region'] 
   }
+
+  # Calculate Shares, MOE included
+  df_denom <- df[, .(estimate_denom = sum(estimate), moe_denom = moe_sum(moe, estimate)), 
+                 by = c("chas_year", "geography_name", "description")]
+  df <- merge(df, df_denom, by = c("chas_year", "geography_name", "description"))
+  
+  df[, share := estimate/estimate_denom
+     ][, share_moe := moe_prop(num = estimate, denom = estimate_denom, moe_num = moe, moe_denom = moe_denom)]
+  
+  # Exclude MOE until ready
+  cols <- c('chas_year', 'geography_name', 'description', 'col_desc', 'estimate', 'estimate_denom', 'share')
+  df <- df[, ..cols]
   
   # pivot wider
-  df <- dcast.data.table(df, chas_year + geography_name + description ~ col_desc, value.var = 'estimate')
+  df <- dcast.data.table(df, chas_year + geography_name + description + estimate_denom ~ col_desc, value.var = c('estimate', 'share'))
+  setnames(df, colnames(df), c(cols[1:3], 'all_units', 'owner_occupied', 'renter_occupied', 'owner_share', 'renter_share'))
 
   # reorder rows
   df <- df[, description := factor(description, levels = re_order)][order(description)]
   
-  # order columns
-  setcolorder(df, c('chas_year', 'geography_name', 'description', 'owner_occupied', 'renter_occupied'))
-  
-  # Calculate Table ----
-  df[, all_units := owner_occupied + renter_occupied
-     ][, `:=` (renter_share = renter_occupied/all_units,
-                owner_share = owner_occupied/all_units)]
   
   return(df)
 }
+
+# x <- create_tenure_table(juris = 'region')

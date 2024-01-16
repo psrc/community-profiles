@@ -19,7 +19,7 @@ create_income_table <- function(juris = c('place', 'county', 'region')) {
   
   cols <- c('variable_name', 'sort','chas_year', 'geography_name', 'estimate', 'moe',  'tenure',
             'household_income', 'race_ethnicity', 'income_grp', 'race_ethnicity_grp')
-  
+
   dfs$T1[, income_grp := fcase(household_income == 'All', 'All',
                                household_income == 'less than or equal to 30% of HAMFI', 'Extremely Low-Income (≤30% AMI)',
                                household_income == 'greater than 30% but less than or equal to 50% of HAMFI', 'Very Low-Income (30-50%)',
@@ -56,39 +56,51 @@ create_income_table <- function(juris = c('place', 'county', 'region')) {
   
   if(juris == 'region') {
     # aggregate counties to region
-    
-    df <- df[, .(estimate = sum(estimate)), by = c('variable_name', 'sort', 'chas_year', 'income_grp', 'race_ethnicity_grp', 'tenure')
+
+    df <- df[, .(estimate = sum(estimate), moe = moe_sum(moe, estimate)), by = c('variable_name', 'sort', 'chas_year', 'income_grp', 'race_ethnicity_grp', 'tenure')
     ][, geography_name := 'Region'] 
   }
   
-  df_sum <- df[, .(estimate = sum(estimate)), by = c('chas_year', 'geography_name', 'tenure', 'income_grp', 'race_ethnicity_grp')]
+  df_sum <- df[, .(estimate = sum(estimate), 
+                   moe = moe_sum(moe, estimate)),
+               by = c('chas_year', 'geography_name', 'tenure', 'income_grp', 'race_ethnicity_grp')]
   
   # sum each race/ethnicity/POC
-  tot_resp_race <- df_sum[income_grp != 'All' & race_ethnicity_grp != 'All', .(estimate = sum(estimate), income_grp = 'All'), 
+  tot_resp_race <- df_sum[income_grp != 'All' & race_ethnicity_grp != 'All', 
+                          .(estimate = sum(estimate), moe = moe_sum(moe, estimate), income_grp = 'All'), 
                           by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp')]
   
   # sum POC (totals & by income group)
-  poc <- df_sum[!race_ethnicity_grp %in% c('All', str_subset(race_ethnicity_grp, "^[W].*")), .(estimate = sum(estimate), race_ethnicity_grp = 'People of Color (POC)'),
+  poc <- df_sum[!race_ethnicity_grp %in% c('All', str_subset(race_ethnicity_grp, "^[W].*")), 
+                .(estimate = sum(estimate), moe = moe_sum(moe, estimate), race_ethnicity_grp = 'People of Color (POC)'),
                 by = c('chas_year', 'geography_name', 'tenure', 'income_grp')]
 
-  tot_poc <- poc[, .(estimate = sum(estimate), income_grp = 'All'), by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp') ]
+  tot_poc <- poc[, .(estimate = sum(estimate), 
+                     moe = moe_sum(moe, estimate), 
+                     income_grp = 'All'), 
+                 by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp') ]
   
   # combine
   df_all <- rbindlist(list(df_sum, tot_resp_race, poc, tot_poc), use.names=TRUE, fill = TRUE)
   
   # incorporate race/ethnicity, poc, and all income totals for denominator column
   denom <- rbindlist(list(tot_resp_race, tot_poc), use.names=TRUE)
-  setnames(denom, 'estimate', 'denom')
+  setnames(denom, c('estimate', 'moe'), c('denom', 'moe_denom'))
   denom[, income_grp:= NULL]
   
   all <- df_all[income_grp == 'All' & race_ethnicity_grp == 'All', ][, income_grp := NULL]
-  setnames(all, 'estimate', 'denom')
+  setnames(all, c('estimate', 'moe'), c('denom', 'moe_denom'))
   denom <- rbindlist(list(denom, all))
   
   df_join <- merge(df_all, denom, by =  c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp'), all.x = TRUE)
   
   # calculate Up to 80%
-  up80 <- df_join[income_grp %in% desc[1:3], .(estimate = sum(estimate), income_grp = 'Up to 80% AMI'), by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp')]
+  up80 <- df_join[income_grp %in% desc[1:3], 
+                  .(estimate = sum(estimate), 
+                    moe = moe_sum(moe, estimate),
+                    income_grp = 'Up to 80% AMI'), 
+                  by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp')]
+  
   up80_join <- merge(up80, denom, by = c('chas_year', 'geography_name', 'tenure', 'race_ethnicity_grp'), all.x = TRUE)
   
   df_join <- rbindlist(list(df_join, up80_join), use.names=TRUE)
@@ -96,10 +108,26 @@ create_income_table <- function(juris = c('place', 'county', 'region')) {
   df_join <- df_join[, income_grp := factor(income_grp, levels = desc)]
   
   # calculate Not Reported
-  re_sum <- df_join[!(race_ethnicity_grp %in% c('People of Color (POC)', 'All')), .(sum = sum(estimate), race_ethnicity_grp = 'Not Reported'), by = c('chas_year', 'geography_name', 'tenure', 'income_grp')]
-  re_total <- df_join[race_ethnicity_grp == 'All', .(geography_name, tenure, income_grp, Total = estimate)]
+
+  re_sum <- df_join[!(race_ethnicity_grp %in% c('People of Color (POC)', 'All')), 
+                    .(sum = sum(estimate), 
+                      moe_sum = moe_sum(moe, estimate),
+                      race_ethnicity_grp = 'Not Reported'), 
+                    by = c('chas_year', 'geography_name', 'tenure', 'income_grp')]
+  
+  re_total <- df_join[race_ethnicity_grp == 'All', .(geography_name, tenure, income_grp, Total = estimate, moe_total = moe)]
   re_sum_join <- merge(re_sum, re_total, by = c('geography_name', 'tenure', 'income_grp'), all.x=TRUE)
-  re_sum_join[, estimate := Total - sum][, `:=` (sum = NULL, Total = NULL)]
+  re_sum_join[, estimate := Total - sum]
+  #re_sum_join[, estimate := Total - sum][, `:=` (sum = NULL, Total = NULL)]
+
+  # Calculate MOE difference ----
+  re_sum_join <- re_sum_join %>%
+    rowwise() %>%
+    mutate(moe = moe_sum(estimate = c(Total, sum),
+                         moe = c(moe_total, moe_sum))) %>% 
+    as.data.table()
+  
+  re_sum_join[, `:=` (sum = NULL, Total = NULL, moe_sum = NULL, moe_total = NULL)]
   
   # any negative differences equals over reporting. Change result to 0.
   re_sum_join[estimate < 0, estimate := 0]
@@ -107,11 +135,16 @@ create_income_table <- function(juris = c('place', 'county', 'region')) {
   re_sum_all <- re_sum_join[income_grp == 'All', .(geography_name, tenure, denom = estimate)]
   re_sum_join <- merge(re_sum_join, re_sum_all, by = c('geography_name', 'tenure'), all.x=TRUE)
   
-  df_join <- rbindlist(list(df_join, re_sum_join), use.names=TRUE)
-  
+  df_join <- rbindlist(list(df_join, re_sum_join), use.names = TRUE, fill = TRUE)
+
   # create shares
-  df_join[, share := estimate/denom]
+  df_join[, share := estimate/denom
+          ][, share_moe := moe_prop(num = estimate, 
+                                    denom = denom, 
+                                    moe_num = moe, 
+                                    moe_denom = moe_denom)]
   df_join[is.na(share), share := 0]
+  df_join[is.na(share_moe), share_moe := 0]
 
   # pivot wider
   df_est <- dcast.data.table(df_join, chas_year + geography_name + tenure + race_ethnicity_grp ~ income_grp, value.var = 'estimate')
