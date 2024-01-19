@@ -33,6 +33,7 @@ rdi_tab_ui <- function(id) {
                   rdi_rentaff_ui(ns('rentaff')),
                   rdi_income_ui(ns('income')),
                   rdi_tenure_ui(ns('tenure')),
+                  rdi_disp_risk_ui(ns('disprisk')),
                   footer = div(div(footer, style = "font-size: 10pt; margin: 1rem 0;"), 
                                div(footer02, style = "font-size: 10pt; margin: 1rem 0;"))
       ) # end tabsetPanel
@@ -67,6 +68,10 @@ rdi_tab_server <- function(id, shape, place) {
                       shape = shape,
                       place = reactive(place())
     )
+    
+    rdi_disp_risk_server('disprisk',
+                         shape = shape,
+                         place = reactive(place()))
     
   }) # end moduleServer
   

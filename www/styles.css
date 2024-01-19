@@ -52,4 +52,28 @@ h3 {
   margin-bottom: .2rem;
 }
 
+[data-title] {
+    position: relative;
+}
 
+[data-title]:after {
+    content: attr(data-title);
+    background-color: #fed8b1;
+    color: black;
+    font-size: 100%;
+    width:250px;
+    padding: 1px 5px 2px 5px;
+    bottom: -2.5em;
+      border: 4px solid rgb(255, 255, 255);
+      border-radius: 5px;
+    left: 100%;
+    position: absolute;
+    z-index: 99999;
+    visibility: hidden;
+}
+
+[data-title]:hover:after {
+    opacity: 1;
+    transition: all 0.1s ease 0.5s;
+    visibility: visible;
+}

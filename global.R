@@ -4,7 +4,6 @@ library(shiny)
 library(shinyjs)
 library(shinyBS)
 
-# library(ggplot2)
 library(scales)
 library(plotly)
 library(foreign)
