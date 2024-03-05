@@ -25,7 +25,7 @@ rdi_disp_risk_ui <- function(id) {
   )# end tabpanel
 }
 
-rdi_disp_risk_server <- function(id, shape, place) {
+rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
   
   moduleServer(id, function(input, output, session) { 
     ns <- session$ns
@@ -108,26 +108,26 @@ rdi_disp_risk_server <- function(id, shape, place) {
     })
     
     output$map <- renderLeaflet({
-      shp <- tract.shape %>%
-        filter(census_year == 2010)
+      # shp <- tract.shape %>%
+      #   filter(census_year == 2010)
+      # https://stackoverflow.com/questions/48696395/leaflet-mixing-continuous-and-discrete-colors
+      disprisk.shape <- disprisk.shape %>% 
+        mutate(risk_level_name = factor(risk_level_name, levels = c("lower", "moderate", "higher")))
+      dispal <- colorFactor(palette = c("#d8b365", "#f5f5f5", "#5ab4ac"), levels = unique(disp_risk_shape$risk_level_name), na.color = "grey")
       
-      leaflet(shp) %>% 
+      leaflet(disp_risk_shape) %>% 
         addProviderTiles(providers$CartoDB.Positron) %>% 
-        addPolygons(weight = 1.0,
-                    dashArray = "3",
-                    highlight = highlightOptions(
-                      weight =5,
-                      color = "76787A",
-                      dashArray ="",
-                      fillOpacity = 0.7),
-                    group = "Census Tracts") %>%
-        addPolygons(data = map_data(),
-                    fill = FALSE,
-                    weight = 3,
-                    opacity = 1.0,
-                    color = "#91268F",
-                    dashArray = "4",
-                    group = "Place Boundary")
+        addPolygons(fillOpacity = 1,
+                    weight = 1,
+                    fillColor = ~dispal(risk_level_name),
+                    group = "Census Tracts") #%>%
+        # addPolygons(data = map_data(),
+        #             fill = FALSE,
+        #             weight = 3,
+        #             opacity = 1.0,
+        #             color = "#91268F",
+        #             dashArray = "4",
+        #             group = "Place Boundary")
 
     })
     

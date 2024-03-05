@@ -108,6 +108,8 @@ tip.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/
 
 projects.shape <- rbind(tip.shape, rtp.shape)
 
+disprisk.shape <- read_rds(file.path('data', "disp_risk_shp.rds"))
+
 numeric_variables <- c("Estimate","MoE")
 percent_variables <- c("Share","Region")
 final.nms <- c("ID","Sponsor","Type","Title","Improvement","Completion","Status","Cost")

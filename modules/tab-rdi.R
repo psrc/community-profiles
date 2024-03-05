@@ -44,7 +44,7 @@ rdi_tab_ui <- function(id) {
   
 }
 
-rdi_tab_server <- function(id, shape, place) {
+rdi_tab_server <- function(id, shape, place, disp_risk_shape) {
   
   moduleServer(id, function(input, output, session) { 
     ns <- session$ns
@@ -71,7 +71,8 @@ rdi_tab_server <- function(id, shape, place) {
     
     rdi_disp_risk_server('disprisk',
                          shape = shape,
-                         place = reactive(place()))
+                         place = reactive(place()),
+                         disp_risk_shape = disp_risk_shape)
     
   }) # end moduleServer
   

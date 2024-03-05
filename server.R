@@ -41,7 +41,8 @@ shinyServer(function(input, output, session) {
   
   rdi_tab_server("rdi", 
                  shape = community.shape,
-                 place = reactive({input$Place}))
+                 place = reactive({input$Place}),
+                 disp_risk_shape = disprisk.shape)
   
   # link from RDI to Race & Ethnicity tab in People/demographics
   observeEvent(input$`rdi-link_re`, {
