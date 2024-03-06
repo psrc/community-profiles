@@ -2,6 +2,9 @@ library(psrccensus)
 library(tidyverse)
 library(psrcelmer)
 library(sf)
+library(odbc)
+library(DBI)
+library(RSQLite)
 
 # Functions ----
 
@@ -163,13 +166,18 @@ create_summary(df = dt_all,
                estimate_col = 'split_totpop')
 
 summary_df <- dt_all %>% 
-  group_by(county_name, planning_geog, race_ethnicity_label, risk_level_name) %>% 
+  group_by(planning_geog, race_ethnicity_label, risk_level_name) %>% 
   summarise(estimate = sum(split_totpop))
 
-create_summary(df = summary_df, 
-               grouping_vars = c('county_name', 'planning_geog', 'race_ethnicity_label'), 
-               estimate_col = 'estimate')
+## add new risk level name: All
+rl_all <- summary_df %>% 
+  group_by(planning_geog, race_ethnicity_label) %>% 
+  summarise(estimate = sum(estimate)) %>% 
+  mutate(risk_level_name = 'All')
 
+summary_df <- bind_rows(summary_df, rl_all) %>% 
+  arrange(planning_geog, race_ethnicity_label, risk_level_name)
+  
 # Formatting ----
 
 re <- c('Total Population',
@@ -182,18 +190,54 @@ re <- c('Total Population',
         'Some Other Race',
         'Two or More Races')
 
-risk_levels <- c('lower', 'moderate', 'higher') 
+risk_levels <- c('lower', 'moderate', 'higher', 'All') 
 
 summary_df_pivot <- summary_df %>% 
   mutate(race_ethnicity_label = factor(race_ethnicity_label, levels = re),
          risk_level_name = factor(risk_level_name, levels = risk_levels)) %>% 
-  arrange(county_name, planning_geog, race_ethnicity_label, risk_level_name) %>% 
-  pivot_wider(id_cols = c('county_name', 'planning_geog', 'race_ethnicity_label'),
+  arrange(planning_geog, race_ethnicity_label, risk_level_name) %>% 
+  pivot_wider(id_cols = c('planning_geog', 'race_ethnicity_label'),
               names_from = 'risk_level_name',
               values_from = 'estimate',
               names_expand = TRUE)
 
+## create %
+summary_df_pivot_shares <- summary_df_pivot %>% 
+  mutate(across(lower:higher, ~ . / All))
 
 
+# send to mysqlite db ----
 
+sqlite_dbname <- file.path('data', paste0('disp_risk_',Sys.Date(), '.db'))
+mydb <- dbConnect(RSQLite::SQLite(), sqlite_dbname)
+
+tblnames <- paste0("acs5_2022_B03002_tract_juris_split_summary_", c("estimates", "shares"))
+walk2(tblnames, list( summary_df_pivot, summary_df_pivot_shares), ~dbWriteTable(mydb, .x , .y, overwrite = TRUE))
+
+# add index? ----
+
+# tables <- dbListTables(mydb)
+# names <- unlist(map(tables, ~str_extract(.x, "(?<=\\.).*")))
+# 
+# for (n in names) {
+#   idx_name <- paste0('idx_', n, '_chas_year')
+#   fulltable <- paste0('[chas.', n, ']')
+#   sql <- paste0('CREATE INDEX ', idx_name, ' ON ', fulltable, '(chas_year)')
+#   print(sql)
+#   dbExecute(mydb, sql)
+# }
+
+dbDisconnect(mydb)
+
+# # test ----
+# 
+# con <- dbConnect(SQLite(), "data/disp_risk_2024-03-06.db")
+# as.data.frame(dbListTables(con))
+# 
+# # # Get table
+# test <- dbReadTable(con, 'acs5_2022_B03002_tract_juris_split_summary_estimates')
+# test2 <- dbReadTable(con, 'acs5_2022_B03002_tract_juris_split_summary_shares')
+# 
+# # # data is fetched; disconnect
+# dbDisconnect(con)
 
