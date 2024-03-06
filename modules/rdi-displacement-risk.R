@@ -47,19 +47,27 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
     
     
     data <- reactive({
-      # pull (currently from SQLite) semi-prepped CHAS
+      
+      
+      
       
     })
     
     table_data <- reactive({
+      # pull (currently from SQLite)
       # data in wide for display in table
+      
+      df <- read.dt.disprisk(type = 'table', "acs5_2022_B03002_tract_juris_split_summary_shares")
+      
+      df %>% 
+        filter(planning_geog == place())
 
     })
     
     plot_data <- reactive({
       # data in long form for plotting
       
-      data()
+      # data()
       
     })
     
@@ -75,7 +83,16 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
     
     output$table <- renderDT({
       # table display
-      # table_data()
+      
+      datatable(table_data(),
+                options = list(
+                               rowCallback = JS(
+                                 "function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {",
+                                 "var full_text = aData[0] + ','+ aData[1] + ',' + aData[2] + ','+ aData[7];",
+                                 "$('td', nRow).attr('data-title', full_text);",
+                                 "}")
+                )
+      )
       
       # https://stackoverflow.com/questions/40224925/r-shiny-mouseover-to-all-table-cells/40634033#40634033
       
@@ -88,15 +105,15 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
       # nRow = each row
       #$('td', nRow) all cells for each row
       # .attr('data-title', full_text) apply data-title attribute css to text
-      datatable(palmerpenguins::penguins,
-                options = list(columnDefs = list(list(visible = FALSE, targets = c(5, 6, 7))),
-                               rowCallback = JS(
-                                 "function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {",
-                                 "var full_text = aData[0] + ','+ aData[1] + ',' + aData[2] + ','+ aData[7];",
-                                 "$('td', nRow).attr('data-title', full_text);",
-                                 "}")
-                )
-      )
+      # datatable(palmerpenguins::penguins,
+      #           options = list(columnDefs = list(list(visible = FALSE, targets = c(5, 6, 7))),
+      #                          rowCallback = JS(
+      #                            "function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {",
+      #                            "var full_text = aData[0] + ','+ aData[1] + ',' + aData[2] + ','+ aData[7];",
+      #                            "$('td', nRow).attr('data-title', full_text);",
+      #                            "}")
+      #           )
+      # )
       
     })
     
