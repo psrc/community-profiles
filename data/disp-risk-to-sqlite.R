@@ -64,6 +64,7 @@ split_df <- split_df %>%
   select(data_geog, planning_geog, percent_of_total_pop)
 
 # join ACS data with Elmer splits
+# what to do about MOE????? ----
 dt_join <- split_df %>% 
   full_join(dt2, by = c('data_geog' = 'geoid10'), relationship = 'many-to-many') %>% 
   arrange(data_geog, var_int) %>% 
@@ -87,36 +88,6 @@ dt_join <- split_df %>%
 create_summary(df = dt_join, 
                grouping_vars = c('planning_geog', 'var_int', 'race_ethnicity_label'), 
                estimate_col = 'split_totpop')
-
-
-# QC Bellevue ----
-# Bellevue checks good
-
-# bellevue_tracts <- split_df %>% 
-#   filter(planning_geog == 'Bellevue') %>% 
-#   distinct(data_geog)
-# 
-# bellevue_tracts2 <- split_df %>% 
-#   filter(data_geog %in% bellevue_tracts$data_geog)
-# 
-# bellevue_dt2 <- dt2 %>% 
-#   ungroup() %>%
-#   select(var_int, geoid10, label,  estimate, moe) %>% 
-#   filter(geoid10 %in% bellevue_tracts$data_geog)
-# 
-# bellevue_df <- bellevue_tracts2 %>% 
-#   left_join(bellevue_dt2, by = c('data_geog' = 'geoid10')) %>% 
-#   arrange(data_geog, var_int) %>% 
-#   mutate(split_totpop = estimate * percent_of_total_pop)
-#  
-# bellevue_df_sum <- bellevue_df %>% 
-#   group_by(planning_geog, var_int, label) %>% 
-#   summarise(split_totpop = sum(split_totpop))
-# 
-# bellevue_df_sum %>% 
-#   ungroup() %>% 
-#   filter(planning_geog == "Bellevue" & var_int != 1) %>% 
-#   summarise(split_totpop = sum(split_totpop))
 
 # QC ----
 
@@ -159,7 +130,9 @@ disp_risk <- read_rds(file.path('data', "disp_risk_shp.rds")) |>
 # NAs in split_totpop/risk_level_name == 0 in estimate
 dt_all <- dt_join %>% 
   filter(!is.na(planning_geog)) %>% 
-  left_join(disp_risk, by = c("data_geog" = "geoid10")) 
+  left_join(disp_risk, by = c("data_geog" = "geoid10")) %>% 
+  mutate(planning_geog = str_replace_all(planning_geog, "Beaux Arts", "Beaux Arts Village")) %>% 
+  mutate(planning_geog = str_replace_all(planning_geog, "Sea Tac", "SeaTac"))
 
 create_summary(df = dt_all, 
                grouping_vars = c('planning_geog', 'var_int', 'race_ethnicity_label'), 
@@ -177,6 +150,15 @@ rl_all <- summary_df %>%
 
 summary_df <- bind_rows(summary_df, rl_all) %>% 
   arrange(planning_geog, race_ethnicity_label, risk_level_name)
+
+## add new juris: Region
+
+region <- summary_df %>% 
+  group_by(race_ethnicity_label, risk_level_name) %>% 
+  summarise(estimate = sum(estimate)) %>% 
+  mutate(planning_geog = 'Region')
+
+summary_df <- bind_rows(summary_df, region)
   
 # Formatting ----
 
@@ -231,7 +213,7 @@ dbDisconnect(mydb)
 
 # # test ----
 # 
-# con <- dbConnect(SQLite(), "data/disp_risk_2024-03-06.db")
+# con <- dbConnect(SQLite(), "data/disp_risk_2024-03-07.db")
 # as.data.frame(dbListTables(con))
 # 
 # # # Get table
@@ -240,4 +222,5 @@ dbDisconnect(mydb)
 # 
 # # # data is fetched; disconnect
 # dbDisconnect(con)
+
 
