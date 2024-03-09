@@ -115,9 +115,14 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
       selcols <- str_subset(colnames(t), ".*er")
       selcols2 <- str_subset(colnames(t), ".*All")
       
+      round_to_tens <- partial(round, digits = -1)
+      
+      t <- t %>% 
+        mutate(across(selcols2, round_to_tens))
+      
       source <- "Sources: American Community Survey (ACS) 2018-2022 Table B03002, Puget Sound Regional Council (PSRC)"
       
-      datatable(table_data(),
+      datatable(t,
                 container = container(),
                 rownames = FALSE,
                 options = list(dom = 'tipr',
@@ -125,8 +130,7 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: right;',
                   htmltools::em(source))) %>% 
-        formatPercentage(selcols, 2) %>% 
-        formatRound(selcols2, 0)
+        formatPercentage(selcols, 2)
       
       # https://stackoverflow.com/questions/40224925/r-shiny-mouseover-to-all-table-cells/40634033#40634033
       
