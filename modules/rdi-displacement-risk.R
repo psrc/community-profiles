@@ -48,9 +48,6 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
     
     data <- reactive({
       
-      
-      
-      
     })
     
     table_data <- reactive({
@@ -90,7 +87,7 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
     container <- reactive({
       # custom container for DT
       
-       selcols = c('Lower', 'Moderate', 'Higher', "All")
+       selcols = c(paste(c('Lower', 'Moderate', 'Higher'), "Risk"), "All")
         
         htmltools::withTags(table(
           class = 'display',
@@ -130,7 +127,7 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: right;',
                   htmltools::em(source))) %>% 
-        formatPercentage(selcols, 2)
+        formatPercentage(selcols, 1)
       
       # https://stackoverflow.com/questions/40224925/r-shiny-mouseover-to-all-table-cells/40634033#40634033
       
@@ -164,43 +161,9 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
     
     output$map <- renderLeaflet({
       
-      # d is tract table with data
-      # shape_tract can just be displacement risk shape
-      
-      # s <- shp %>%
-      #   left_join(d, by = c('geoid' = 'tract_geoid'))
-      
       m <- create_displacement_risk_map(shape_tract = disp_risk_shape,
                                         shape_place = map_data(), 
                                         title = paste('Displacement Risk'))
-      
-
-      
-      
-      
-      
-      
-      
-      # # shp <- tract.shape %>%
-      # #   filter(census_year == 2010)
-      # # https://stackoverflow.com/questions/48696395/leaflet-mixing-continuous-and-discrete-colors
-      # disprisk.shape <- disprisk.shape %>% 
-      #   mutate(risk_level_name = factor(risk_level_name, levels = c("lower", "moderate", "higher")))
-      # dispal <- colorFactor(palette = c("#d8b365", "#f5f5f5", "#5ab4ac"), levels = unique(disp_risk_shape$risk_level_name), na.color = "grey")
-      # 
-      # leaflet(disp_risk_shape) %>% 
-      #   addProviderTiles(providers$CartoDB.Positron) %>% 
-      #   addPolygons(fillOpacity = 1,
-      #               weight = 1,
-      #               fillColor = ~dispal(risk_level_name),
-      #               group = "Census Tracts") #%>%
-      #   # addPolygons(data = map_data(),
-      #   #             fill = FALSE,
-      #   #             weight = 3,
-      #   #             opacity = 1.0,
-      #   #             color = "#91268F",
-      #   #             dashArray = "4",
-      #   #             group = "Place Boundary")
 
     })
     

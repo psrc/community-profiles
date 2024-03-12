@@ -4,7 +4,7 @@ rdi_tab_ui <- function(id) {
   ns <- NS(id)
   
   intro <- p("The housing and household level metrics on this page can be used to support analyses of racially disparate impacts (RDI) within a local jurisdiction or community. 
-        Topics include racial disparities in Cost Burden, Rental Affordability, Income, and Tenure. 
+        Topics include racial disparities in Cost Burden, Rental Affordability, Income, Tenure, and Displacement Risk. 
         The data were drawn from HUD's", 
         tags$a(href="https://www.huduser.gov/portal/datasets/cp.html","Comprehensive Housing Affordability Strategy (CHAS) dataset,", target = "_blank"), 
         " a custom American Community Survey data product. 

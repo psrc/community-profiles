@@ -33,7 +33,7 @@ d <- df %>%
 # https://psrc.github.io/psrcelmer/
 
 # tract/juris split values for 2010 tracts but split in accordance with OFM data for 2019
-gsplit_sql <- "select * from general.get_geography_splits('tract10', 'Jurisdiction 2020', 2019, 2020, 2018)"
+gsplit_sql <- "select * from general.get_geography_splits('tract10', 'Jurisdiction 2020', 2022, 2022, 2018)"
 split_df <- get_query(gsplit_sql)
 
 # use 2010-2020 census tract crosswalk
@@ -119,6 +119,11 @@ qc <- totpop_check %>%
   mutate(diff = split_totpop - dp05_totpop)
 
 # openxlsx::write.xlsx(qc, "data/qc_splittotpop_dp05_totpop_only.xlsx")
+
+# Aggregate to create 'Other' category ----
+
+
+
 
 # Displacement Risk Levels ----
 
@@ -213,7 +218,7 @@ dbDisconnect(mydb)
 
 # # test ----
 # 
-# con <- dbConnect(SQLite(), "data/disp_risk_2024-03-07.db")
+# con <- dbConnect(SQLite(), "data/disp_risk_2024-03-11.db")
 # as.data.frame(dbListTables(con))
 # 
 # # # Get table
