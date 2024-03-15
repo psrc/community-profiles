@@ -199,48 +199,100 @@ summary_df <- bind_rows(summary_df, region)
   
 # Formatting ----
 
-re <- c('Total Population',
-        'Hispanic Or Latino',
-        'Non-Hispanic White',
-        'Black or African American',
-        'American Indian & Alaska Native',
-        'Asian',
-        'Native Hawaiian & Pacific Islander',
-        'Other',
-        'People of Color (POC)')
+## Formatting & calculations test b ----
 
-risk_levels <- c('lower', 'moderate', 'higher', 'All') 
-
-summary_df_pivot <- summary_df %>% 
-  mutate(race_ethnicity_label = factor(race_ethnicity_label, levels = re),
-         risk_level_name = factor(risk_level_name, levels = risk_levels)) %>% 
-  arrange(planning_geog, race_ethnicity_label, risk_level_name) %>% 
+### set aside 'All' risk level
+summary_df_all <- summary_df %>% 
+  filter(risk_level_name == 'All') %>% 
   pivot_wider(id_cols = c('planning_geog', 'race_ethnicity_label'),
               names_from = 'risk_level_name',
-              values_from = c('estimate', 'moe'),
-              names_expand = TRUE)
+              values_from = c('estimate', 'moe'))
 
-## create %
+### calculate CV/shares
+summary_df2 <- summary_df %>% 
+  filter(risk_level_name != 'All') %>% 
+  left_join(summary_df_all, by = c('planning_geog', 'race_ethnicity_label')) %>% 
+  mutate(se = moe / 1.645) %>% 
+  mutate(cv = se / estimate) %>% 
+  mutate(reliability = case_when(cv < .15 ~ 'Good',
+                                 cv > .15 & cv <= .30 ~ 'Fair',
+                                 cv > .30 & cv <= .50 ~ 'Use with Caution',
+                                 cv > .50 ~ 'Use with Great Caution')) %>% 
+  mutate(estimate_share = estimate / estimate_All,
+         moe_share = moe_prop(num = estimate,
+                              denom = estimate_All,
+                              moe_num = moe,
+                              moe_denom = moe_All))
 
-newcols <- paste0(paste0('estimate_', c('lower', 'moderate', 'higher')), "_share")
+summary_df3 <- summary_df2 %>% 
+  pivot_wider(id_cols = c('planning_geog', 'race_ethnicity_label'),
+              names_from = 'risk_level_name',
+              values_from = c('estimate', 'moe', 'reliability', 'estimate_share', 'moe_share'))
+  
 
-summary_df_pivot_all <- summary_df_pivot %>% 
-  mutate(moe_lower_share = moe_prop(num = estimate_lower, 
-                                    denom = estimate_All, 
-                                    moe_num = moe_lower, 
-                                    moe_denom = moe_All),
-         moe_moderate_share = moe_prop(num = estimate_moderate, 
-                                       denom = estimate_All, 
-                                       moe_num = moe_moderate, 
-                                       moe_denom = moe_All),
-         moe_higher_share = moe_prop(num = estimate_higher, 
-                                     denom = estimate_All, 
-                                     moe_num = moe_higher, 
-                                     moe_denom = moe_All)
-           ) %>%
-  mutate(estimate_lower_share = estimate_lower / estimate_All,
-         estimate_moderate_share = estimate_moderate / estimate_All,
-         estimate_higher_share = estimate_higher / estimate_All)
+## Formatting & calculations test a ----
+
+# re <- c('Total Population',
+#         'Hispanic Or Latino',
+#         'Non-Hispanic White',
+#         'Black or African American',
+#         'American Indian & Alaska Native',
+#         'Asian',
+#         'Native Hawaiian & Pacific Islander',
+#         'Other',
+#         'People of Color (POC)')
+# 
+# risk_levels <- c('lower', 'moderate', 'higher', 'All') 
+# 
+# summary_df_pivot <- summary_df %>% 
+#   mutate(race_ethnicity_label = factor(race_ethnicity_label, levels = re),
+#          risk_level_name = factor(risk_level_name, levels = risk_levels)) %>% 
+#   arrange(planning_geog, race_ethnicity_label, risk_level_name) %>% 
+#   pivot_wider(id_cols = c('planning_geog', 'race_ethnicity_label'),
+#               names_from = 'risk_level_name',
+#               values_from = c('estimate', 'moe'),
+#               names_expand = TRUE)
+# 
+# ## create %
+# 
+# newcols <- paste0(paste0('estimate_', c('lower', 'moderate', 'higher')), "_share")
+# 
+# summary_df_pivot_all <- summary_df_pivot %>%
+#   mutate(moe_lower_share = moe_prop(num = estimate_lower,
+#                                     denom = estimate_All,
+#                                     moe_num = moe_lower,
+#                                     moe_denom = moe_All),
+#          moe_moderate_share = moe_prop(num = estimate_moderate,
+#                                        denom = estimate_All,
+#                                        moe_num = moe_moderate,
+#                                        moe_denom = moe_All),
+#          moe_higher_share = moe_prop(num = estimate_higher,
+#                                      denom = estimate_All,
+#                                      moe_num = moe_higher,
+#                                      moe_denom = moe_All)
+#            ) %>%
+#   mutate(estimate_lower_share = estimate_lower / estimate_All,
+#          estimate_moderate_share = estimate_moderate / estimate_All,
+#          estimate_higher_share = estimate_higher / estimate_All) %>%
+#   mutate(se_lower = moe_lower /1.645,
+#          se_moderate = moe_moderate / 1.645,
+#          se_higher = moe_higher / 1.645) %>%
+#   mutate(cv_lower = se_lower / estimate_lower,
+#          cv_moderate = se_moderate / estimate_moderate,
+#          cv_higher = se_higher / estimate_higher) %>%
+#   mutate(reliability_lower = case_when(cv_lower < .15 ~ 'Good',
+#                                        cv_lower > .15 & cv_lower <= .30 ~ 'Fair',
+#                                        cv_lower > .30 & cv_lower <= .50 ~ 'Use with Caution',
+#                                        cv_lower > .50 ~ 'Use with Great Caution'),
+#          reliability_moderate = case_when(cv_moderate < .15 ~ 'Good',
+#                                           cv_moderate > .15 & cv_lower <= .30 ~ 'Fair',
+#                                           cv_moderate > .30 & cv_lower <= .50 ~ 'Use with Caution',
+#                                           cv_moderate > .50 ~ 'Use with Great Caution'),
+#          reliability_higher = case_when(cv_higher < .15 ~ 'Good',
+#                                         cv_higher > .15 & cv_lower <= .30 ~ 'Fair',
+#                                         cv_higher > .30 & cv_lower <= .50 ~ 'Use with Caution',
+#                                         cv_higher > .50 ~ 'Use with Great Caution'))
+  
 
 
 
