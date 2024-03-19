@@ -54,23 +54,28 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
       # pull (currently from SQLite)
       # data in wide for display in table
       
-      rename_cols <- function(df) {
+      select_rename_cols <- function(df) {
+        place_name <- unique(df$planning_geog)
+        
         df %>% 
-          rename_with(~paste0(paste0(unique(df$planning_geog), "_"), .x, recycle0 = TRUE), c('lower', 'moderate', 'higher', 'All')) %>% 
+          select(planning_geog, race_ethnicity_label, contains('share'), ends_with('All'), starts_with('reliability')) %>%
+          select(planning_geog, race_ethnicity_label, starts_with('estimate'), starts_with('reliability')) %>% 
+          rename_with(~paste0(paste0(place_name, "_"), .x, recycle0 = TRUE), 
+                      setdiff(colnames(.), c('planning_geog', 'race_ethnicity_label'))) %>% 
           select(-planning_geog)
       }
       
-      df <- read.dt.disprisk(type = 'table', "acs5_2022_B03002_tract_juris_split_summary_shares")
-      
+      df <- read.dt.disprisk(type = 'table', "acs5_2022_B03002_tract_juris_split_summary")
+
       juris <- df %>% 
-        filter(planning_geog == place()) 
-      j <- rename_cols(juris)
+        filter(planning_geog == place()) %>% 
+        select_rename_cols()
       
       region <- df %>% 
-        filter(planning_geog == 'Region')
-      r <- rename_cols(region)
+        filter(planning_geog == 'Region') %>% 
+        select_rename_cols()
       
-      t <- left_join(j, r, by = 'race_ethnicity_label')
+      t <- left_join(juris, region, by = 'race_ethnicity_label')
     })
     
     plot_data <- reactive({
@@ -87,18 +92,18 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
     container <- reactive({
       # custom container for DT
       
-       selcols = c(paste(c('Lower', 'Moderate', 'Higher'), "Risk"), "All")
-        
+       sel_cols <-  c(paste(c('Lower', 'Moderate', 'Higher'), "Risk"), "All", paste(c('Lower', 'Moderate', 'Higher'), "Reliability"))
+
         htmltools::withTags(table(
           class = 'display',
           thead(
             tr(
               th(rowspan = 2, 'Race/Ethnicity'),
-              th(class = 'dt-center', colspan = 4, place_name()),
-              th(class = 'dt-center', colspan = 4, 'Region')
+              th(class = 'dt-center', colspan = 7, place_name()),
+              th(class = 'dt-center', colspan = 7, 'Region')
             ),
             tr(
-              lapply(rep(selcols, 2), th)
+              lapply(rep(sel_cols, 2), th)
             )
           )
         ))
@@ -109,25 +114,28 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
       # table display
       t <- table_data()
 
-      selcols <- str_subset(colnames(t), ".*er")
-      selcols2 <- str_subset(colnames(t), ".*All")
+      main_cols <- colnames(t)[grep(".*_estimate.*", colnames(t))]
+      sel_cols <- str_subset(main_cols, ".*_estimate_share_.*")
+      sel_cols2 <- str_subset(main_cols, ".*All")
+      invis_cols <- str_subset(colnames(t), ".*reliability.*")
       
       round_to_tens <- partial(round, digits = -1)
       
       t <- t %>% 
-        mutate(across(selcols2, round_to_tens))
+        mutate(across(sel_cols2, round_to_tens))
       
       source <- "Sources: American Community Survey (ACS) 2018-2022 Table B03002, Puget Sound Regional Council (PSRC)"
-      
+
       datatable(t,
                 container = container(),
                 rownames = FALSE,
                 options = list(dom = 'tipr',
-                               columnDefs = list(list(className = 'dt-center', targets = 1:8))),
+                               columnDefs = list(list(className = 'dt-center', targets = c(1:4, 8:11)),
+                                                 list(visible = FALSE, targets = c(5:7, 12:14)))),
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: right;',
                   htmltools::em(source))) %>% 
-        formatPercentage(selcols, 1)
+        formatPercentage(sel_cols, 1)
       
       # https://stackoverflow.com/questions/40224925/r-shiny-mouseover-to-all-table-cells/40634033#40634033
       
