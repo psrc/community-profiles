@@ -125,19 +125,31 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
         mutate(across(sel_cols2, round_to_tens))
       
       source <- "Sources: American Community Survey (ACS) 2018-2022 Table B03002, Puget Sound Regional Council (PSRC)"
-
+      
+      tooltip_js <-  c("function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {",
+                                  "const tableCol = [1, 2, 3, 5, 6, 7];",
+                                  "const dataCol = [5, 6, 7, 12, 13, 14];",
+                                  "for(i = 0; i < tableCol.length; i++) {",
+                                  "$('td:eq('+tableCol[i]+')', nRow).attr('data-title', aData[dataCol[i]]);",
+                                  "}",
+                        "}")
+      
       datatable(t,
                 container = container(),
                 rownames = FALSE,
                 options = list(dom = 'tipr',
                                columnDefs = list(list(className = 'dt-center', targets = c(1:4, 8:11)),
-                                                 list(visible = FALSE, targets = c(5:7, 12:14)))),
+                                                 list(visible = FALSE, targets = c(5:7, 12:14))),
+                               rowCallback = JS(tooltip_js)
+                               ),
                 caption = htmltools::tags$caption(
                   style = 'caption-side: bottom; text-align: right;',
                   htmltools::em(source))) %>% 
         formatPercentage(sel_cols, 1)
       
+      
       # https://stackoverflow.com/questions/40224925/r-shiny-mouseover-to-all-table-cells/40634033#40634033
+      # https://willdebras.github.io/posts/tooltips/
       
       # can hover and have tooltip? yes
       # can hide columns but still reference them in tooltip? yes
