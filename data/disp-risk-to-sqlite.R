@@ -68,13 +68,13 @@ d3 <- d2 %>%
                                     var_int == 12 ~ 'Hispanic or Latino',
                                     .default = race_ethnicity)) %>%
   mutate(race_ethnicity = str_replace_all(race_ethnicity, ":", "")) %>%
-  mutate(race_ethnicity_label = case_when(race_ethnicity == 'Total' ~ 'Total Population',
-                                          race_ethnicity == 'White alone' ~ 'Non-Hispanic White',
+  mutate(race_ethnicity_label = case_when(race_ethnicity == 'Total' ~ 'All',
+                                          race_ethnicity == 'White alone' ~ 'White',
                                           race_ethnicity == 'Black or African American alone' ~ 'Black or African American',
-                                          race_ethnicity == 'American Indian and Alaska Native alone' ~ 'American Indian & Alaska Native',
+                                          race_ethnicity == 'American Indian and Alaska Native alone' ~ 'American Indian and Alaska Native',
                                           race_ethnicity == 'Asian alone' ~ 'Asian',
-                                          race_ethnicity == 'Native Hawaiian and Other Pacific Islander alone' ~ 'Native Hawaiian & Pacific Islander',
-                                          race_ethnicity == 'Hispanic or Latino' ~ 'Hispanic Or Latino',
+                                          race_ethnicity == 'Native Hawaiian and Other Pacific Islander alone' ~ 'Pacific Islander',
+                                          race_ethnicity == 'Hispanic or Latino' ~ 'Hispanic Or Latino (of any race)',
                                           total == 'POC' ~ 'People of Color (POC)',
                                           total == 'Other' ~ 'Other'))
 
@@ -201,15 +201,15 @@ summary_df <- bind_rows(summary_df, region)
 
 ## Formatting & calculations
 
-re <- c('American Indian & Alaska Native',
+re <- c('American Indian and Alaska Native',
         'Asian',
         'Black or African American',
-        'Hispanic Or Latino',
-        'Native Hawaiian & Pacific Islander',
+        'Hispanic Or Latino (of any race)',
+        'Pacific Islander',
         'Other',
         'People of Color (POC)',
-        'Non-Hispanic White',
-        'Total Population')
+        'White',
+        'All')
 
 risk_levels <- c('lower', 'moderate', 'higher')
 
@@ -269,15 +269,15 @@ dbDisconnect(mydb)
 
 # test ----
 
-# con <- dbConnect(SQLite(), "data/disp_risk_2024-03-18.db")
-# as.data.frame(dbListTables(con))
-# 
-# # # Get table
-# # test <- dbReadTable(con, 'acs5_2022_B03002_tract_juris_split_summary_estimates')
-# # test2 <- dbReadTable(con, 'acs5_2022_B03002_tract_juris_split_summary_shares')
-# test3 <- dbReadTable(con, 'acs5_2022_B03002_tract_juris_split_summary')
-# 
-# # # data is fetched; disconnect
-# dbDisconnect(con)
+con <- dbConnect(SQLite(), "data/disp_risk_2024-03-25.db")
+as.data.frame(dbListTables(con))
+
+# # Get table
+# test <- dbReadTable(con, 'acs5_2022_B03002_tract_juris_split_summary_estimates')
+# test2 <- dbReadTable(con, 'acs5_2022_B03002_tract_juris_split_summary_shares')
+test3 <- dbReadTable(con, 'acs5_2022_B03002_tract_juris_split_summary')
+
+# # data is fetched; disconnect
+dbDisconnect(con)
 
 
