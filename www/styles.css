@@ -58,18 +58,19 @@ h3 {
 
 [data-title]:after {
     content: attr(data-title);
-    background-color: #fed8b1;
+    background-color: #f4ebf4;
     color: black;
     font-size: 100%;
-    width:250px;
+    width: 150px;
     padding: 1px 5px 2px 5px;
-    bottom: -2.5em;
-      border: 4px solid rgb(255, 255, 255);
+    margin-top: -1.5rem;
+      border: 1px solid darkgrey;
       border-radius: 5px;
-    left: 100%;
+    left: auto;
     position: absolute;
     z-index: 99999;
     visibility: hidden;
+    box-shadow: 10px 5px 5px lightgrey;
 }
 
 [data-title]:hover:after {
