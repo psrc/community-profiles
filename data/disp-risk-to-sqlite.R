@@ -29,6 +29,7 @@ d <- df %>%
            sep = "_") %>% 
   mutate(var_int = as.numeric(var_num))
 
+
 ## Aggregate categories ----
 
 
@@ -54,6 +55,7 @@ d2 <- d %>%
   bind_rows(d_poc) %>% 
   arrange(GEOID, var_int)
 
+
 ## Munge label ----
 
 
@@ -74,10 +76,11 @@ d3 <- d2 %>%
                                           race_ethnicity == 'American Indian and Alaska Native alone' ~ 'American Indian and Alaska Native',
                                           race_ethnicity == 'Asian alone' ~ 'Asian',
                                           race_ethnicity == 'Native Hawaiian and Other Pacific Islander alone' ~ 'Pacific Islander',
-                                          race_ethnicity == 'Hispanic or Latino' ~ 'Hispanic Or Latino (of any race)',
+                                          race_ethnicity == 'Hispanic or Latino' ~ 'Hispanic or Latino (of any race)',
                                           total == 'POC' ~ 'People of Color (POC)',
                                           total == 'Other' ~ 'Other'))
 
+# City/Towns level ----
 # Elmer Tract/Juris Splits ----
 
 
@@ -115,6 +118,7 @@ create_summary(df = dt_join,
                grouping_vars = c('planning_geog', 'var_int', 'race_ethnicity_label'), 
                estimate_col = 'split_totpop') %>% 
   filter(planning_geog == 'Bellevue')
+
 
 # QC ----
 
@@ -204,26 +208,25 @@ summary_df <- bind_rows(summary_df, region)
 re <- c('American Indian and Alaska Native',
         'Asian',
         'Black or African American',
-        'Hispanic Or Latino (of any race)',
+        'Hispanic or Latino (of any race)',
         'Pacific Islander',
         'Other',
         'People of Color (POC)',
         'White',
         'All')
 
-risk_levels <- c('lower', 'moderate', 'higher')
+risk_levels <- c('lower', 'moderate', 'higher', 'All')
 
 ### set aside 'All' risk level
 summary_df_all <- summary_df %>% 
-  filter(risk_level_name == 'All') %>% 
+  filter(risk_level_name == 'All') %>%
   pivot_wider(id_cols = c('planning_geog', 'race_ethnicity_label'),
               names_from = 'risk_level_name',
-              values_from = c('estimate', 'moe'))
+              values_from = c('estimate', 'moe')) %>% 
+  rename_with(~str_replace_all(.x,'All', 'denom'))
 
 ### calculate CV/shares
 summary_df2 <- summary_df %>% 
-  filter(risk_level_name != 'All') %>% 
-  left_join(summary_df_all, by = c('planning_geog', 'race_ethnicity_label')) %>% 
   mutate(se = moe / 1.645) %>% 
   mutate(cv = se / estimate) %>% 
   mutate(reliability = case_when(cv == Inf ~ 'Estimate is 0, cannot compute',
@@ -232,15 +235,16 @@ summary_df2 <- summary_df %>%
                                  cv > .30 & cv <= .50 ~ 'Use with Caution',
                                  cv > .50 ~ 'Use with Great Caution',
                                  .default = 'missing or N/A'
-                                 )) %>% 
-  mutate(estimate_share = estimate / estimate_All,
-         moe_share = moe_prop(num = estimate,
-                              denom = estimate_All,
-                              moe_num = moe,
-                              moe_denom = moe_All)) %>% 
+  )) %>% 
   mutate(race_ethnicity_label = factor(race_ethnicity_label, levels = re),
          risk_level_name = factor(risk_level_name, levels = risk_levels)) %>% 
-  arrange(planning_geog, race_ethnicity_label, risk_level_name)
+  arrange(planning_geog, race_ethnicity_label, risk_level_name) %>% 
+  left_join(summary_df_all, by = c('planning_geog', 'race_ethnicity_label')) %>% 
+  mutate(estimate_share = estimate / estimate_denom,
+         moe_share = moe_prop(num = estimate,
+                              denom = estimate_denom,
+                              moe_num = moe,
+                              moe_denom = moe_denom))
 
 summary_df3 <- summary_df2 %>% 
   pivot_wider(id_cols = c('planning_geog', 'race_ethnicity_label'),
@@ -254,28 +258,92 @@ summary_df4 <- summary_df3 %>%
 
 # openxlsx::write.xlsx(summary_df4, "test-b-summary.xlsx")
 
+# County level ----
+
+cnty_summary <- dt %>% 
+  mutate(cnty_id = str_sub(geoid10, 3, 5)) %>% 
+  left_join(disp_risk, by = "geoid10") %>% 
+  filter(!is.na(risk_level_name)) %>% 
+  group_by(cnty_id, county_name, race_ethnicity_label, risk_level_name) %>% 
+  summarise(estimate = sum(estimate),
+            moe = tidycensus::moe_sum(moe, estimate)) 
+
+cnty_summary_all <- cnty_summary %>% 
+  ungroup() %>% 
+  group_by(race_ethnicity_label, cnty_id, county_name) %>% 
+  summarise(estimate = sum(estimate),
+            moe = tidycensus::moe_sum(moe, estimate)) %>% 
+  mutate(risk_level_name = 'All')
+
+cnty_summary_df <- bind_rows(cnty_summary, cnty_summary_all) %>% 
+  arrange(cnty_id, county_name, race_ethnicity_label, risk_level_name)  
+
+cnty_denom <- cnty_summary_df %>% 
+  filter(risk_level_name == 'All') %>% 
+  pivot_wider(id_cols = c('cnty_id', 'county_name', 'race_ethnicity_label'),
+              names_from = 'risk_level_name',
+              values_from = c('estimate', 'moe')) %>% 
+  rename_with(~str_replace_all(.x,'All', 'denom'))
+
+cnty_summary_df2 <- cnty_summary_df %>% 
+  mutate(se = moe / 1.645) %>%
+  mutate(cv = se / estimate) %>%
+  mutate(reliability = case_when(cv == Inf ~ 'Estimate is 0, cannot compute',
+                                 cv <= .15 ~ 'Good',
+                                 cv > .15 & cv <= .30 ~ 'Fair',
+                                 cv > .30 & cv <= .50 ~ 'Use with Caution',
+                                 cv > .50 ~ 'Use with Great Caution',
+                                 .default = 'missing or N/A'
+  )) %>% 
+  left_join(cnty_denom, by = c('cnty_id', 'county_name', 'race_ethnicity_label')) %>%
+  mutate(estimate_share = estimate / estimate_denom,
+         moe_share = moe_prop(num = estimate,
+                              denom = estimate_denom,
+                              moe_num = moe,
+                              moe_denom = moe_denom)) %>% 
+  mutate(race_ethnicity_label = factor(race_ethnicity_label, levels = re),
+         risk_level_name = factor(risk_level_name, levels = risk_levels)) %>% 
+  arrange(cnty_id, race_ethnicity_label, risk_level_name) %>%
+  pivot_wider(id_cols = c('cnty_id', 'county_name', 'race_ethnicity_label'),
+              names_from = 'risk_level_name',
+              values_from = c('estimate', 'moe', 'reliability', 'estimate_share', 'moe_share'),
+              names_sort = TRUE) %>%
+  left_join(cnty_denom, by = c('cnty_id', 'county_name', 'race_ethnicity_label')) %>%
+  mutate(planning_geog = case_when(county_name == 'King' ~ 'King County',
+                                   county_name == 'Kitsap' ~ 'Kitsap County',
+                                   county_name == 'Pierce' ~ 'Pierce County',
+                                   county_name == 'Snohomish' ~ 'Snohomish County')) %>%
+  ungroup() %>%
+  select(-cnty_id, -county_name) %>%
+  select(planning_geog, everything())
 
 
+
+# bind city/towns, region, and counties
+
+df_all <- bind_rows(summary_df4, cnty_summary_df2)
 
 # send to mysqlite db ----
 
 sqlite_dbname <- file.path('data', paste0('disp_risk_',Sys.Date(), '.db'))
 mydb <- dbConnect(RSQLite::SQLite(), sqlite_dbname)
 
-dbWriteTable(mydb, 'acs5_2022_B03002_tract_juris_split_summary', summary_df4, overwrite = TRUE)
+dbWriteTable(mydb, 'acs5_2022_B03002_tract_juris_split_summary', df_all, overwrite = TRUE)
 
 
 dbDisconnect(mydb)
 
 # test ----
 
-con <- dbConnect(SQLite(), "data/disp_risk_2024-03-25.db")
+con <- dbConnect(SQLite(), "data/disp_risk_2024-04-04.db")
+# con <- dbConnect(SQLite(), "data/disp_risk_2024-03-25.db")
 as.data.frame(dbListTables(con))
 
 # # Get table
 # test <- dbReadTable(con, 'acs5_2022_B03002_tract_juris_split_summary_estimates')
 # test2 <- dbReadTable(con, 'acs5_2022_B03002_tract_juris_split_summary_shares')
-test3 <- dbReadTable(con, 'acs5_2022_B03002_tract_juris_split_summary')
+# test3 <- dbReadTable(con, 'acs5_2022_B03002_tract_juris_split_summary')
+test4 <- dbReadTable(con, 'acs5_2022_B03002_tract_juris_split_summary')
 
 # # data is fetched; disconnect
 dbDisconnect(con)

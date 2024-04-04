@@ -8,7 +8,7 @@ library(tidycensus)
 sqldb.connect.disprisk <- function() {
   # connect to SQLite db containing tract-juris split displacement risk level tables
   
-  dbConnect(SQLite(), "data/disp_risk_2024-03-25.db")
+  dbConnect(SQLite(), "data/disp_risk_2024-04-04.db")
 }
 
 

@@ -56,10 +56,11 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
       
       select_rename_cols <- function(df) {
         place_name <- unique(df$planning_geog)
-        
+
         df %>% 
-          select(planning_geog, race_ethnicity_label, contains('share'), ends_with('All'), starts_with('reliability')) %>%
+          select(planning_geog, race_ethnicity_label, contains('share'), ends_with('All'), starts_with('reliability'), -contains('share_All')) %>%
           select(planning_geog, race_ethnicity_label, starts_with('estimate'), starts_with('reliability')) %>% 
+          relocate(reliability_All, .after = last_col()) %>% 
           rename_with(~paste0(paste0(place_name, "_"), .x, recycle0 = TRUE), 
                       setdiff(colnames(.), c('planning_geog', 'race_ethnicity_label'))) %>% 
           select(-planning_geog)
@@ -92,15 +93,15 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
     container <- reactive({
       # custom container for DT
       
-       sel_cols <-  c(paste(c('Lower', 'Moderate', 'Higher'), "Risk"), "All", paste(c('Lower', 'Moderate', 'Higher'), "Reliability"))
+       sel_cols <-  c(paste(c('Lower', 'Moderate', 'Higher'), "Risk"), "Total Popualtion", paste(c('Lower', 'Moderate', 'Higher', 'All'), "Reliability"))
 
         htmltools::withTags(table(
           class = 'display',
           thead(
             tr(
               th(rowspan = 2, 'Race/Ethnicity'),
-              th(class = 'dt-center', colspan = 7, place_name()),
-              th(class = 'dt-center', colspan = 7, 'Region')
+              th(class = 'dt-center', colspan = 8, place_name()),
+              th(class = 'dt-center', colspan = 8, 'Region')
             ),
             tr(
               lapply(rep(sel_cols, 2), th)
@@ -124,22 +125,25 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
       t <- t %>% 
         mutate(across(sel_cols2, round_to_tens))
       
-      source <- "Sources: American Community Survey (ACS) 2018-2022 Table B03002, Puget Sound Regional Council (PSRC)"
+      source <- "Sources: Puget Sound Regional Council (PSRC), Displacement Risk Index"
       
+      # https://stackoverflow.com/questions/56590555/how-can-i-introduce-a-new-line-within-a-column-using-dtedit-and-shinyuioutput
       tooltip_js <-  c("function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {",
-                                  "const tableCol = [1, 2, 3, 5, 6, 7];",
-                                  "const dataCol = [5, 6, 7, 12, 13, 14];",
+                                  "const tableCol = Array.from({length: 8}, (x, i) => i + 1);",
+                                  "const dataCol = [5, 6, 7, 8, 13, 14, 15, 16];",
                                   "for(i = 0; i < tableCol.length; i++) {",
-                                  "$('td:eq('+tableCol[i]+')', nRow).attr('data-title', aData[dataCol[i]]);",
+                                  "let full_text = 'Data reliability: ' + aData[dataCol[i]];",
+                                  "$('td:eq('+tableCol[i]+')', nRow).attr('data-title', full_text);",
                                   "}",
                         "}")
-      
+
       datatable(t,
+                escape = FALSE,
                 container = container(),
                 rownames = FALSE,
                 options = list(dom = 'tipr',
-                               columnDefs = list(list(className = 'dt-center', targets = c(1:4, 8:11)),
-                                                 list(visible = FALSE, targets = c(5:7, 12:14))),
+                               columnDefs = list(list(className = 'dt-center', targets = c(1:4, 9:12)),
+                                                 list(visible = FALSE, targets = c(5:8, 13:16))),
                                rowCallback = JS(tooltip_js)
                                ),
                 caption = htmltools::tags$caption(

@@ -53,7 +53,7 @@ h3 {
 }
 
 [data-title] {
-    position: relative;
+    /*position: relative;*/
 }
 
 [data-title]:after {
@@ -63,12 +63,12 @@ h3 {
     font-size: 100%;
     width: 150px;
     padding: 1px 5px 2px 5px;
-    margin-top: -1.5rem;
+    /*margin-top: -1.5rem;*/
       border: 1px solid darkgrey;
       border-radius: 5px;
     left: auto;
     position: absolute;
-    z-index: 99999;
+    z-index: 1; /*99999;*/
     visibility: hidden;
     box-shadow: 10px 5px 5px lightgrey;
 }
