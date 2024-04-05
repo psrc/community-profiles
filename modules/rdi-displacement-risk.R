@@ -184,7 +184,7 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
     })
     
     output$map <- renderLeaflet({
-      
+
       m <- create_displacement_risk_map(shape_tract = disp_risk_shape,
                                         shape_place = map_data(), 
                                         title = paste('Displacement Risk'))
