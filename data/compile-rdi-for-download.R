@@ -1,7 +1,6 @@
 library(tidyverse)
 
 scripts <- c('cost-burden', 'income', 'rental-affordability', 'tenure')
-# scripts <- c('rental-affordability', 'tenure') # doesn't have e or s 
 scripts <- paste0("function-", scripts, ".R")
 
 source('modules/function-query-sqlite-chas.R')
@@ -54,6 +53,6 @@ chas_year <- unique(dfs[[1]]$chas_year)
 # export each jurisdiction as separate workbook
 for(j in setdiff(juris, 'Region')) {
   chas_geog_df <- map(dfs, ~.x %>% filter(geography_name %in% c(j, 'Region')))
-  openxlsx::write.xlsx(chas_geog_df, here::here(file.path("data-profiles-chas", paste0(chas_year - 4, "-", chas_year, "-chas-data-", j, ".xlsx"))))
+  openxlsx::write.xlsx(chas_geog_df, here::here(file.path("data-profiles-chas", paste0(chas_year - 4, "-", chas_year, "-chas-data-", tolower(j), ".xlsx"))))
 }
 

@@ -13,22 +13,10 @@ shinyUI(
                    selectInput("Year",
                                "Select American Community Survey Data:",
                                data_years),
-                   
-                   # # Test conditional panel
-                   # conditionalPanel(
-                   #   condition = "input.Navbar == 'rdi'",
-                   #   selectInput("chas_data",
-                   #               "Select CHAS dataset:",
-                   #               c("2015-2019 CHAS", "2016-2020 CHAS"))
-                   # ),
-                   
+
                    juris_profile_ui('profile'),
+                   download_data_ui('download'),
                   
-                   downloadLink('downloadData', 
-                                label = "Download Data Profiles in Excel Format"),
-                   
-                   
-                   
                    width = 3),
       
       mainPanel(shinyjs::useShinyjs(), 
