@@ -21,3 +21,5 @@ read.dt.disprisk <- function(type = c('table', 'query'), string) {
   dbDisconnect(con)
   setDT(dt)
 }
+
+

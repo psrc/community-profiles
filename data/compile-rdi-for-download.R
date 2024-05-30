@@ -1,10 +1,13 @@
 library(tidyverse)
 library(openxlsx)
 
+# source scripts containing the "create__" functions. Retrieve "create__" functions ----
+
 scripts <- c('cost-burden', 'income', 'rental-affordability', 'tenure')
 scripts <- paste0("function-", scripts, ".R")
 
 source('modules/function-query-sqlite-chas.R')
+source('modules/function-query-sqlite-displacement-risk.R')
 
 walk(scripts, ~source(file.path('modules', .x)))
 rm(list = str_subset(ls(), "_dt_"))
@@ -12,6 +15,8 @@ rm(list = str_subset(ls(), "_dt_"))
 geogs <- c('place', 'county', 'region')
 
 funcs <- str_subset(ls(), "create")
+
+# Run the various "create" functions to generate data tables ----
 
 dfs <- list()
 for(f in funcs) {
@@ -44,7 +49,17 @@ for(f in funcs) {
   
 } 
 
+# displacement risk ----
+
+drisk_df <- read.dt.disprisk(type = 'table', "acs5_2022_B03002_tract_juris_split_summary") |>
+  select(Jurisdiction = planning_geog, race_ethnicity_label, contains('share'), ends_with('All'), starts_with('reliability'), -contains('share_All')) |>
+  select(Jurisdiction, race_ethnicity_label, starts_with('estimate'), starts_with('reliability')) |>
+  relocate(reliability_All, .after = last_col())
+
+dfs$displacement_risk <- drisk_df
+
 # munge ----
+
 ## clean column names
 for(i in 1:length(dfs)) {
   n <- names(dfs[i])
@@ -64,6 +79,14 @@ for(i in 1:length(dfs)) {
     setnames(dfs[[i]], c('chas_year', 'geography_name', 'description'), c('Year', 'Jurisdiction', 'Race or Ethnicity'))
     colnames(dfs[[i]]) <- str_replace_all(colnames(dfs[[i]]), "_", " ")
     
+  } else if(str_detect(n, "displacement")) {
+    colnames(dfs[[i]]) <- str_replace_all(colnames(dfs[[i]]), "estimate", "")
+    colnames(dfs[[i]]) <- str_replace_all(colnames(dfs[[i]]), "_", " ")
+    colnames(dfs[[i]]) <- str_to_title(colnames(dfs[[i]]))
+    setnames(dfs[[i]], str_subset(colnames(dfs[[i]]), "Race.*"), c('Race or Ethnicity'))
+    colnames(dfs[[i]])[3:length(colnames(dfs[[i]]))] <- paste(colnames(dfs[[i]])[3:length(colnames(dfs[[i]]))], "Risk")
+    
+    
   }
   
   if(str_detect(n, "rental") == T | str_detect(n, "tenure") == T) {
@@ -79,9 +102,10 @@ juris <- setdiff(chas_geogs, cdps)
 
 chas_year <- unique(dfs[[1]]$Year)
 
-# create function
-# format excel 
-# create_ofm_hct_summary_spreadsheet https://github.com/psrc/centers-monitoring-data-tools/blob/main/functions.R
+
+# format excel spreadsheets for export ----
+# example of openxlsx formatting: create_ofm_hct_summary_spreadsheet 
+# https://github.com/psrc/centers-monitoring-data-tools/blob/main/functions.R
 
 create_cost_burden_income_sheet <- function(data, wb, sheetname, numFmt) {
   nr <- nrow(data) + 1
@@ -127,7 +151,33 @@ create_rental_tenure_sheet <- function(data, wb, sheetname) {
   addStyle(wb, sheetname, style = head_style2, rows = 1, cols = 1:3, gridExpand = TRUE, stack = TRUE)
 }
 
-# export each jurisdiction as separate workbook
+create_displacement_risk_sheet <- function(data, wb, sheetname) {
+  nr <- nrow(data) + 1
+  nc <- ncol(data)
+  
+  addWorksheet(wb, sheetname)
+  df_style <- createStyle(fontName = 'Poppins', fontSize = 9.5)
+  head_style <- createStyle(halign = 'center')
+  head_style2 <- createStyle(halign = 'left')
+  est_style <- createStyle(halign = 'center', numFmt = 'COMMA')
+  per_style <- createStyle(halign = 'center', numFmt = 'PERCENTAGE')
+  
+  writeData(wb, sheetname, data, headerStyle = head_style)
+  
+  addStyle(wb, sheetname, style = df_style, rows = 1:nr, cols = 1:nc, gridExpand = TRUE, stack = TRUE)
+  
+  addStyle(wb, sheetname, style = est_style, rows = 2:nr, cols = 6, gridExpand = TRUE, stack = TRUE)
+  addStyle(wb, sheetname, style = per_style, rows = 2:nr, cols = 3:5, gridExpand = TRUE, stack = TRUE)
+  
+  addStyle(wb, sheetname, style = head_style2, rows = 1, cols = 1:2, gridExpand = TRUE, stack = TRUE)
+  addStyle(wb, sheetname, style = head_style2, rows = 2:nr, cols = 7:nc, gridExpand = TRUE, stack = TRUE)
+
+  
+}
+
+
+## export each jurisdiction as separate workbook ----
+
 for(j in setdiff(juris, 'Region')) {
   juris_df <- map(dfs, ~.x %>% filter(Jurisdiction %in% c(j, 'Region')))
   
@@ -141,9 +191,11 @@ for(j in setdiff(juris, 'Region')) {
   create_cost_burden_income_sheet(data = juris_df$income_share, wb = wb, sheetname = "Income Share", numFmt = 'PERCENTAGE')
   create_rental_tenure_sheet(data = juris_df$rental_affordability, wb = wb, sheetname = "Rental Affordability")
   create_rental_tenure_sheet(data = juris_df$tenure, wb = wb, sheetname = "Tenure")
+  create_displacement_risk_sheet(data = juris_df$displacement_risk, wb = wb, sheetname = "Displacement Risk")
   
   # openXL(wb) # preview
   
+  # saveWorkbook(wb, file = here::here(file.path("T:\\2024May\\christy\\data-profiles-chas", paste0(chas_year - 4, "-", chas_year, "-chas-data-", tolower(j), ".xlsx"))), overwrite = TRUE)
   saveWorkbook(wb, file = here::here(file.path("data-profiles-chas", paste0(chas_year - 4, "-", chas_year, "-chas-data-", tolower(j), ".xlsx"))), overwrite = TRUE)
 }
 
