@@ -5,7 +5,7 @@ rdi_disp_risk_ui <- function(id) {
   
   intro <- p("PSRC developed a regional Displacement Risk Mapping tool to identify areas where residents are at greater 
              risk of displacement. Displacement risk is a composite of indicators representing five elements of 
-             neighborhood displacement risks: socio-demographics, transportation qualities, neighborhood characteristics, 
+             neighborhood displacement risk: socio-demographics, transportation qualities, neighborhood characteristics, 
              housing, and civic engagement.  More information about this tool can be found",
              
              tags$a(href="https://www.psrc.org/our-work/displacement-risk-mapping","here", target = "_blank"), 
@@ -13,7 +13,7 @@ rdi_disp_risk_ui <- function(id) {
              ".", style = "font-size: 11pt;")
   
   intro2 <- p("The table below provides estimates of the shares of people by race/ethnicity that live in areas of lower, 
-             moderate, and higher displacement risks in the community selected and across the four-county region.", style = "font-size: 11pt;")
+             moderate, and higher displacement risk in the community selected and across the four-county region.", style = "font-size: 11pt;")
   
   tabPanel(title = "Displacement Risk",
            div(style = "padding-top: 1rem;",
