@@ -8,9 +8,7 @@ rdi_disp_risk_ui <- function(id) {
              neighborhood displacement risk: socio-demographics, transportation qualities, neighborhood characteristics, 
              housing, and civic engagement.  More information about this tool can be found",
              
-             tags$a(href="https://www.psrc.org/our-work/displacement-risk-mapping","here", target = "_blank"), 
-             
-             ".", style = "font-size: 11pt;")
+             tags$a(href="https://www.psrc.org/our-work/displacement-risk-mapping","here.", target = "_blank"), style = "font-size: 11pt;")
   
   intro2 <- p("The table below provides estimates of the shares of people by race/ethnicity that live in areas of lower, 
              moderate, and higher displacement risk in the community selected and across the four-county region.", style = "font-size: 11pt;")
