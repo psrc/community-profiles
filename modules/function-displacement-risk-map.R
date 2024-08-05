@@ -6,14 +6,15 @@ create_displacement_risk_map <- function(shape_tract, shape_place, title) {
   shp_cut_ids <- st_intersection(shape_tract, shape_place_valid)
   
   # remove non-relevant tracts from spatial intersection output
-  if(str_detect(shape_place$geog_name, "County")) {
+  if(unique(str_detect(shape_place$geog_name, "County"))) {
+    
     cnty_code <- switch(shape_place$geog_name,
                         "King County" = "033",
                         "Kitsap County" = "035",
                         "Pierce County" = "053",
                         "Snohomish County" = "061")
     shp_cut_ids <- shp_cut_ids %>% 
-      filter(countyfp10  == cnty_code)
+      filter(countyfp10 == cnty_code)
   }
   
   shp_cut <- shape_tract %>% 
