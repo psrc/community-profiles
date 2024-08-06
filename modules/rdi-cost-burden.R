@@ -112,16 +112,19 @@ rdi_cost_burden_server <- function(id, shape, place) {
         style = 'margin-top: 1rem'
       )
     })
+    
+    place_alias <- reactive({
+      ifelse(place() == 'Silverdale', p <- 'Silverdale CDP', p <- place())
+    })
 
     data <- reactive({
       # pull (currently from SQLite) semi-prepped CHAS
-      
       ifelse(str_detect(place(), ".*County"), j <- 'county', j <- 'place') 
- 
+
       p_dfs <- create_cost_burden_table(juris = j)
       r_dfs <- create_cost_burden_table(juris = 'region') 
       
-      p_dfs <- map(p_dfs, ~filter(.x, geography_name == place()))
+      p_dfs <- map(p_dfs, ~filter(.x, geography_name == place_alias()))
       
       rdfs <- odfs <- list()
       tables_list <- list(p = p_dfs, r = r_dfs)
@@ -223,7 +226,6 @@ rdi_cost_burden_server <- function(id, shape, place) {
     
     output$r_e_table <- renderDT({
       # Renter Estimate table display
-      
       d <- prep_cost_burden_table(data()$r[['pe']], data()$r[['re']])
 
       create_dt_cost_burden(table = d, container = container(), source = vals$source)

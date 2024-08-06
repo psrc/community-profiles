@@ -50,13 +50,16 @@ rdi_rentaff_server <- function(id, shape, place) {
       
     })
     
+    place_alias <- reactive({
+      ifelse(place() == 'Silverdale', p <- 'Silverdale CDP', p <- place())
+      return(p)
+    })
+    
     data <- reactive({
       # pull (currently from SQLite) semi-prepped CHAS
-      # if(place() %in% c('King County', 'Kitsap County', 'Pierce County', 'Snohomish County')) browser()
-      
       ifelse(str_detect(place(), ".*County"), j <- 'county', j <- 'place') 
       df <- create_rental_affordability_table(juris = j) %>% 
-        filter(geography_name == place())
+        filter(geography_name == place_alias())
 
       df_region <- create_rental_affordability_table(juris = 'region')
 
@@ -92,9 +95,8 @@ rdi_rentaff_server <- function(id, shape, place) {
     
     plot_clean_data <- reactive({
       # munge long form data for visual
-      
-      geog <- c(place(), 'Region')
-      
+      geog <- c(place_alias(), 'Region')
+
       plot_data() %>% 
         mutate(type_desc = case_when(type == 'rental_units_share' ~ 'Rental Units', 
                                      type == 'renter_hh_income_share' ~ 'Renter Households')) %>% 
@@ -146,7 +148,7 @@ rdi_rentaff_server <- function(id, shape, place) {
     })
     
     output$plot01 <- renderEcharts4r({
-      d <- plot_clean_data() %>% filter(geography_name == place())
+      d <- plot_clean_data() %>% filter(geography_name == place_alias())
 
       echart_rdi(data = d,
                  desc_col = description_short,

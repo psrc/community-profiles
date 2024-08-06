@@ -56,7 +56,6 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
       
     })
     
-    
     data <- reactive({
       
     })
@@ -64,6 +63,7 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
     table_data <- reactive({
       # pull (currently from SQLite)
       # data in wide for display in table
+      
       
       select_rename_cols <- function(df) {
         place_name <- unique(df$planning_geog)
@@ -80,7 +80,7 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
       df <- read.dt.disprisk(type = 'table', "acs5_2022_B03002_tract_juris_split_summary")
 
       juris <- df %>% 
-        filter(planning_geog == place()) %>% 
+        filter(planning_geog == place()) %>%
         select_rename_cols()
       
       region <- df %>% 
@@ -97,9 +97,9 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
       
     })
     
-    place_name <- reactive({
-      place()
-    })
+    # place_name <- reactive({
+    #   place()
+    # })
     
     container <- reactive({
       # custom container for DT
@@ -111,7 +111,7 @@ rdi_disp_risk_server <- function(id, shape, place, disp_risk_shape) {
           thead(
             tr(
               th(rowspan = 2, 'Race/Ethnicity'),
-              th(class = 'dt-center', colspan = 8, place_name()),
+              th(class = 'dt-center', colspan = 8, place()),
               th(class = 'dt-center', colspan = 8, 'Region')
             ),
             tr(

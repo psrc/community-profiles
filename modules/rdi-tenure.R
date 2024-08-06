@@ -78,17 +78,18 @@ rdi_tenure_server <- function(id, shape, place) {
       
     })
     
+    place_alias <- reactive({
+      ifelse(place() == 'Silverdale', p <- 'Silverdale CDP', p <- place())
+    })
+    
     data <- reactive({
       # pull (currently from SQLite) semi-prepped CHAS
       
       ifelse(str_detect(place(), ".*County"), j <- 'county', j <- 'place')
       
       df <- create_tenure_table(juris = j) %>%
-        filter(geography_name == place())
+        filter(geography_name == place_alias())
       
-      # df <- create_tenure_table(juris = 'place') %>%
-      #   filter(geography_name == place())
-
       df_region <- create_tenure_table(juris = 'region')
 
       return(list(place = df, region = df_region))
