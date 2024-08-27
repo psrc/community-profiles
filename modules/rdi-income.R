@@ -116,6 +116,10 @@ rdi_income_server <- function(id, shape, place) {
       )
     })
     
+    place_alias <- reactive({
+      ifelse(place() == 'Silverdale', p <- 'Silverdale CDP', p <- place())
+    })
+    
     data <- reactive({
       # pull (currently from SQLite) semi-prepped CHAS
       
@@ -124,7 +128,8 @@ rdi_income_server <- function(id, shape, place) {
       p_dfs <- create_income_table(juris = j)
       r_dfs <- create_income_table(juris = 'region') 
 
-      p_dfs <- map(p_dfs, ~filter(.x, geography_name == place()))
+      p_dfs <- map(p_dfs, ~filter(.x, geography_name == place_alias()))
+      # p_dfs <- map(p_dfs, ~filter(.x, geography_name == place()))
       
       rdfs <- odfs <- list()
       tables_list <- list(p = p_dfs, r = r_dfs)

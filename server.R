@@ -6,13 +6,10 @@ shinyServer(function(input, output, session) {
                        place = reactive(input$Place), 
                        year = reactive(input$Year))
   
-  
-  output$downloadData <- downloadHandler(
-    filename = function() {paste0(tolower(str_replace_all(input$Year," ","-")),"-",tolower(str_replace_all(input$Place," ","-")),".xlsx")},
-    content <- function(file) {file.copy(here(paste0("data-profiles/",tolower(str_replace_all(input$Year," ","-")),"-",tolower(str_replace_all(input$Place," ","-")),".xlsx")),file)},
-    contentType = "application/Excel"
-  )
-  
+  download_data_server('download', 
+                       place = reactive(input$Place), 
+                       year = reactive(input$Year))
+
   ## This section is for all the data on the Main Overview Page ----
 
   home_tab_server("home", place = reactive({input$Place}))
@@ -41,7 +38,8 @@ shinyServer(function(input, output, session) {
   
   rdi_tab_server("rdi", 
                  shape = community.shape,
-                 place = reactive({input$Place}))
+                 place = reactive({input$Place}),
+                 disp_risk_shape = disprisk.shape)
   
   # link from RDI to Race & Ethnicity tab in People/demographics
   observeEvent(input$`rdi-link_re`, {

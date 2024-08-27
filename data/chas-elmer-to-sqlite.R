@@ -46,12 +46,12 @@ for (n in names) {
 dbDisconnect(mydb)
 
 # test ----
-# 
+
 # con <- dbConnect(SQLite(), "data/chas_2023-07-26.db")
 # as.data.frame(dbListTables(con))
 # 
 # # # Get table
-# test <- dbReadTable(con, 'chas.county_T1')
+# test <- dbReadTable(con, 'chas.place_T9')
 # #
 # # # data is fetched; disconnect
 # dbDisconnect(con)

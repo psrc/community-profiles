@@ -13,11 +13,10 @@ shinyUI(
                    selectInput("Year",
                                "Select American Community Survey Data:",
                                data_years),
-                   
+
                    juris_profile_ui('profile'),
+                   download_data_ui('download'),
                   
-                   downloadLink('downloadData', 
-                                label = "Download Data Profiles in Excel Format"),
                    width = 3),
       
       mainPanel(shinyjs::useShinyjs(), 
@@ -39,6 +38,7 @@ shinyUI(
                                     house_tab_ui("house")),
 
                            tabPanel("RDI",
+                                    value = 'rdi',
                                     rdi_tab_ui("rdi")),
                            
                            tabPanel(icon("briefcase"),
@@ -52,9 +52,7 @@ shinyUI(
                            
                            source_tab_ui("source"),
                           
-                           footer = p("Click on the icon at the top of the page that corresponds to the metrics that you are interested in 
-                                      and you will get access to those measures. 
-                                      If you have any questions about the data or are curious what else we might have, please click",
+                           footer = p("If you have any questions about the data or are curious what other data we might have, please click",
                                     tags$a(class = "source_url", href="https://www.psrc.org/contact/information-center", "here", target="_blank"),
                                     " and we will be happy to help.",
                                     style = "font-size: 10pt; margin-top: 2rem;")
