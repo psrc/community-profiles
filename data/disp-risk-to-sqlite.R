@@ -1,3 +1,5 @@
+# This script uses tract ACS data and applies a tract-juris geography splits (Elmer) to create jurisdiction level output
+# for the Displacement Risk Table in the RDI tab.
 library(psrccensus)
 library(tidycensus)
 library(tidyverse)
