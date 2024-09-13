@@ -42,7 +42,6 @@ census_data <- as_tibble(fread('data//census_data_by_place.csv')) %>%
 wgs84 <- 4326
 
 load(file.path('data', 'community_profile_shapes.rda'))
-disprisk.shape <- read_rds(file.path('data', "disp_risk_shp.rds"))
 
 numeric_variables <- c("Estimate","MoE")
 percent_variables <- c("Share","Region")

@@ -67,8 +67,13 @@ tip.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/
 
 projects.shape <- rbind(tip.shape, rtp.shape)
 
+## Displacement Risk ----
+
+disp_risk_path <- "https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/Displacement_Risk_Data/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
+disprisk.shape <- st_read(disp_risk_path)
+
 ## Export to data subdirectory & X:/DSA/shiny-uploads/community-profiles/data ----
 
-save(community.point, community.shape, tract.shape, rtp.shape, tip.shape, projects.shape, file = 'data/community_profile_shapes.rda')
+save(community.point, community.shape, tract.shape, rtp.shape, tip.shape, projects.shape, disprisk.shape, file = 'data/community_profile_shapes.rda')
 
-# file.copy(from = 'data/community_profile_shapes.rda', to = "X:/DSA/shiny-uploads/community-profiles/data/community_profile_shapes.rda")
+# file.copy(from = 'data/community_profile_shapes.rda', to = "X:/DSA/shiny-uploads/community-profiles/data/community_profile_shapes.rda", overwrite = TRUE)
