@@ -41,73 +41,7 @@ census_data <- as_tibble(fread('data//census_data_by_place.csv')) %>%
 # Shapefiles ----
 wgs84 <- 4326
 
-city.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/City_Boundaries/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>%
-  select(city_name, cnty_name) %>% 
-  mutate(cnty_name=paste0(cnty_name, " County")) %>%
-  mutate(city_name = gsub("Sea Tac","SeaTac",city_name)) %>%
-  mutate(city_name = gsub("Beaux Arts","Beaux Arts Village",city_name)) %>%
-  rename(geog_name=city_name, county=cnty_name)
-
-rgeo.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/Regional_Geographies/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>%
-  filter(juris=="Silverdale UGA") %>%
-  mutate(juris=str_replace(juris, "Silverdale UGA", "Silverdale")) %>%
-  select(juris, cnty_name) %>% 
-  mutate(cnty_name=paste0(cnty_name, " County")) %>%
-  rename(geog_name=juris, county=cnty_name)
-
-county.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/County_Boundaries/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>%
-  filter(psrc == 1) %>%
-  select(county_nm) %>% rename(geog_name=county_nm) %>%
-  mutate(geog_name = paste0(geog_name, " County"), county=geog_name)
-
-community.shape <- rbind(city.shape, county.shape, rgeo.shape)
-community.shape <- left_join(community.shape, jurisdictions, by=c("geog_name"="juris_name"))
-rm(city.shape, county.shape, rgeo.shape)
-
-community.point <- community.shape %>% st_drop_geometry()
-
-tract.2010 <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/Census_Tracts_2010/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>% 
-  select(geoid10, county_name) %>%
-  mutate(county = paste0(county_name, " County")) %>%
-  select(-county_name) %>%
-  rename(geoid=geoid10) %>%
-  mutate(census_year = 2010)
-
-tract.2020 <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/Census_Tracts_2020/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>% 
-  select(geoid20, county_name) %>%
-  mutate(county = paste0(county_name, " County")) %>%
-  select(-county_name) %>%
-  rename(geoid=geoid20) %>%
-  mutate(census_year = 2020)
-
-tract.shape <- rbind(tract.2010, tract.2020)
-rm(tract.2010, tract.2020)
-
-rtp.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/Regional_Capacity_Projects/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>%
-  mutate(Total_Cost = as.numeric(Total_Cost)) %>%
-  mutate(Completion = as.character(Completion)) %>%
-  select(MTP_ID, Sponsor, Agency_Typ, Project_Ti, Type, Completion, Status, Total_Cost) %>%
-  rename(`ID`=MTP_ID, `Type`=Agency_Typ,`Title`=Project_Ti, `Improvement`=Type, `Cost`=Total_Cost)
-
-tip.shape <- st_read("https://services6.arcgis.com/GWxg6t7KXELn1thE/arcgis/rest/services/TIP_21_24/FeatureServer/0/query?where=0=0&outFields=*&f=pgeojson") %>%
-  mutate(TotCost = as.numeric(TotCost)) %>%
-  mutate(EstCompletionYear = as.character(EstCompletionYear)) %>%
-  mutate(Status="2021-2024 TIP") %>%
-  select(ProjNo,PlaceShortName,ProjectTitle,ImproveType,EstCompletionYear,Status,TotCost) %>%
-  rename(`ID`=ProjNo, `Sponsor`=PlaceShortName, `Title`=ProjectTitle) %>%
-  rename(`Improvement`=ImproveType, `Completion`= EstCompletionYear, `Status`=Status, `Cost`=TotCost) %>%
-  mutate(Type = case_when(
-    Sponsor %in% c("King County", "Kitsap County", "Pierce County", "Snohomish County") ~ "Counties",
-    Sponsor %in% c("Kitsap Transit", "Pierce Transit", "Everett Transit", "King County Metro", "Community Transit") ~ "Local Transit",
-    Sponsor %in% c("Sound Transit") ~ "Regional Transit",
-    Sponsor %in% c("Tulalip Tribes", "Port of Seattle", "Muckleshoot Indian Tribe", "Port of Everett") ~ "Ports/Tribes",
-    Sponsor %in% c("WSDOT") ~ "State",
-    Sponsor %in% c("Washington State Ferries") ~ "WSF")) %>%
-  mutate(Type = replace_na(Type, "Cities")) %>%
-  select(ID, Sponsor, Type, Title, Improvement, Completion, Status, Cost)
-
-projects.shape <- rbind(tip.shape, rtp.shape)
-
+load(file.path('data', 'community_profile_shapes.rda'))
 disprisk.shape <- read_rds(file.path('data', "disp_risk_shp.rds"))
 
 numeric_variables <- c("Estimate","MoE")

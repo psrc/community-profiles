@@ -53,3 +53,5 @@ vignettes/*.pdf
 *.shp
 *.shx
 *shp.xml
+*.rda
+scratch*
