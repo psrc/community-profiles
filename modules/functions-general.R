@@ -166,7 +166,14 @@ create_tract_map <- function(t, y, p, v, val, d.clr, d.title, pre="", s="", dec=
   
   # Create Map
   working_map <- leaflet(data = current_value, options = leafletOptions(zoomControl=FALSE)) %>% 
-    addProviderTiles(providers$CartoDB.Positron) %>%
+    # addProviderTiles(providers$CartoDB.Positron) %>%
+    addTiles(
+      urlTemplate = carto_positron_url,
+      attribution = paste(
+        '&copy; <a href="https://carto.com/attributions">CARTO</a>,',
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      )
+    ) %>%
     addLayersControl(baseGroups = c("Base Map"),
                      overlayGroups = c("Census Tracts","Place Boundary"),
                      options = layersControlOptions(collapsed = TRUE)) %>%

@@ -6,10 +6,11 @@ library(DBI)
 library(RSQLite)
 
 elmer_connection <- dbConnect(odbc::odbc(),
-                              driver = "SQL Server",
-                              server = "AWS-PROD-SQL\\Sockeye",
+                              driver = "ODBC Driver 18 for SQL Server",
+                              server = "SQLserver",
                               database = "Elmer",
-                              trusted_connection = "yes"
+                              trusted_connection = "yes",
+                              TrustServerCertificate = "Yes"
 ) 
 
 sqlite_dbname <- file.path('data', paste0('chas_',Sys.Date(), '.db'))
@@ -47,7 +48,8 @@ dbDisconnect(mydb)
 
 # test ----
 
-# con <- dbConnect(SQLite(), "data/chas_2023-07-26.db")
+# con <- dbConnect(SQLite(), "data/chas_2026-10-06.db")
+# # con <- dbConnect(SQLite(), "data/chas_2023-07-26.db")
 # as.data.frame(dbListTables(con))
 # 
 # # # Get table

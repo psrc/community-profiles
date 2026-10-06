@@ -19,6 +19,12 @@ library(shinycssloaders)
 library(psrcplot)
 library(echarts4r)
 
+# https://github.com/rstudio/leaflet/issues/965#issuecomment-5479310144
+# get environment variable
+carto_api_key = Sys.getenv("CARTO_API_KEY")
+# add key to end of CARTO positron url
+carto_positron_url <- paste0("https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png",'?key=', carto_api_key)
+
 # run all files in the modules sub-directory
 module_files <- list.files('modules', full.names = TRUE)
 sapply(module_files, source)
