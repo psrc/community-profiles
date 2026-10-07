@@ -263,7 +263,14 @@ create_tip_map <- function(p, i=tip.shape, plan.yr, d.title, d.clr=plan.clrs) {
                      "<b> <br>",paste0("Project Completion: "), "</b>", trimmed$Completion) %>% lapply(htmltools::HTML)
     # Create Map
     working_map <- leaflet() %>% 
-      addProviderTiles(providers$CartoDB.Positron) %>%
+      # addProviderTiles(providers$CartoDB.Positron) %>%
+      addTiles(
+        urlTemplate = carto_positron_url,
+        attribution = paste(
+          '&copy; <a href="https://carto.com/attributions">CARTO</a>,',
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        )
+      ) %>%
       addLayersControl(baseGroups = c("Base Map"),
                        overlayGroups = c(plan.yr,"City Boundary"),
                        options = layersControlOptions(collapsed = TRUE)) %>%
@@ -299,7 +306,14 @@ create_rtp_map <- function(p, i=rtp.shape, plan.yr, d.title, d.clr=plan.clrs) {
   if (is.null(interim) == TRUE) {
     
     working_map <- leaflet() %>% 
-      addProviderTiles(providers$CartoDB.Positron) %>%
+      # addProviderTiles(providers$CartoDB.Positron) %>%
+      addTiles(
+        urlTemplate = carto_positron_url,
+        attribution = paste(
+          '&copy; <a href="https://carto.com/attributions">CARTO</a>,',
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        )
+      ) %>%
       addLayersControl(baseGroups = c("Base Map"),
                        overlayGroups = c(plan.yr,"City Boundary"),
                        options = layersControlOptions(collapsed = TRUE)) %>%
@@ -323,7 +337,14 @@ create_rtp_map <- function(p, i=rtp.shape, plan.yr, d.title, d.clr=plan.clrs) {
                      "<b> <br>",paste0("Project Completion: "), "</b>", trimmed$Completion) %>% lapply(htmltools::HTML)
     # Create Map
     working_map <- leaflet() %>% 
-      addProviderTiles(providers$CartoDB.Positron) %>%
+      # addProviderTiles(providers$CartoDB.Positron) %>%
+      addTiles(
+        urlTemplate = carto_positron_url,
+        attribution = paste(
+          '&copy; <a href="https://carto.com/attributions">CARTO</a>,',
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        )
+      ) %>%
       addLayersControl(baseGroups = c("Base Map"),
                        overlayGroups = c(plan.yr,"City Boundary"),
                        options = layersControlOptions(collapsed = TRUE)) %>%

@@ -87,7 +87,14 @@ create_cost_burden_tract_map <- function(table, tenure_type = c("Owner", "Renter
                )
 
   m <- leaflet(data = shp_cut, options = leafletOptions(zoomControl=FALSE)) %>%
-    addProviderTiles(providers$CartoDB.Positron) %>%
+    # addProviderTiles(providers$CartoDB.Positron) %>%
+    addTiles(
+      urlTemplate = carto_positron_url,
+      attribution = paste(
+        '&copy; <a href="https://carto.com/attributions">CARTO</a>,',
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      )
+    ) %>%
     addLayersControl(baseGroups = c("Base Map"),
                      overlayGroups = c("Place Boundary", names(shps)),
                      options = layersControlOptions(collapsed = TRUE)) %>%
